@@ -1,0 +1,96 @@
+datasource db {
+    provider = "postgresql"
+    url      = env("POSTGRES_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+// for FE if use microservice
+// generator typescriptInterfaces {
+//   provider = "prisma-generator-typescript-interfaces"
+//   output   = "../shared-types/"
+// }
+
+enum EUserOrAccountType {
+    CUSTOMER
+    STAFF
+}
+
+enum EPermissionAction {
+    READ
+    CREATE
+    UPDATE
+    DELETE
+}
+
+enum EPermissionResource {
+    PRODUCT
+    USER
+    ROLE
+    PERMISSION
+}
+
+model User {
+    id        String             @id @default(uuid())
+    fullName  String
+    type      EUserOrAccountType
+    account   Account?
+    createdAt DateTime           @default(now())
+    updatedAt DateTime           @default(now()) @updatedAt
+}
+
+model Account {
+    id                 String             @id @default(uuid())
+    username           String             @unique
+    password           String
+    type               EUserOrAccountType
+    accessTokenVersion Int                @default(1)
+    isBanned           Boolean            @default(false)
+    isBlocked          Boolean            @default(false)
+    userId             String             @unique
+    roleId             String
+    createdAt          DateTime           @default(now())
+    updatedAt          DateTime           @default(now()) @updatedAt
+
+    role         Role           @relation(fields: [roleId], references: [id])
+    user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+    refreshToken RefreshToken[]
+}
+
+model Role {
+    id          String   @id @default(uuid())
+    name        String   @unique
+    description String?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @default(now()) @updatedAt
+
+    permissions Permission[]
+    accounts    Account[]
+}
+
+model Permission {
+    id        String              @id @default(uuid())
+    resource  EPermissionResource
+    action    EPermissionAction
+    createdAt DateTime            @default(now())
+    updatedAt DateTime            @default(now()) @updatedAt
+
+    roles Role[]
+
+    @@unique([action, resource], name: "action_resource")
+}
+
+model RefreshToken {
+    id        String   @id @default(uuid())
+    token     String
+    expiresAt DateTime
+    ipAddress String
+    userAgent String
+    accountId String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    account Account @relation(fields: [accountId], references: [id])
+}

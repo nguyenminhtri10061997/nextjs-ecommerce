@@ -1,0 +1,43 @@
+import ContactPageIcon from "@mui/icons-material/ContactPage";
+import { EPermissionAction, EPermissionResource } from "@prisma/client";
+
+export type TDashBoardMenuItem = {
+  label: string
+  to?: string
+  perAction?: EPermissionAction
+  perResource?: EPermissionResource
+  icon?: React.ReactElement
+  children?: TDashBoardMenuItem[]
+}
+
+export const DASHBOARD_MENU_ITEMS: TDashBoardMenuItem[] = [
+  {
+    label: "User Management",
+    icon: <ContactPageIcon />,
+    children: [
+      {
+        label: 'User',
+        to: "/dashboard/user",
+        icon: <ContactPageIcon />,
+        perResource: EPermissionResource.USER,
+        perAction: EPermissionAction.READ,
+      },
+      {
+        label: "Role",
+        to: "/dashboard/role",
+        icon: <ContactPageIcon />,
+        perAction: EPermissionAction.READ,
+        perResource: EPermissionResource.ROLE,
+      },
+      {
+        label: "Permission",
+        to: "/dashboard/permission",
+        icon: <ContactPageIcon />,
+        perAction: EPermissionAction.READ,
+        perResource: EPermissionResource.PERMISSION,
+      },
+    ]
+  },
+];
+
+export const ADMIN_DRAWER_WIDTH = 250
