@@ -41,3 +41,8 @@ export const SearchQueryDTO = (IEnum: string[]) =>
       searchType: z.enum(ESearchType),
     }),
   });
+
+
+export const LanguageQueryDTO = z.object({
+  language: z.string()
+});

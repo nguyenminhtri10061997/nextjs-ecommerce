@@ -1,0 +1,93 @@
+import { AppResponse } from "@/common/appResponse";
+import { AppError } from "@/common/appError";
+import { getOrderBy } from "@/common";
+import prisma from "@/lib/prisma";
+import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
+import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
+import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
+import { THofContext } from "@/lib/HOF/type";
+import { EPermissionResource, EPermissionAction, Prisma } from "@prisma/client";
+import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator";
+import { ESearchType } from "@/lib/zod/paginationDTO";
+
+export const GET = withValidateFieldHandler(
+  null,
+  GetQueryDTO,
+  null,
+  withVerifyAccessToken(
+    withVerifyCanDoAction(
+      { resource: EPermissionResource.PRODUCT_CATEGORY, action: EPermissionAction.READ },
+      async (_, ctx: THofContext<never, typeof GetQueryDTO>) => {
+        const { orderQuery, searchQuery } = ctx.queryParse || {};
+        const where: Prisma.ProductCategoryWhereInput = {};
+
+        if (searchQuery?.searchKey && searchQuery?.searchStr) {
+          const key = searchQuery.searchKey as keyof Prisma.ProductCategoryWhereInput;
+          where[key] = {
+            [searchQuery.searchType || ESearchType.contains]: searchQuery.searchStr,
+          } as any;
+        }
+
+        const data = await prisma.productCategory.findMany({
+          where,
+          orderBy: getOrderBy(orderQuery),
+        });
+
+        return AppResponse.json({ status: 200, data });
+      }
+    )
+  )
+);
+
+export const POST = withValidateFieldHandler(
+  null,
+  null,
+  PostCreateBodyDTO,
+  withVerifyAccessToken(
+    withVerifyCanDoAction(
+      { resource: EPermissionResource.PRODUCT_CATEGORY, action: EPermissionAction.CREATE },
+      async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
+        const {
+          name,
+          seoTitle,
+          description,
+          seoDescription,
+          displayOrder,
+          productCategoryParentId,
+          isActive,
+        } = ctx.bodyParse!;
+
+        const res = await prisma.productCategory.create({
+          data: {
+            name,
+            seoTitle,
+            description,
+            seoDescription,
+            displayOrder,
+            productCategoryParentId,
+            isActive,
+          },
+        });
+
+        return AppResponse.json({ status: 200, data: res });
+      }
+    )
+  )
+);
+
+export const DELETE = withValidateFieldHandler(
+  null,
+  null,
+  DeleteBodyDTO,
+  withVerifyAccessToken(
+    withVerifyCanDoAction(
+      { resource: EPermissionResource.PRODUCT_CATEGORY, action: EPermissionAction.DELETE },
+      async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
+        const res = await prisma.productCategory.deleteMany({
+          where: { id: { in: ctx.bodyParse!.ids } },
+        });
+        return AppResponse.json({ status: 200, data: res.count });
+      }
+    )
+  )
+);

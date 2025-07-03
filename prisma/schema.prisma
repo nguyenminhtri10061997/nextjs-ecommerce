@@ -13,6 +13,8 @@ generator client {
 //   output   = "../shared-types/"
 // }
 
+// AUTH SERVICE
+
 enum EUserOrAccountType {
     CUSTOMER
     STAFF
@@ -26,19 +28,29 @@ enum EPermissionAction {
 }
 
 enum EPermissionResource {
-    PRODUCT
     USER
     ROLE
     PERMISSION
+    PRODUCT
+    BRAND
+    LANGUAGE
+    PRODUCT_CATEGORY
+    ATTRIBUTE
+    PRODUCT_OPTION
+    PRODUCT_STATUS
+    PRODUCT_RATING
 }
 
+// Tables
+
 model User {
-    id        String             @id @default(uuid())
-    fullName  String
-    type      EUserOrAccountType
-    account   Account?
-    createdAt DateTime           @default(now())
-    updatedAt DateTime           @default(now()) @updatedAt
+    id            String             @id @default(uuid())
+    fullName      String
+    type          EUserOrAccountType
+    account       Account?
+    createdAt     DateTime           @default(now())
+    updatedAt     DateTime           @default(now()) @updatedAt
+    ProductRating ProductRating[]
 }
 
 model Account {
@@ -93,4 +105,299 @@ model RefreshToken {
     updatedAt DateTime @default(now()) @updatedAt
 
     account Account @relation(fields: [accountId], references: [id])
+}
+
+// PRODUCT SERVICE
+
+enum EStockStatus {
+    STOCKING
+    OUT_OF_STOCK
+    ALMOST_OUT_OF_STOCK
+}
+
+enum EStockType {
+    SKU
+    EXTERNAL
+    ATTRIBUTE
+}
+
+enum EPriceModifierType {
+    FREE // free
+    ADD // add more money of price
+    SUBTRACT // subtract money of price (very rare but example: don't want get plastic eating utensils)
+    SET // set price again
+    PERCENT // add price by percent %
+    REDUCE_PERCENT // reduce price by percent %
+}
+
+enum EAttributeType {
+    PRODUCT
+}
+
+// Tables
+
+model Product {
+    id                String   @id @default(uuid())
+    productCategoryId String?
+    brandId           String?
+    name              String
+    slug              String
+    seoTitle          String?
+    description       String?
+    seoDescription    String?
+    detail            String?
+    mainImage         String?
+    listImages        String[] @default([])
+    viewCount         Int      @default(0)
+    soldCount         Int      @default(0)
+    avgRate           Float?
+    isActive          Boolean  @default(true)
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @default(now()) @updatedAt
+
+    attributes      ProductAttribute[]
+    skus            ProductSku[]
+    translations    ProductTranslation[]
+    ratings         ProductRating[]
+    productStatuses ProductToProductStatus[]
+    productOptions  ProductToProductOption[]
+    ProductCategory ProductCategory?         @relation(fields: [productCategoryId], references: [id])
+    Brand           Brand?                   @relation(fields: [brandId], references: [id])
+}
+
+model Brand {
+    id        String    @id @default(uuid())
+    name      String
+    logoUrl   String
+    isActive  Boolean
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    products  Product[]
+}
+
+model Language {
+    id           String   @id @default(uuid())
+    code         String
+    name         String
+    isActive     Boolean  @default(true)
+    isDefault    Boolean?
+    iconUrl      String?
+    displayOrder Int?
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @default(now()) @updatedAt
+
+    productCategoryTranslations ProductCategoryTranslation[]
+    productTranslations         ProductTranslation[]
+}
+
+model ProductCategory {
+    id                      String   @id @default(uuid())
+    name                    String
+    seoTitle                String
+    description             String
+    seoDescription          String
+    displayOrder            Int?
+    productCategoryParentId String?
+    isActive                Boolean
+    createdAt               DateTime @default(now())
+    updatedAt               DateTime @default(now()) @updatedAt
+
+    products     Product[]
+    translations ProductCategoryTranslation[]
+}
+
+model ProductCategoryTranslation {
+    id                String   @id @default(uuid())
+    productCategoryId String
+    languageId        String
+    name              String
+    seoTitle          String
+    description       String
+    seoDescription    String
+    createdAt         DateTime @default(now())
+    updatedAt         DateTime @default(now()) @updatedAt
+
+    productCategory ProductCategory @relation(fields: [productCategoryId], references: [id])
+    language        Language        @relation(fields: [languageId], references: [id])
+}
+
+model ProductTranslation {
+    id             String   @id @default(uuid())
+    productId      String
+    languageId     String
+    name           String
+    seoTitle       String
+    description    String
+    seoDescription String
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @default(now()) @updatedAt
+
+    product  Product  @relation(fields: [productId], references: [id])
+    language Language @relation(fields: [languageId], references: [id])
+}
+
+model Attribute {
+    id        String         @id @default(uuid())
+    name      String
+    type      EAttributeType
+    createdAt DateTime       @default(now())
+    updatedAt DateTime       @default(now()) @updatedAt
+
+    attributeValues AttributeValue[]
+}
+
+model AttributeValue {
+    id        String   @id @default(uuid())
+    name      String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    attributeId String
+    attribute   Attribute @relation(fields: [attributeId], references: [id])
+}
+
+model ProductAttribute {
+    id           String   @id @default(uuid())
+    productId    String
+    name         String
+    displayOrder Int?
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @default(now()) @updatedAt
+
+    product         Product                 @relation(fields: [productId], references: [id])
+    attributeValues ProductAttributeValue[]
+}
+
+model ProductAttributeValue {
+    id                 String   @id @default(uuid())
+    productAttributeId String
+    name               String
+    image              String?
+    displayOrder       Int?
+    createdAt          DateTime @default(now())
+    updatedAt          DateTime @default(now()) @updatedAt
+
+    attribute          ProductAttribute           @relation(fields: [productAttributeId], references: [id])
+    skuAttributeValues ProductSkuAttributeValue[]
+}
+
+model ProductSku {
+    id          String        @id @default(uuid())
+    productId   String
+    sellerSku   String?
+    stockStatus EStockStatus?
+    stockType   EStockType
+    salePrice   Float?
+    price       Float
+    costPrice   Float?
+    stock       Int?
+    barcode     String?
+    weight      Float?
+    width       Float?
+    height      Float?
+    length      Float?
+    isActive    Boolean       @default(true)
+    createdAt   DateTime      @default(now())
+    updatedAt   DateTime      @default(now()) @updatedAt
+
+    product            Product                    @relation(fields: [productId], references: [id])
+    skuAttributeValues ProductSkuAttributeValue[]
+}
+
+model ProductSkuAttributeValue {
+    id                      String   @id @default(uuid())
+    productSkuId            String
+    productAttributeValueId String
+    createdAt               DateTime @default(now())
+    updatedAt               DateTime @default(now()) @updatedAt
+
+    sku            ProductSku            @relation(fields: [productSkuId], references: [id])
+    attributeValue ProductAttributeValue @relation(fields: [productAttributeValueId], references: [id])
+
+    @@unique([productSkuId, productAttributeValueId], name: "productSkuId_productAttributeValueId")
+}
+
+model ProductOption {
+    id        String   @id @default(uuid())
+    name      String
+    isActive  Boolean
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    items    ProductOptionItem[]
+    products ProductToProductOption[]
+}
+
+model ProductOptionItem {
+    id              String   @id @default(uuid())
+    productOptionId String
+    name            String
+    displayOrder    Int?
+    isActive        Boolean
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @default(now()) @updatedAt
+
+    option ProductOption @relation(fields: [productOptionId], references: [id])
+}
+
+model ProductToProductOption {
+    id                 String             @id @default(uuid())
+    productId          String
+    productOptionId    String
+    displayOrder       Int?
+    isRequired         Boolean            @default(false)
+    maxSelect          Int
+    priceModifierType  EPriceModifierType
+    priceModifierValue Float
+    createdAt          DateTime           @default(now())
+    updatedAt          DateTime           @default(now()) @updatedAt
+
+    product Product       @relation(fields: [productId], references: [id])
+    option  ProductOption @relation(fields: [productOptionId], references: [id])
+}
+
+model ProductStatus {
+    id               String   @id @default(uuid())
+    name             String
+    slug             String
+    description      String
+    expiredAfterDays Int
+    image            String
+    backgroundColor  String
+    displayOrder     Int?
+    isActive         Boolean
+    createdAt        DateTime @default(now())
+    updatedAt        DateTime @default(now()) @updatedAt
+
+    products ProductToProductStatus[]
+}
+
+model ProductToProductStatus {
+    id              String   @id @default(uuid())
+    productId       String
+    productStatusId String
+    expiredAt       DateTime
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @default(now()) @updatedAt
+
+    product Product       @relation(fields: [productId], references: [id])
+    status  ProductStatus @relation(fields: [productStatusId], references: [id])
+}
+
+model ProductRating {
+    id        String   @id @default(uuid())
+    userId    String
+    productId String
+    rating    Float
+    title     String
+    detail    String
+    video     String
+    images    String
+    isVerify  Boolean  @default(false)
+    verifyBy  String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
+
+    product Product @relation(fields: [productId], references: [id])
+    user    User    @relation(fields: [userId], references: [id])
 }
