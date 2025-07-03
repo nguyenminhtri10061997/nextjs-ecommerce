@@ -119,6 +119,7 @@ enum EStockType {
     SKU
     EXTERNAL
     ATTRIBUTE
+    DIGITAL // link down
 }
 
 enum EPriceModifierType {
