@@ -87,7 +87,7 @@ export const POST = withValidateFieldHandler(
                     attributes,
                     skus,
                     translations,
-                    productStatuses,
+                    productStatusIds,
                     productOptions,
                     ...omit
                 } = ctx.bodyParse!;
@@ -118,26 +118,72 @@ export const POST = withValidateFieldHandler(
                     objCreate.attributes = {
                         create: attributes.map(at => ({
                             name: at.name,
+                            slug: at.slug,
+                            image: at.image,
                             displayOrder: at.displayOrder,
+
                             attributeValues: {
                                 create: at.attributeValues.map(atv => ({
+                                    image: atv.image,
+                                    slug: atv.slug,
                                     name: atv.name,
                                     displayOrder: atv.displayOrder,
-                                    image: atv.image,
-                                })),
+                                } as Prisma.ProductAttributeValueCreateInput)),
                             }
                         })),
                     }
                 }
 
-
                 if (skus?.length) {
                     objCreate.skus = {
-                        create: [
-                            {
-                                
-                            }
-                        ]
+                        create: skus.map(sku => ({
+                            sellerSku: sku.sellerSku,
+                            stockStatus: sku.stockStatus,
+                            stockType: sku.stockType,
+                            salePrice: sku.salePrice,
+                            price: sku.price,
+                            costPrice: sku.costPrice,
+                            stock: sku.stock,
+                            barcode: sku.barcode,
+                            weight: sku.weight,
+                            width: sku.width,
+                            height: sku.height,
+                            length: sku.length,
+                            note: sku.note,
+                            isActive: sku.isActive,
+                            isDefault: sku.isDefault,
+                            displayOrder: sku.displayOrder,
+                            skuAttributeValues: {
+                                create: sku.skuAttributeValues
+                            },
+                        }) as Prisma.ProductSkuCreateWithoutProductInput)
+                    }
+                }
+
+                if (translations?.length) {
+                    objCreate.translations = {
+                        create: translations
+                    }
+                }
+
+                if (productStatusIds?.length) {
+                    objCreate.productStatuses = {
+                        connect: productStatusIds.map(id => ({
+                            id,
+                        }))
+                    }
+                }
+
+                if (productOptions?.length) {
+                    objCreate.productOptions = {
+                        create: productOptions.map(op => ({
+                            productOptionId: op.productOptionId,
+                            displayOrder: op.displayOrder,
+                            isRequired: op.isRequired,
+                            maxSelect: op.maxSelect,
+                            priceModifierType: op.priceModifierType,
+                            priceModifierValue: op.priceModifierValue,
+                        }) as Prisma.ProductToProductOptionUncheckedCreateWithoutProductInput)
                     }
                 }
 

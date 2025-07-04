@@ -9,12 +9,13 @@ export const GetQueryDTO = z.object({
 
 export const PostCreateBodyDTO = z.object({
   name: z.string(),
-  seoTitle: z.string(),
-  description: z.string(),
-  seoDescription: z.string(),
-  displayOrder: z.number().nonnegative(),
+  slug: z.string(),
+  seoTitle: z.string().optional(),
+  description: z.string().optional(),
+  seoDescription: z.string().optional(),
+  displayOrder: z.number().nonnegative().optional(),
   productCategoryParentId: z.uuid().nullable().optional(),
-  isActive: z.boolean().optional().default(true),
+  isActive: z.boolean().optional(),
 });
 
 export const DeleteBodyDTO = z.object({

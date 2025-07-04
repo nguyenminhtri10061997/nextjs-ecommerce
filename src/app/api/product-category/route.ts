@@ -9,6 +9,7 @@ import { THofContext } from "@/lib/HOF/type";
 import { EPermissionResource, EPermissionAction, Prisma } from "@prisma/client";
 import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator";
 import { ESearchType } from "@/lib/zod/paginationDTO";
+import { AppStatusCode } from "@/common/statusCode";
 
 export const GET = withValidateFieldHandler(
   null,
@@ -49,6 +50,7 @@ export const POST = withValidateFieldHandler(
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
         const {
           name,
+          slug,
           seoTitle,
           description,
           seoDescription,
@@ -57,9 +59,31 @@ export const POST = withValidateFieldHandler(
           isActive,
         } = ctx.bodyParse!;
 
+        const exists = await prisma.attribute.findFirst({
+          where: {
+            OR: [
+              {
+                name,
+              },
+              {
+                slug,
+              },
+            ]
+          }
+        })
+        if (exists) {
+          if (exists.name === name) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
+          }
+          if (exists.slug === slug) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+          }
+        }
+
         const res = await prisma.productCategory.create({
           data: {
             name,
+            slug,
             seoTitle,
             description,
             seoDescription,

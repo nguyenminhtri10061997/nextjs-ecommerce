@@ -40,7 +40,7 @@ export const PUT = withValidateFieldHandler(
       { resource: EPermissionResource.LANGUAGE, action: EPermissionAction.UPDATE },
       async (_, ctx: THofContext<typeof IdParamsDTO, never, typeof PutBodyDTO>) => {
         const { id } = ctx.paramParse!;
-        const { name, code, iconUrl, isActive, isDefault, displayOrder } = ctx.bodyParse!;
+        const { name, code, isActive, isDefault, } = ctx.bodyParse!;
 
         const lang = await prisma.language.findUnique({ where: { id } });
         if (!lang) {
@@ -54,14 +54,24 @@ export const PUT = withValidateFieldHandler(
           return AppError.json({ status: AppStatusCode.EXISTING, message: "Language code already exists" });
         }
 
-        if (isDefault) {
-          await prisma.language.updateMany({ data: { isDefault: false } });
-        }
-
-        const updated = await prisma.language.update({
-          where: { id },
-          data: { name, code, iconUrl, isActive, isDefault, displayOrder },
-        });
+        const [updated] = await Promise.all([
+          prisma.language.update({
+            where: { id },
+            data: { name, code, isActive,  isDefault, },
+          }),
+          isDefault ?
+            prisma.language.updateMany({
+              where: {
+                id: {
+                  not: lang.id,
+                },
+                isDefault: true,
+              },
+              data: {
+                isDefault: false,
+              }
+            }) : null
+        ]);
 
         return AppResponse.json({ status: 200, data: updated });
       }

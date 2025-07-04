@@ -131,8 +131,10 @@ enum EPriceModifierType {
     REDUCE_PERCENT // reduce price by percent %
 }
 
-enum EAttributeType {
-    PRODUCT
+enum ETagDisplayType {
+    TEXT_IMAGE
+    IMAGE_ONLY
+    TEXT_BACKGROUND
 }
 
 // Tables
@@ -160,7 +162,7 @@ model Product {
     skus            ProductSku[]
     translations    ProductTranslation[]
     ratings         ProductRating[]
-    productStatuses ProductToProductStatus[]
+    productTags     ProductToProductTag[]
     productOptions  ProductToProductOption[]
     ProductCategory ProductCategory?         @relation(fields: [productCategoryId], references: [id])
     Brand           Brand?                   @relation(fields: [brandId], references: [id])
@@ -169,23 +171,22 @@ model Product {
 model Brand {
     id        String    @id @default(uuid())
     name      String
-    logoUrl   String
-    isActive  Boolean
+    slug      String
+    logoImage String?
+    isActive  Boolean   @default(true)
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     products  Product[]
 }
 
 model Language {
-    id           String   @id @default(uuid())
-    code         String
-    name         String
-    isActive     Boolean  @default(true)
-    isDefault    Boolean?
-    iconUrl      String?
-    displayOrder Int?
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @default(now()) @updatedAt
+    id        String   @id @default(uuid())
+    code      String   @unique
+    name      String
+    isActive  Boolean  @default(true)
+    isDefault Boolean? @default(false)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
 
     productCategoryTranslations ProductCategoryTranslation[]
     productTranslations         ProductTranslation[]
@@ -194,12 +195,13 @@ model Language {
 model ProductCategory {
     id                      String   @id @default(uuid())
     name                    String
-    seoTitle                String
-    description             String
-    seoDescription          String
+    slug                    String
+    seoTitle                String?
+    description             String?
+    seoDescription          String?
     displayOrder            Int?
     productCategoryParentId String?
-    isActive                Boolean
+    isActive                Boolean  @default(true)
     createdAt               DateTime @default(now())
     updatedAt               DateTime @default(now()) @updatedAt
 
@@ -227,9 +229,11 @@ model ProductTranslation {
     productId      String
     languageId     String
     name           String
-    seoTitle       String
-    description    String
-    seoDescription String
+    slug           String
+    seoTitle       String?
+    description    String?
+    seoDescription String?
+    detail         String?
     createdAt      DateTime @default(now())
     updatedAt      DateTime @default(now()) @updatedAt
 
@@ -238,11 +242,11 @@ model ProductTranslation {
 }
 
 model Attribute {
-    id        String         @id @default(uuid())
-    name      String
-    type      EAttributeType
-    createdAt DateTime       @default(now())
-    updatedAt DateTime       @default(now()) @updatedAt
+    id        String   @id @default(uuid())
+    name      String   @unique
+    slug      String   @unique
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
 
     attributeValues AttributeValue[]
 }
@@ -250,6 +254,7 @@ model Attribute {
 model AttributeValue {
     id        String   @id @default(uuid())
     name      String
+    slug      String
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
 
@@ -261,18 +266,21 @@ model ProductAttribute {
     id           String   @id @default(uuid())
     productId    String
     name         String
+    slug         String
     displayOrder Int?
     createdAt    DateTime @default(now())
     updatedAt    DateTime @default(now()) @updatedAt
 
-    product         Product                 @relation(fields: [productId], references: [id])
-    attributeValues ProductAttributeValue[]
+    product                  Product                    @relation(fields: [productId], references: [id])
+    attributeValues          ProductAttributeValue[]
+    ProductSkuAttributeValue ProductSkuAttributeValue[]
 }
 
 model ProductAttributeValue {
     id                 String   @id @default(uuid())
     productAttributeId String
     name               String
+    slug               String
     image              String?
     displayOrder       Int?
     createdAt          DateTime @default(now())
@@ -283,23 +291,26 @@ model ProductAttributeValue {
 }
 
 model ProductSku {
-    id          String        @id @default(uuid())
-    productId   String
-    sellerSku   String?
-    stockStatus EStockStatus?
-    stockType   EStockType
-    salePrice   Float?
-    price       Float
-    costPrice   Float?
-    stock       Int?
-    barcode     String?
-    weight      Float?
-    width       Float?
-    height      Float?
-    length      Float?
-    isActive    Boolean       @default(true)
-    createdAt   DateTime      @default(now())
-    updatedAt   DateTime      @default(now()) @updatedAt
+    id           String        @id @default(uuid())
+    productId    String
+    sellerSku    String?
+    stockStatus  EStockStatus?
+    stockType    EStockType
+    salePrice    Float?
+    price        Float
+    costPrice    Float?
+    stock        Int?
+    barcode      String?
+    weight       Float?
+    width        Float?
+    height       Float?
+    length       Float?
+    note         String
+    displayOrder Int?
+    isActive     Boolean       @default(true)
+    isDefault    Boolean
+    createdAt    DateTime      @default(now())
+    updatedAt    DateTime      @default(now()) @updatedAt
 
     product            Product                    @relation(fields: [productId], references: [id])
     skuAttributeValues ProductSkuAttributeValue[]
@@ -308,12 +319,16 @@ model ProductSku {
 model ProductSkuAttributeValue {
     id                      String   @id @default(uuid())
     productSkuId            String
+    productAttributeId      String
     productAttributeValueId String
+    image                   String?
+    Label                   String?
     createdAt               DateTime @default(now())
     updatedAt               DateTime @default(now()) @updatedAt
 
     sku            ProductSku            @relation(fields: [productSkuId], references: [id])
     attributeValue ProductAttributeValue @relation(fields: [productAttributeValueId], references: [id])
+    attribute      ProductAttribute      @relation(fields: [productAttributeId], references: [id])
 
     @@unique([productSkuId, productAttributeValueId], name: "productSkuId_productAttributeValueId")
 }
@@ -321,6 +336,7 @@ model ProductSkuAttributeValue {
 model ProductOption {
     id        String   @id @default(uuid())
     name      String
+    slug      String
     isActive  Boolean
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
@@ -333,6 +349,7 @@ model ProductOptionItem {
     id              String   @id @default(uuid())
     productOptionId String
     name            String
+    slug            String
     displayOrder    Int?
     isActive        Boolean
     createdAt       DateTime @default(now())
@@ -357,48 +374,53 @@ model ProductToProductOption {
     option  ProductOption @relation(fields: [productOptionId], references: [id])
 }
 
-model ProductStatus {
-    id               String   @id @default(uuid())
+model ProductTag {
+    id               String         @id @default(uuid())
+    code             String         @unique
     name             String
     slug             String
-    description      String
-    expiredAfterDays Int
-    image            String
-    backgroundColor  String
+    description      String?
+    expiredAfterDays Int?
+    displayType      ETagDisplayType
+    image            String?
+    bgColor          String?
+    textColor        String?
     displayOrder     Int?
-    isActive         Boolean
-    createdAt        DateTime @default(now())
-    updatedAt        DateTime @default(now()) @updatedAt
+    isActive         Boolean        @default(true)
+    createdAt        DateTime       @default(now())
+    updatedAt        DateTime       @default(now()) @updatedAt
 
-    products ProductToProductStatus[]
+    products ProductToProductTag[]
 }
 
-model ProductToProductStatus {
-    id              String   @id @default(uuid())
-    productId       String
-    productStatusId String
-    expiredAt       DateTime
-    createdAt       DateTime @default(now())
-    updatedAt       DateTime @default(now()) @updatedAt
+model ProductToProductTag {
+    id           String   @id @default(uuid())
+    productId    String
+    productTagId String
+    expiredAt    DateTime
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @default(now()) @updatedAt
 
-    product Product       @relation(fields: [productId], references: [id])
-    status  ProductStatus @relation(fields: [productStatusId], references: [id])
+    product    Product    @relation(fields: [productId], references: [id])
+    productTag ProductTag @relation(fields: [productTagId], references: [id])
 }
 
 model ProductRating {
-    id        String   @id @default(uuid())
-    userId    String
-    productId String
-    rating    Float
-    title     String
-    detail    String
-    video     String
-    images    String
-    isVerify  Boolean  @default(false)
-    verifyBy  String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
+    id             String   @id @default(uuid())
+    userId         String
+    productId      String
+    rating         Float
+    title          String
+    detail         String
+    video          String?
+    images         String[] @default([])
+    isVerify       Boolean  @default(false)
+    verifyByUserId String?
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @default(now()) @updatedAt
 
     product Product @relation(fields: [productId], references: [id])
     user    User    @relation(fields: [userId], references: [id])
+
+    @@unique([productId, userId])
 }

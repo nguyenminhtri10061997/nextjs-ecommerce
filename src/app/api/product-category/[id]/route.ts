@@ -42,6 +42,7 @@ export const PUT = withValidateFieldHandler(
         const { id } = ctx.paramParse!;
         const {
           name,
+          slug,
           seoTitle,
           description,
           seoDescription,
@@ -49,6 +50,27 @@ export const PUT = withValidateFieldHandler(
           productCategoryParentId,
           isActive,
         } = ctx.bodyParse!;
+
+        const exists = await prisma.attribute.findFirst({
+          where: {
+            OR: [
+              {
+                name,
+              },
+              {
+                slug,
+              },
+            ]
+          }
+        })
+        if (exists) {
+          if (exists.name === name) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
+          }
+          if (exists.slug === slug) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+          }
+        }
 
         const existing = await prisma.productCategory.findUnique({ where: { id } });
         if (!existing) {

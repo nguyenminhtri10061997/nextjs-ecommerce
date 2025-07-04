@@ -4,13 +4,14 @@ import { z } from "zod/v4";
 
 export const GetQueryDTO = z.object({
   orderQuery: OrderQueryDTO.shape.orderQuery.optional(),
-  searchQuery: SearchQueryDTO(["name"] as (keyof Brand)[]).shape.searchQuery.optional(),
+  searchQuery: SearchQueryDTO(["name", "slug"] as (keyof Brand)[]).shape.searchQuery.optional(),
 });
 
 export const PostCreateBodyDTO = z.object({
-  name: z.string(),
-  logoUrl: z.string(),
-  isActive: z.boolean().optional().default(true),
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  logoImage: z.string().optional(),
+  isActive: z.boolean().optional(),
 });
 
 export const DeleteBodyDTO = z.object({

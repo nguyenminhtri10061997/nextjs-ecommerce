@@ -1,17 +1,17 @@
 import { z } from "zod/v4";
-import { EAttributeType } from "@prisma/client";
 
 export const IdParamsDTO = z.object({
   id: z.uuid(),
 });
 
-export const AttributeValueDTO = z.object({
+const AttributeValueDTO = z.object({
   id: z.uuid().optional(),
   name: z.string().min(1),
+  slug: z.string().min(1),
 });
 
-export const PutBodyDTO = z.object({
-  name: z.string(),
-  type: z.enum(EAttributeType),
-  attributeValues: z.array(AttributeValueDTO),
+export const PatchBodyDTO = z.object({
+  name: z.string().optional().nullable(),
+  slug: z.string().min(1).optional().nullable(),
+  attributeValues: z.array(AttributeValueDTO).optional().nullable(),
 });

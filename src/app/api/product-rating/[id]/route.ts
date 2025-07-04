@@ -19,7 +19,6 @@ export const GET = withValidateFieldHandler(
       async (_, ctx: THofContext<typeof IdParamsDTO>) => {
         const rating = await prisma.productRating.findUnique({
           where: { id: ctx.paramParse!.id },
-          include: { user: true, product: true },
         });
 
         if (!rating) {

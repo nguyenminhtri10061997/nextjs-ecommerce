@@ -13,6 +13,7 @@ import {
   GetQueryDTO,
   PostCreateBodyDTO,
 } from "./validator";
+import { AppStatusCode } from "@/common/statusCode";
 
 export const GET = withValidateFieldHandler(
   null,
@@ -50,19 +51,26 @@ export const POST = withValidateFieldHandler(
     withVerifyCanDoAction(
       { resource: EPermissionResource.LANGUAGE, action: EPermissionAction.CREATE },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
-        const { name, code, iconUrl, isActive, isDefault, displayOrder } = ctx.bodyParse!;
+        const { name, code, isActive, isDefault, } = ctx.bodyParse!;
 
-        const exists = await prisma.language.findFirst({ where: { code } });
+        const exists = await prisma.language.findUnique({ where: { code } });
         if (exists) {
-          return AppError.json({ status: 409, message: "Language code already exists" });
+          return AppError.json({ status: AppStatusCode.EXISTING, message: "Language code already exists" });
         }
 
         if (isDefault) {
-          await prisma.language.updateMany({ data: { isDefault: false } });
+          await prisma.language.updateMany({
+            where: {
+              isDefault: true,
+            },
+            data: {
+              isDefault: false,
+            }
+          })
         }
 
         const res = await prisma.language.create({
-          data: { name, code, iconUrl, isActive, isDefault, displayOrder },
+          data: { name, code, isActive, },
         });
 
         return AppResponse.json({ status: 200, data: res });

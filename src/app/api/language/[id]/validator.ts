@@ -7,8 +7,6 @@ export const IdParamsDTO = z.object({
 export const PutBodyDTO = z.object({
   code: z.string(),
   name: z.string(),
-  iconUrl: z.string(),
-  displayOrder: z.number(),
   isActive: z.boolean(),
   isDefault: z.boolean(),
 });

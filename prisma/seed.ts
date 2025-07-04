@@ -100,4 +100,6 @@ export async function main() {
     ));
 }
 
-main();
+main().finally(() => {
+    prisma.$disconnect()
+});

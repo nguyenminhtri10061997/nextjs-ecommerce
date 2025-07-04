@@ -1,4 +1,4 @@
-import { getOrderBy } from "@/common";
+import { getOrderBy, getSkipAndTake } from "@/common";
 import { AppError } from "@/common/appError";
 import { AppResponse } from "@/common/appResponse";
 import { THofContext } from "@/lib/HOF/type";
@@ -13,6 +13,9 @@ import {
   GetQueryDTO,
   PostCreateBodyDTO,
 } from "./validator";
+import dayjs from "dayjs";
+import { TGetProductRatingListResponse } from "@/types/api/product-rating";
+import { AppStatusCode } from "@/common/statusCode";
 
 export const GET = withValidateFieldHandler(
   null,
@@ -22,26 +25,49 @@ export const GET = withValidateFieldHandler(
     withVerifyCanDoAction(
       { resource: EPermissionResource.PRODUCT_RATING, action: EPermissionAction.READ },
       async (_, ctx: THofContext<never, typeof GetQueryDTO>) => {
-        const { orderQuery, searchQuery } = ctx.queryParse || {};
+        const { orderQuery, pagination, dateRangeQuery, ratings, } = ctx.queryParse || {};
         const where: Prisma.ProductRatingWhereInput = {};
 
-        if (searchQuery?.searchKey && searchQuery?.searchStr) {
-          const key = searchQuery.searchKey as keyof Prisma.ProductRatingWhereInput;
-          where[key] = {
-            [searchQuery.searchType || ESearchType.contains]: searchQuery.searchStr,
-          } as any;
+        if (dateRangeQuery?.startDate && dateRangeQuery?.endDate) {
+          where["createdAt"] = {
+            gte: dayjs(dateRangeQuery.startDate).startOf("d").toDate(),
+            lte: dayjs(dateRangeQuery.endDate).startOf("d").toDate(),
+          };
         }
 
-        const data = await prisma.productRating.findMany({
-          where,
-          orderBy: getOrderBy(orderQuery),
-          include: {
-            user: true,
-            product: true,
-          },
-        });
+        const {
+          skip,
+          take,
+        } = getSkipAndTake(pagination)
 
-        return AppResponse.json({ status: 200, data });
+        const findManyArgs: Prisma.ProductRatingFindManyArgs = {
+          where,
+          skip,
+          take,
+          orderBy: getOrderBy(orderQuery),
+        };
+
+        if (ratings?.length) {
+          where.rating = {
+            in: ratings
+          }
+        }
+
+        const [data, count] = await Promise.all([
+          prisma.productRating.findMany(findManyArgs),
+          skip && take ? prisma.productRating.count({ where }) : undefined,
+        ]);
+
+        return AppResponse.json({
+          status: 200,
+          data: {
+            data,
+            pagination: pagination ? {
+              ...pagination,
+              count,
+            } : undefined,
+          } as TGetProductRatingListResponse,
+        });
       }
     )
   )
@@ -71,7 +97,7 @@ export const POST = withValidateFieldHandler(
 
         if (exists) {
           return AppError.json({
-            status: 409,
+            status: AppStatusCode.EXISTING,
             message: "You have already rated this product",
           });
         }

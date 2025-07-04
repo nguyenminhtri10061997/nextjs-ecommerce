@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import Negotiator from 'negotiator'
 import { match } from '@formatjs/intl-localematcher'
 import { getToken } from "./lib/dal";
+import fileLocale from '@/constants/locale/locales.json'
 
+const { defaultLocale = 'en-US', locales = [], } = fileLocale
 const protectedRoutes = ["/dashboard"];
 const loginPath = "/dashboard/login";
-
-let locales = ['en-US', 'vi-VN']
 
 const getLocale = (headers: Headers) => {
   const headersObject: Record<string, string> = {}
@@ -15,7 +15,6 @@ const getLocale = (headers: Headers) => {
   })
 
   const languages = new Negotiator({ headers: headersObject }).languages()
-  const defaultLocale = 'en-US'
 
   return match(languages, locales, defaultLocale)
 }

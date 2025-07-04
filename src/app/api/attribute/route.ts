@@ -9,6 +9,7 @@ import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
 import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
 import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator";
 import { ESearchType } from "@/lib/zod/paginationDTO";
+import { AppStatusCode } from "@/common/statusCode";
 
 export const GET = withValidateFieldHandler(
   null,
@@ -48,16 +49,47 @@ export const POST = withValidateFieldHandler(
     withVerifyCanDoAction(
       { resource: EPermissionResource.ATTRIBUTE, action: EPermissionAction.CREATE },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
-        const { name, type, attributeValues } = ctx.bodyParse!;
+        const { name, slug, attributeValues } = ctx.bodyParse!;
+
+        const exists = await prisma.attribute.findFirst({
+          where: {
+            OR: [
+              {
+                name,
+              },
+              {
+                slug,
+              },
+            ]
+          }
+        })
+        if (exists) {
+          if (exists.name === name) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
+          }
+          if (exists.slug === slug) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+          }
+        }
+
+        const objCreate: Prisma.AttributeCreateInput = {
+          name,
+          slug,
+        }
+
+        if (attributeValues?.length) {
+          objCreate.attributeValues = {
+            createMany: {
+              data: attributeValues.map(atv => ({
+                name: atv.name,
+                slug: atv.slug,
+            }))
+            }
+          }
+        }
 
         const created = await prisma.attribute.create({
-          data: {
-            name,
-            type,
-            attributeValues: {
-              create: attributeValues.map((v) => ({ name: v.name })),
-            },
-          },
+          data: objCreate,
         });
 
         return AppResponse.json({ status: 200, data: created });

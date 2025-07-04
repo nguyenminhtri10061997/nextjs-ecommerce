@@ -41,11 +41,35 @@ export const PUT = withValidateFieldHandler(
       { resource: EPermissionResource.ATTRIBUTE, action: EPermissionAction.UPDATE },
       async (_, ctx: THofContext<typeof IdParamsDTO, never, typeof PutBodyDTO>) => {
         const { id } = ctx.paramParse!;
-        const { name, type, attributeValues } = ctx.bodyParse!;
+        const { name, slug, attributeValues } = ctx.bodyParse!;
 
         const existing = await prisma.attribute.findUnique({ where: { id }, include: { attributeValues: true } });
         if (!existing) {
           return AppError.json({ status: AppStatusCode.NOT_FOUND, message: "Attribute not found" });
+        }
+
+        const exists = await prisma.attribute.findFirst({
+          where: {
+            id: {
+              not: id,
+            },
+            OR: [
+              {
+                name,
+              },
+              {
+                slug,
+              },
+            ]
+          }
+        })
+        if (exists) {
+          if (exists.name === name) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
+          }
+          if (exists.slug === slug) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+          }
         }
 
         const existingIds = new Set(existing.attributeValues.map((v) => v.id));
@@ -59,14 +83,13 @@ export const PUT = withValidateFieldHandler(
           where: { id },
           data: {
             name,
-            type,
             attributeValues: {
               deleteMany: { id: { in: toDelete } },
               updateMany: toUpdate.map((v) => ({
                 where: { id: v.id },
                 data: { name: v.name },
               })),
-              create: toCreate.map((v) => ({ name: v.name })),
+              create: toCreate.map((v) => ({ name: v.name, slug: v.slug })),
             },
           },
           include: { attributeValues: true },

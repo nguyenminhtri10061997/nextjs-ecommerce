@@ -13,6 +13,7 @@ import {
   GetQueryDTO,
   PostCreateBodyDTO,
 } from "./validator";
+import { AppStatusCode } from "@/common/statusCode";
 
 export const GET = withValidateFieldHandler(
   null,
@@ -53,14 +54,37 @@ export const POST = withValidateFieldHandler(
     withVerifyCanDoAction(
       { resource: EPermissionResource.BRAND, action: EPermissionAction.CREATE },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
-        const { name, logoUrl, isActive } = ctx.bodyParse!;
+        const { name, slug, logoImage, isActive } = ctx.bodyParse!;
 
-        const exists = await prisma.brand.findFirst({ where: { name } });
+        const exists = await prisma.attribute.findFirst({
+          where: {
+            OR: [
+              {
+                name,
+              },
+              {
+                slug,
+              },
+            ]
+          }
+        })
         if (exists) {
-          return AppError.json({ status: 409, message: "Brand name already exists" });
+          if (exists.name === name) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
+          }
+          if (exists.slug === slug) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+          }
         }
 
-        const res = await prisma.brand.create({ data: { name, logoUrl, isActive } });
+        const res = await prisma.brand.create({
+          data: {
+            isActive,
+            name,
+            slug,
+            logoImage,
+          }
+        });
         return AppResponse.json({ status: 200, data: res });
       }
     )

@@ -9,6 +9,6 @@ export const PutBodyDTO = z.object({
   title: z.string(),
   detail: z.string(),
   video: z.string(),
-  images: z.string(),
+  images: z.array(z.string()),
   isVerify: z.boolean(),
 });

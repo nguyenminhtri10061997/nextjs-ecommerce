@@ -1,21 +1,21 @@
-import { z } from "zod/v4";
-import { EAttributeType } from "@prisma/client";
 import { OrderQueryDTO, SearchQueryDTO } from "@/lib/zod/paginationDTO";
 import { Attribute } from "@prisma/client";
-
-export const AttributeValueDTO = z.object({
-  name: z.string().min(1),
-});
+import { z } from "zod/v4";
 
 export const GetQueryDTO = z.object({
   orderQuery: OrderQueryDTO.shape.orderQuery.optional(),
-  searchQuery: SearchQueryDTO(["name"] as (keyof Attribute)[]).shape.searchQuery.optional(),
+  searchQuery: SearchQueryDTO(["name", "slug"] as (keyof Attribute)[]).shape.searchQuery.optional(),
+});
+
+const AttributeValueDTO = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1),
 });
 
 export const PostCreateBodyDTO = z.object({
-  name: z.string(),
-  type: z.enum(EAttributeType),
-  attributeValues: z.array(AttributeValueDTO).optional().default([]),
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  attributeValues: z.array(AttributeValueDTO).optional(),
 });
 
 export const DeleteBodyDTO = z.object({

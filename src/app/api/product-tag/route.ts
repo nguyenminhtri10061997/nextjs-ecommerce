@@ -13,6 +13,7 @@ import {
   GetQueryDTO,
   PostCreateBodyDTO,
 } from "./validator";
+import { AppStatusCode } from "@/common/statusCode";
 
 export const GET = withValidateFieldHandler(
   null,
@@ -23,16 +24,16 @@ export const GET = withValidateFieldHandler(
       { resource: EPermissionResource.PRODUCT_STATUS, action: EPermissionAction.READ },
       async (_, ctx: THofContext<never, typeof GetQueryDTO>) => {
         const { orderQuery, searchQuery } = ctx.queryParse || {};
-        const where: Prisma.ProductStatusWhereInput = {};
+        const where: Prisma.ProductTagWhereInput = {};
 
         if (searchQuery?.searchKey && searchQuery?.searchStr) {
-          const key = searchQuery.searchKey as keyof Prisma.ProductStatusWhereInput;
+          const key = searchQuery.searchKey as keyof Prisma.ProductTagWhereInput;
           where[key] = {
             [searchQuery.searchType || ESearchType.equals]: searchQuery.searchStr,
           } as any;
         }
 
-        const data = await prisma.productStatus.findMany({
+        const data = await prisma.productTag.findMany({
           where,
           orderBy: getOrderBy(orderQuery),
         });
@@ -52,32 +53,40 @@ export const POST = withValidateFieldHandler(
       { resource: EPermissionResource.PRODUCT_STATUS, action: EPermissionAction.CREATE },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
         const {
+          code,
           name,
           slug,
           description,
           expiredAfterDays,
+          displayType,
           image,
-          backgroundColor,
+          bgColor,
+          textColor,
           displayOrder,
           isActive,
         } = ctx.bodyParse!;
 
-        const exists = await prisma.productStatus.findFirst({
-          where: { OR: [{ name }, { slug }] },
+        const exists = await prisma.productTag.findFirst({
+          where: {
+            code,
+          },
         });
 
         if (exists) {
-          return AppError.json({ status: 409, message: "Name or slug already exists" });
+          return AppError.json({ status: AppStatusCode.EXISTING, message: 'Code already exist' })
         }
 
-        const created = await prisma.productStatus.create({
+        const created = await prisma.productTag.create({
           data: {
+            code,
             name,
             slug,
             description,
             expiredAfterDays,
+            displayType,
             image,
-            backgroundColor,
+            bgColor,
+            textColor,
             displayOrder,
             isActive,
           },
@@ -97,7 +106,7 @@ export const DELETE = withValidateFieldHandler(
     withVerifyCanDoAction(
       { resource: EPermissionResource.PRODUCT_STATUS, action: EPermissionAction.DELETE },
       async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
-        const res = await prisma.productStatus.deleteMany({
+        const res = await prisma.productTag.deleteMany({
           where: { id: { in: ctx.bodyParse!.ids } },
         });
         return AppResponse.json({ status: 200, data: res.count });

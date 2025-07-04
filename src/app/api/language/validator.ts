@@ -10,10 +10,8 @@ export const GetQueryDTO = z.object({
 export const PostCreateBodyDTO = z.object({
   code: z.string(),
   name: z.string(),
-  iconUrl: z.string(),
-  displayOrder: z.number(),
-  isActive: z.boolean().optional().default(true),
-  isDefault: z.boolean().optional().default(false),
+  isActive: z.boolean().optional(),
+  isDefault: z.boolean().optional(),
 });
 
 export const DeleteBodyDTO = z.object({

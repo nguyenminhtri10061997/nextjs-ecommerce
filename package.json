@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "generate-localesJsonFile": "tsx src/generate/locales.ts",
     "start": "next start",
     "lint": "next lint",
     "migrate": "npx prisma migrate dev --name init",
+    "migrate-reset": "npx prisma migrate reset",
     "generate": "npx prisma generate",
     "generate-dict-type": "npx quicktype --lang typescript --src ./src/dictionaries/en-US.json -o ./src/types/dictTypeGenerated.ts --just-types --alphabetize-properties"
   },

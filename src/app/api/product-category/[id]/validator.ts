@@ -6,10 +6,11 @@ export const IdParamsDTO = z.object({
 
 export const PutBodyDTO = z.object({
   name: z.string(),
-  seoTitle: z.string(),
-  description: z.string(),
-  seoDescription: z.string(),
-  displayOrder: z.number().nonnegative(),
-  productCategoryParentId: z.uuid().nullable().optional(),
+  slug: z.string(),
+  seoTitle: z.string().optional(),
+  description: z.string().optional(),
+  seoDescription: z.string().optional(),
+  displayOrder: z.number().nonnegative().optional(),
+  productCategoryParentId: z.uuid().nullable(),
   isActive: z.boolean(),
 });

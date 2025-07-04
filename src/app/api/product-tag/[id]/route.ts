@@ -17,7 +17,7 @@ export const GET = withValidateFieldHandler(
     withVerifyCanDoAction(
       { resource: EPermissionResource.PRODUCT_STATUS, action: EPermissionAction.READ },
       async (_, ctx: THofContext<typeof IdParamsDTO>) => {
-        const entity = await prisma.productStatus.findUnique({
+        const entity = await prisma.productTag.findUnique({
           where: { id: ctx.paramParse!.id },
         });
 
@@ -51,12 +51,12 @@ export const PUT = withValidateFieldHandler(
           isActive,
         } = ctx.bodyParse!;
 
-        const entity = await prisma.productStatus.findUnique({ where: { id } });
+        const entity = await prisma.productTag.findUnique({ where: { id } });
         if (!entity) {
           return AppError.json({ status: AppStatusCode.NOT_FOUND, message: "Product status not found" });
         }
 
-        const existed = await prisma.productStatus.findFirst({
+        const existed = await prisma.productTag.findFirst({
           where: {
             id: { not: id },
             OR: [{ name }, { slug }],
@@ -64,13 +64,15 @@ export const PUT = withValidateFieldHandler(
         });
 
         if (existed) {
-          return AppError.json({
-            status: AppStatusCode.EXISTING,
-            message: "Another status with same name or slug already exists",
-          });
+          if (existed.name === name) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
+          }
+          if (existed.slug === slug) {
+            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+          }
         }
 
-        const updated = await prisma.productStatus.update({
+        const updated = await prisma.productTag.update({
           where: { id },
           data: {
             name,
