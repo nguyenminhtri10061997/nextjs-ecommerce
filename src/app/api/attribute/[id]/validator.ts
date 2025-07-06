@@ -11,7 +11,7 @@ const AttributeValueDTO = z.object({
 });
 
 export const PatchBodyDTO = z.object({
-  name: z.string().optional().nullable(),
-  slug: z.string().min(1).optional().nullable(),
-  attributeValues: z.array(AttributeValueDTO).optional().nullable(),
+  name: z.string().min(1).optional(),
+  slug: z.string().min(1).optional(),
+  attributeValues: z.array(AttributeValueDTO).optional(),
 });

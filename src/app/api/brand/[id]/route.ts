@@ -7,7 +7,7 @@ import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
 import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
 import prisma from "@/lib/prisma";
 import { EPermissionAction, EPermissionResource } from "@prisma/client";
-import { IdParamsDTO, PutBodyDTO } from "./validator";
+import { IdParamsDTO, PatchBodyDTO } from "./validator";
 
 export const GET = withValidateFieldHandler(
   IdParamsDTO,
@@ -22,7 +22,10 @@ export const GET = withValidateFieldHandler(
         });
 
         if (!brand) {
-          return AppError.json({ status: AppStatusCode.NOT_FOUND, message: "Brand not found" });
+          return AppError.json({
+            status: AppStatusCode.NOT_FOUND,
+            message: "Brand not found",
+          });
         }
 
         return AppResponse.json({ status: 200, data: brand });
@@ -34,37 +37,51 @@ export const GET = withValidateFieldHandler(
 export const PUT = withValidateFieldHandler(
   IdParamsDTO,
   null,
-  PutBodyDTO,
+  PatchBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
       { resource: EPermissionResource.BRAND, action: EPermissionAction.UPDATE },
-      async (_, ctx: THofContext<typeof IdParamsDTO, never, typeof PutBodyDTO>) => {
+      async (
+        _,
+        ctx: THofContext<typeof IdParamsDTO, never, typeof PatchBodyDTO>
+      ) => {
         const { id } = ctx.paramParse!;
         const { name, slug, logoImage, isActive } = ctx.bodyParse!;
 
         const brand = await prisma.brand.findUnique({ where: { id } });
         if (!brand) {
-          return AppError.json({ status: AppStatusCode.NOT_FOUND, message: "Brand not found" });
+          return AppError.json({
+            status: AppStatusCode.NOT_FOUND,
+            message: "Brand not found",
+          });
         }
 
-        const exists = await prisma.attribute.findFirst({
-          where: {
-            OR: [
-              {
-                name,
-              },
-              {
-                slug,
-              },
-            ]
-          }
-        })
-        if (exists) {
-          if (exists.name === name) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
-          }
-          if (exists.slug === slug) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+        if (name || slug) {
+          const exists = await prisma.brand.findFirst({
+            where: {
+              OR: [
+                {
+                  name,
+                },
+                {
+                  slug,
+                },
+              ],
+            },
+          });
+          if (exists) {
+            if (exists.name === name) {
+              return AppError.json({
+                status: AppStatusCode.EXISTING,
+                message: "Name already exist",
+              });
+            }
+            if (exists.slug === slug) {
+              return AppError.json({
+                status: AppStatusCode.EXISTING,
+                message: "Slug already exist",
+              });
+            }
           }
         }
 

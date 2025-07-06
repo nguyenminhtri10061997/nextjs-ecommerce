@@ -17,16 +17,21 @@ export const GET = withValidateFieldHandler(
   null,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.PRODUCT_CATEGORY, action: EPermissionAction.READ },
+      {
+        resource: EPermissionResource.PRODUCT_CATEGORY,
+        action: EPermissionAction.READ,
+      },
       async (_, ctx: THofContext<never, typeof GetQueryDTO>) => {
         const { orderQuery, searchQuery } = ctx.queryParse || {};
         const where: Prisma.ProductCategoryWhereInput = {};
 
         if (searchQuery?.searchKey && searchQuery?.searchStr) {
-          const key = searchQuery.searchKey as keyof Prisma.ProductCategoryWhereInput;
+          const key =
+            searchQuery.searchKey as keyof Prisma.ProductCategoryWhereInput;
           where[key] = {
-            [searchQuery.searchType || ESearchType.contains]: searchQuery.searchStr,
-          } as any;
+            [searchQuery.searchType || ESearchType.contains]:
+              searchQuery.searchStr,
+          } as never;
         }
 
         const data = await prisma.productCategory.findMany({
@@ -46,7 +51,10 @@ export const POST = withValidateFieldHandler(
   PostCreateBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.PRODUCT_CATEGORY, action: EPermissionAction.CREATE },
+      {
+        resource: EPermissionResource.PRODUCT_CATEGORY,
+        action: EPermissionAction.CREATE,
+      },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
         const {
           name,
@@ -59,7 +67,7 @@ export const POST = withValidateFieldHandler(
           isActive,
         } = ctx.bodyParse!;
 
-        const exists = await prisma.attribute.findFirst({
+        const exists = await prisma.productCategory.findFirst({
           where: {
             OR: [
               {
@@ -68,15 +76,21 @@ export const POST = withValidateFieldHandler(
               {
                 slug,
               },
-            ]
-          }
-        })
+            ],
+          },
+        });
         if (exists) {
           if (exists.name === name) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
+            return AppError.json({
+              status: AppStatusCode.EXISTING,
+              message: "Name already exist",
+            });
           }
           if (exists.slug === slug) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+            return AppError.json({
+              status: AppStatusCode.EXISTING,
+              message: "Slug already exist",
+            });
           }
         }
 
@@ -105,7 +119,10 @@ export const DELETE = withValidateFieldHandler(
   DeleteBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.PRODUCT_CATEGORY, action: EPermissionAction.DELETE },
+      {
+        resource: EPermissionResource.PRODUCT_CATEGORY,
+        action: EPermissionAction.DELETE,
+      },
       async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
         const res = await prisma.productCategory.deleteMany({
           where: { id: { in: ctx.bodyParse!.ids } },

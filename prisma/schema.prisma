@@ -143,8 +143,9 @@ model Product {
     id                String   @id @default(uuid())
     productCategoryId String?
     brandId           String?
-    name              String
-    slug              String
+    code              String   @unique
+    name              String   @unique
+    slug              String   @unique
     seoTitle          String?
     description       String?
     seoDescription    String?
@@ -170,8 +171,8 @@ model Product {
 
 model Brand {
     id        String    @id @default(uuid())
-    name      String
-    slug      String
+    name      String    @unique
+    slug      String    @unique
     logoImage String?
     isActive  Boolean   @default(true)
     createdAt DateTime  @default(now())
@@ -182,7 +183,7 @@ model Brand {
 model Language {
     id        String   @id @default(uuid())
     code      String   @unique
-    name      String
+    name      String   @unique
     isActive  Boolean  @default(true)
     isDefault Boolean? @default(false)
     createdAt DateTime @default(now())
@@ -193,17 +194,19 @@ model Language {
 }
 
 model ProductCategory {
-    id                      String   @id @default(uuid())
-    name                    String
-    slug                    String
+    id                      String            @id @default(uuid())
+    name                    String            @unique
+    slug                    String            @unique
     seoTitle                String?
     description             String?
     seoDescription          String?
     displayOrder            Int?
     productCategoryParentId String?
-    isActive                Boolean  @default(true)
-    createdAt               DateTime @default(now())
-    updatedAt               DateTime @default(now()) @updatedAt
+    ProductCategoryParent   ProductCategory?  @relation("ProductCategories", fields: [productCategoryParentId], references: [id])
+    ProductCategoryChilds   ProductCategory[] @relation("ProductCategories")
+    isActive                Boolean           @default(true)
+    createdAt               DateTime          @default(now())
+    updatedAt               DateTime          @default(now()) @updatedAt
 
     products     Product[]
     translations ProductCategoryTranslation[]
@@ -228,8 +231,8 @@ model ProductTranslation {
     id             String   @id @default(uuid())
     productId      String
     languageId     String
-    name           String
-    slug           String
+    name           String   @unique
+    slug           String   @unique
     seoTitle       String?
     description    String?
     seoDescription String?
@@ -265,8 +268,8 @@ model AttributeValue {
 model ProductAttribute {
     id           String   @id @default(uuid())
     productId    String
-    name         String
-    slug         String
+    name         String   @unique
+    slug         String   @unique
     displayOrder Int?
     createdAt    DateTime @default(now())
     updatedAt    DateTime @default(now()) @updatedAt
@@ -293,7 +296,7 @@ model ProductAttributeValue {
 model ProductSku {
     id           String        @id @default(uuid())
     productId    String
-    sellerSku    String?
+    sellerSku    String?       @unique
     stockStatus  EStockStatus?
     stockType    EStockType
     salePrice    Float?
@@ -335,8 +338,8 @@ model ProductSkuAttributeValue {
 
 model ProductOption {
     id        String   @id @default(uuid())
-    name      String
-    slug      String
+    name      String   @unique
+    slug      String   @unique
     isActive  Boolean
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now()) @updatedAt
@@ -375,10 +378,10 @@ model ProductToProductOption {
 }
 
 model ProductTag {
-    id               String         @id @default(uuid())
-    code             String         @unique
-    name             String
-    slug             String
+    id               String          @id @default(uuid())
+    code             String          @unique
+    name             String          @unique
+    slug             String          @unique
     description      String?
     expiredAfterDays Int?
     displayType      ETagDisplayType
@@ -386,20 +389,20 @@ model ProductTag {
     bgColor          String?
     textColor        String?
     displayOrder     Int?
-    isActive         Boolean        @default(true)
-    createdAt        DateTime       @default(now())
-    updatedAt        DateTime       @default(now()) @updatedAt
+    isActive         Boolean         @default(true)
+    createdAt        DateTime        @default(now())
+    updatedAt        DateTime        @default(now()) @updatedAt
 
     products ProductToProductTag[]
 }
 
 model ProductToProductTag {
-    id           String   @id @default(uuid())
+    id           String    @id @default(uuid())
     productId    String
     productTagId String
-    expiredAt    DateTime
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @default(now()) @updatedAt
+    expiredAt    DateTime?
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @default(now()) @updatedAt
 
     product    Product    @relation(fields: [productId], references: [id])
     productTag ProductTag @relation(fields: [productTagId], references: [id])

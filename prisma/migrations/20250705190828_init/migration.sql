@@ -17,7 +17,7 @@ CREATE TYPE "EStockType" AS ENUM ('SKU', 'EXTERNAL', 'ATTRIBUTE', 'DIGITAL');
 CREATE TYPE "EPriceModifierType" AS ENUM ('FREE', 'ADD', 'SUBTRACT', 'SET', 'PERCENT', 'REDUCE_PERCENT');
 
 -- CreateEnum
-CREATE TYPE "EAttributeType" AS ENUM ('PRODUCT');
+CREATE TYPE "ETagDisplayType" AS ENUM ('TEXT_IMAGE', 'IMAGE_ONLY', 'TEXT_BACKGROUND');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -125,6 +125,7 @@ CREATE TABLE "Language" (
     "code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "isDefault" BOOLEAN DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -185,7 +186,6 @@ CREATE TABLE "Attribute" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "type" "EAttributeType" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -314,32 +314,35 @@ CREATE TABLE "ProductToProductOption" (
 );
 
 -- CreateTable
-CREATE TABLE "ProductStatus" (
+CREATE TABLE "ProductTag" (
     "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "description" TEXT,
     "expiredAfterDays" INTEGER,
+    "displayType" "ETagDisplayType" NOT NULL,
     "image" TEXT,
-    "backgroundColor" TEXT,
+    "bgColor" TEXT,
+    "textColor" TEXT,
     "displayOrder" INTEGER,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ProductStatus_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ProductTag_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "ProductToProductStatus" (
+CREATE TABLE "ProductToProductTag" (
     "id" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
-    "productStatusId" TEXT NOT NULL,
+    "productTagId" TEXT NOT NULL,
     "expiredAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ProductToProductStatus_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ProductToProductTag_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -381,7 +384,34 @@ CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
 CREATE UNIQUE INDEX "Permission_action_resource_key" ON "Permission"("action", "resource");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Product_name_key" ON "Product"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Product_slug_key" ON "Product"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Brand_name_key" ON "Brand"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Brand_slug_key" ON "Brand"("slug");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Language_code_key" ON "Language"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Language_name_key" ON "Language"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductCategory_name_key" ON "ProductCategory"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductCategory_slug_key" ON "ProductCategory"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductTranslation_name_key" ON "ProductTranslation"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductTranslation_slug_key" ON "ProductTranslation"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Attribute_name_key" ON "Attribute"("name");
@@ -390,7 +420,31 @@ CREATE UNIQUE INDEX "Attribute_name_key" ON "Attribute"("name");
 CREATE UNIQUE INDEX "Attribute_slug_key" ON "Attribute"("slug");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "ProductAttribute_name_key" ON "ProductAttribute"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductAttribute_slug_key" ON "ProductAttribute"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductSku_sellerSku_key" ON "ProductSku"("sellerSku");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "ProductSkuAttributeValue_productSkuId_productAttributeValue_key" ON "ProductSkuAttributeValue"("productSkuId", "productAttributeValueId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductOption_name_key" ON "ProductOption"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductOption_slug_key" ON "ProductOption"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductTag_code_key" ON "ProductTag"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductTag_name_key" ON "ProductTag"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductTag_slug_key" ON "ProductTag"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ProductRating_productId_userId_key" ON "ProductRating"("productId", "userId");
@@ -412,6 +466,9 @@ ALTER TABLE "Product" ADD CONSTRAINT "Product_productCategoryId_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_brandId_fkey" FOREIGN KEY ("brandId") REFERENCES "Brand"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProductCategory" ADD CONSTRAINT "ProductCategory_productCategoryParentId_fkey" FOREIGN KEY ("productCategoryParentId") REFERENCES "ProductCategory"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ProductCategoryTranslation" ADD CONSTRAINT "ProductCategoryTranslation_productCategoryId_fkey" FOREIGN KEY ("productCategoryId") REFERENCES "ProductCategory"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -456,10 +513,10 @@ ALTER TABLE "ProductToProductOption" ADD CONSTRAINT "ProductToProductOption_prod
 ALTER TABLE "ProductToProductOption" ADD CONSTRAINT "ProductToProductOption_productOptionId_fkey" FOREIGN KEY ("productOptionId") REFERENCES "ProductOption"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ProductToProductStatus" ADD CONSTRAINT "ProductToProductStatus_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ProductToProductTag" ADD CONSTRAINT "ProductToProductTag_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ProductToProductStatus" ADD CONSTRAINT "ProductToProductStatus_productStatusId_fkey" FOREIGN KEY ("productStatusId") REFERENCES "ProductStatus"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ProductToProductTag" ADD CONSTRAINT "ProductToProductTag_productTagId_fkey" FOREIGN KEY ("productTagId") REFERENCES "ProductTag"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ProductRating" ADD CONSTRAINT "ProductRating_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

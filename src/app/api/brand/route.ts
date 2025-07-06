@@ -30,7 +30,7 @@ export const GET = withValidateFieldHandler(
           const key = searchQuery.searchKey as keyof Prisma.BrandWhereInput;
           where[key] = {
             [searchQuery.searchType || ESearchType.equals]: searchQuery.searchStr,
-          } as any;
+          } as never;
         }
 
         const [data] = await Promise.all([
@@ -56,7 +56,7 @@ export const POST = withValidateFieldHandler(
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
         const { name, slug, logoImage, isActive } = ctx.bodyParse!;
 
-        const exists = await prisma.attribute.findFirst({
+        const exists = await prisma.brand.findFirst({
           where: {
             OR: [
               {

@@ -4,11 +4,11 @@ export const IdParamsDTO = z.object({
   id: z.uuid(),
 });
 
-export const PutBodyDTO = z.object({
-  rating: z.number().min(0).max(5),
-  title: z.string(),
-  detail: z.string(),
-  video: z.string(),
-  images: z.array(z.string()),
-  isVerify: z.boolean(),
+export const PatchBodyDTO = z.object({
+  rating: z.number().min(0).max(5).optional(),
+  title: z.string().optional(),
+  detail: z.string().optional(),
+  video: z.string().nullable().optional(),
+  images: z.array(z.string()).optional(),
+  isVerify: z.boolean().optional(),
 });

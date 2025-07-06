@@ -8,11 +8,7 @@ import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
 import prisma from "@/lib/prisma";
 import { ESearchType } from "@/lib/zod/paginationDTO";
 import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
-import {
-  DeleteBodyDTO,
-  GetQueryDTO,
-  PostCreateBodyDTO,
-} from "./validator";
+import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator";
 import { AppStatusCode } from "@/common/statusCode";
 
 export const GET = withValidateFieldHandler(
@@ -21,16 +17,21 @@ export const GET = withValidateFieldHandler(
   null,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.PRODUCT_STATUS, action: EPermissionAction.READ },
+      {
+        resource: EPermissionResource.PRODUCT_STATUS,
+        action: EPermissionAction.READ,
+      },
       async (_, ctx: THofContext<never, typeof GetQueryDTO>) => {
         const { orderQuery, searchQuery } = ctx.queryParse || {};
         const where: Prisma.ProductTagWhereInput = {};
 
         if (searchQuery?.searchKey && searchQuery?.searchStr) {
-          const key = searchQuery.searchKey as keyof Prisma.ProductTagWhereInput;
+          const key =
+            searchQuery.searchKey as keyof Prisma.ProductTagWhereInput;
           where[key] = {
-            [searchQuery.searchType || ESearchType.equals]: searchQuery.searchStr,
-          } as any;
+            [searchQuery.searchType || ESearchType.equals]:
+              searchQuery.searchStr,
+          } as never;
         }
 
         const data = await prisma.productTag.findMany({
@@ -50,7 +51,10 @@ export const POST = withValidateFieldHandler(
   PostCreateBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.PRODUCT_STATUS, action: EPermissionAction.CREATE },
+      {
+        resource: EPermissionResource.PRODUCT_STATUS,
+        action: EPermissionAction.CREATE,
+      },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
         const {
           code,
@@ -68,12 +72,31 @@ export const POST = withValidateFieldHandler(
 
         const exists = await prisma.productTag.findFirst({
           where: {
-            code,
+            OR: [
+              {
+                code,
+              },
+              {
+                name,
+              },
+              {
+                slug,
+              },
+            ],
           },
         });
 
         if (exists) {
-          return AppError.json({ status: AppStatusCode.EXISTING, message: 'Code already exist' })
+          let mes = "Code";
+          if (exists.code === name) {
+            mes = "Name";
+          } else if (exists.name === slug) {
+            mes = "Slug";
+          }
+          return AppError.json({
+            status: AppStatusCode.EXISTING,
+            message: `${mes} already exist`,
+          });
         }
 
         const created = await prisma.productTag.create({
@@ -104,7 +127,10 @@ export const DELETE = withValidateFieldHandler(
   DeleteBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.PRODUCT_STATUS, action: EPermissionAction.DELETE },
+      {
+        resource: EPermissionResource.PRODUCT_STATUS,
+        action: EPermissionAction.DELETE,
+      },
       async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
         const res = await prisma.productTag.deleteMany({
           where: { id: { in: ctx.bodyParse!.ids } },

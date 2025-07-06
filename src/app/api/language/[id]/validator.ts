@@ -4,9 +4,9 @@ export const IdParamsDTO = z.object({
   id: z.uuid(),
 });
 
-export const PutBodyDTO = z.object({
-  code: z.string(),
-  name: z.string(),
-  isActive: z.boolean(),
-  isDefault: z.boolean(),
+export const PatchBodyDTO = z.object({
+  code: z.string().min(1).optional(),
+  name: z.string().min(1).optional(),
+  isActive: z.boolean().optional(),
+  isDefault: z.boolean().optional(),
 });

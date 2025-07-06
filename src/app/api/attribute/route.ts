@@ -26,7 +26,7 @@ export const GET = withValidateFieldHandler(
           const key = searchQuery.searchKey as keyof Prisma.AttributeWhereInput;
           where[key] = {
             [searchQuery.searchType || ESearchType.contains]: searchQuery.searchStr,
-          } as any;
+          } as never;
         }
 
         const data = await prisma.attribute.findMany({

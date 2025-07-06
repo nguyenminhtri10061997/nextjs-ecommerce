@@ -5,15 +5,15 @@ export const idParamsDTO = z.object({
   id: z.uuidv4(),
 });
 
-export const putBodyDTO = z.object({
-  fullName: z.string(),
-  type: z.enum(EUserOrAccountType),
+export const patchBodyDTO = z.object({
+  fullName: z.string().optional(),
+  type: z.enum(EUserOrAccountType).optional(),
   account: z.object({
-    username: z.string(),
+    username: z.string().optional(),
     newPassword: z.string().optional(),
-    roleId: z.uuidv4(),
+    roleId: z.uuidv4().optional(),
     isBanned: z.boolean().optional(),
     isBlocked: z.boolean().optional(),
-    accessTokenVersion: z.coerce.number().nonnegative().int(),
-  })
-})
+    accessTokenVersion: z.coerce.number().nonnegative().int().optional(),
+  }),
+});

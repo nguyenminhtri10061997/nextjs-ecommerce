@@ -8,8 +8,8 @@ export const GetQueryDTO = z.object({
 });
 
 export const PostCreateBodyDTO = z.object({
-  code: z.string(),
-  name: z.string(),
+  code: z.string().min(1),
+  name: z.string().min(1),
   isActive: z.boolean().optional(),
   isDefault: z.boolean().optional(),
 });

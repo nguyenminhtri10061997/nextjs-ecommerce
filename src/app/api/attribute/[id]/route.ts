@@ -6,8 +6,8 @@ import { THofContext } from "@/lib/HOF/type";
 import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
 import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
 import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
-import { EPermissionAction, EPermissionResource } from "@prisma/client";
-import { IdParamsDTO, PutBodyDTO } from "./validator";
+import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
+import { IdParamsDTO, PatchBodyDTO } from "./validator";
 
 export const GET = withValidateFieldHandler(
   IdParamsDTO,
@@ -15,7 +15,10 @@ export const GET = withValidateFieldHandler(
   null,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.ATTRIBUTE, action: EPermissionAction.READ },
+      {
+        resource: EPermissionResource.ATTRIBUTE,
+        action: EPermissionAction.READ,
+      },
       async (_, ctx: THofContext<typeof IdParamsDTO>) => {
         const data = await prisma.attribute.findUnique({
           where: { id: ctx.paramParse!.id },
@@ -32,67 +35,98 @@ export const GET = withValidateFieldHandler(
   )
 );
 
-export const PUT = withValidateFieldHandler(
+export const PATCH = withValidateFieldHandler(
   IdParamsDTO,
   null,
-  PutBodyDTO,
+  PatchBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.ATTRIBUTE, action: EPermissionAction.UPDATE },
-      async (_, ctx: THofContext<typeof IdParamsDTO, never, typeof PutBodyDTO>) => {
+      {
+        resource: EPermissionResource.ATTRIBUTE,
+        action: EPermissionAction.UPDATE,
+      },
+      async (
+        _,
+        ctx: THofContext<typeof IdParamsDTO, never, typeof PatchBodyDTO>
+      ) => {
         const { id } = ctx.paramParse!;
         const { name, slug, attributeValues } = ctx.bodyParse!;
 
-        const existing = await prisma.attribute.findUnique({ where: { id }, include: { attributeValues: true } });
+        const existing = await prisma.attribute.findUnique({
+          where: { id },
+          include: { attributeValues: true },
+        });
         if (!existing) {
-          return AppError.json({ status: AppStatusCode.NOT_FOUND, message: "Attribute not found" });
+          return AppError.json({
+            status: AppStatusCode.NOT_FOUND,
+            message: "Attribute not found",
+          });
         }
 
-        const exists = await prisma.attribute.findFirst({
-          where: {
-            id: {
-              not: id,
+        if (name || slug) {
+          const exists = await prisma.attribute.findFirst({
+            where: {
+              id: {
+                not: id,
+              },
+              OR: [
+                {
+                  name,
+                },
+                {
+                  slug,
+                },
+              ],
             },
-            OR: [
-              {
-                name,
-              },
-              {
-                slug,
-              },
-            ]
-          }
-        })
-        if (exists) {
-          if (exists.name === name) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
-          }
-          if (exists.slug === slug) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+          });
+          if (exists) {
+            if (exists.name === name) {
+              return AppError.json({
+                status: AppStatusCode.EXISTING,
+                message: "Name already exist",
+              });
+            }
+            if (exists.slug === slug) {
+              return AppError.json({
+                status: AppStatusCode.EXISTING,
+                message: "Slug already exist",
+              });
+            }
           }
         }
 
-        const existingIds = new Set(existing.attributeValues.map((v) => v.id));
-        const incomingIds = new Set(attributeValues.map((v) => v.id).filter(Boolean));
+        const objUpdate: Prisma.AttributeUpdateInput = {
+          name,
+          slug,
+        };
 
-        const toDelete = Array.from(existingIds).filter((id) => !incomingIds.has(id!));
-        const toUpdate = attributeValues.filter((v) => v.id);
-        const toCreate = attributeValues.filter((v) => !v.id);
+        if (attributeValues?.length) {
+          const existingIds = new Set(
+            existing.attributeValues.map((v) => v.id)
+          );
+          const incomingIds = new Set(
+            attributeValues.map((v) => v.id).filter(Boolean)
+          );
+
+          const toDelete = Array.from(existingIds).filter(
+            (id) => !incomingIds.has(id!)
+          );
+          const toUpdate = attributeValues.filter((v) => v.id);
+          const toCreate = attributeValues.filter((v) => !v.id);
+
+          objUpdate.attributeValues = {
+            deleteMany: { id: { in: toDelete } },
+            updateMany: toUpdate.map((v) => ({
+              where: { id: v.id },
+              data: { name: v.name },
+            })),
+            create: toCreate.map((v) => ({ name: v.name, slug: v.slug })),
+          };
+        }
 
         const updated = await prisma.attribute.update({
           where: { id },
-          data: {
-            name,
-            attributeValues: {
-              deleteMany: { id: { in: toDelete } },
-              updateMany: toUpdate.map((v) => ({
-                where: { id: v.id },
-                data: { name: v.name },
-              })),
-              create: toCreate.map((v) => ({ name: v.name, slug: v.slug })),
-            },
-          },
-          include: { attributeValues: true },
+          data: objUpdate,
         });
 
         return AppResponse.json({ status: 200, data: updated });

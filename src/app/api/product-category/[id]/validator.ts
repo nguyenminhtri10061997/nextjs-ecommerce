@@ -4,13 +4,13 @@ export const IdParamsDTO = z.object({
   id: z.uuid(),
 });
 
-export const PutBodyDTO = z.object({
-  name: z.string(),
-  slug: z.string(),
-  seoTitle: z.string().optional(),
-  description: z.string().optional(),
-  seoDescription: z.string().optional(),
-  displayOrder: z.number().nonnegative().optional(),
-  productCategoryParentId: z.uuid().nullable(),
+export const PatchBodyDTO = z.object({
+  name: z.string().optional(),
+  slug: z.string().optional(),
+  seoTitle: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  seoDescription: z.string().nullable().optional(),
+  displayOrder: z.number().nonnegative().nullable().optional(),
+  productCategoryParentId: z.uuid().nullable().optional(),
   isActive: z.boolean(),
 });

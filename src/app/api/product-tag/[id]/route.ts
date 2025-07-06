@@ -7,7 +7,7 @@ import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
 import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
 import prisma from "@/lib/prisma";
 import { EPermissionAction, EPermissionResource } from "@prisma/client";
-import { IdParamsDTO, PutBodyDTO } from "./validator";
+import { IdParamsDTO, PatchBodyDTO } from "./validator";
 
 export const GET = withValidateFieldHandler(
   IdParamsDTO,
@@ -15,14 +15,20 @@ export const GET = withValidateFieldHandler(
   null,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.PRODUCT_STATUS, action: EPermissionAction.READ },
+      {
+        resource: EPermissionResource.PRODUCT_STATUS,
+        action: EPermissionAction.READ,
+      },
       async (_, ctx: THofContext<typeof IdParamsDTO>) => {
         const entity = await prisma.productTag.findUnique({
           where: { id: ctx.paramParse!.id },
         });
 
         if (!entity) {
-          return AppError.json({ status: 404, message: "Product status not found" });
+          return AppError.json({
+            status: 404,
+            message: "Product tag not found",
+          });
         }
 
         return AppResponse.json({ status: 200, data: entity });
@@ -34,53 +40,74 @@ export const GET = withValidateFieldHandler(
 export const PUT = withValidateFieldHandler(
   IdParamsDTO,
   null,
-  PutBodyDTO,
+  PatchBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.PRODUCT_STATUS, action: EPermissionAction.UPDATE },
-      async (_, ctx: THofContext<typeof IdParamsDTO, never, typeof PutBodyDTO>) => {
+      {
+        resource: EPermissionResource.PRODUCT_STATUS,
+        action: EPermissionAction.UPDATE,
+      },
+      async (
+        _,
+        ctx: THofContext<typeof IdParamsDTO, never, typeof PatchBodyDTO>
+      ) => {
         const { id } = ctx.paramParse!;
         const {
+          code,
           name,
           slug,
           description,
           expiredAfterDays,
+          displayType,
           image,
-          backgroundColor,
+          bgColor,
+          textColor,
           displayOrder,
           isActive,
         } = ctx.bodyParse!;
 
         const entity = await prisma.productTag.findUnique({ where: { id } });
         if (!entity) {
-          return AppError.json({ status: AppStatusCode.NOT_FOUND, message: "Product status not found" });
+          return AppError.json({
+            status: AppStatusCode.NOT_FOUND,
+            message: "Product tag not found",
+          });
         }
 
-        const existed = await prisma.productTag.findFirst({
-          where: {
-            id: { not: id },
-            OR: [{ name }, { slug }],
-          },
-        });
+        if (code || name || slug) {
+          const existed = await prisma.productTag.findFirst({
+            where: {
+              id: { not: id },
+              OR: [{ name }, { slug }, { code }],
+            },
+          });
 
-        if (existed) {
-          if (existed.name === name) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
-          }
-          if (existed.slug === slug) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+          if (existed) {
+            let mes = "Code";
+            if (existed.name === name) {
+              mes = "Name";
+            } else if (existed.slug === slug) {
+              mes = "Slug";
+            }
+            return AppError.json({
+              status: AppStatusCode.EXISTING,
+              message: `${mes} already exist`,
+            });
           }
         }
 
         const updated = await prisma.productTag.update({
           where: { id },
           data: {
+            code,
             name,
             slug,
             description,
             expiredAfterDays,
+            displayType,
             image,
-            backgroundColor,
+            bgColor,
+            textColor,
             displayOrder,
             isActive,
           },
