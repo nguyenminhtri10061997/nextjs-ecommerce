@@ -1,7 +1,7 @@
 "use client";
 
 import { useAlertContext } from "@/hooks/useAlertContext";
-import { getRoleDetail, putRole, roleKeys } from "@/lib/reactQuery/role";
+import { getRoleDetail, patchRole, roleKeys } from "@/lib/reactQuery/role";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
@@ -30,7 +30,7 @@ export const usePage = () => {
   });
 
   const mutation = useMutation({
-    mutationFn: putRole,
+    mutationFn: patchRole,
     onSuccess: async () => {
       showAlert("Update Role success");
       await Promise.all([

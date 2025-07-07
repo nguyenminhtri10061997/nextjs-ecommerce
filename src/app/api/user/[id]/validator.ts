@@ -5,7 +5,7 @@ export const idParamsDTO = z.object({
   id: z.uuidv4(),
 });
 
-export const patchBodyDTO = z.object({
+export const PatchBodyDTO = z.object({
   fullName: z.string().optional(),
   type: z.enum(EUserOrAccountType).optional(),
   account: z.object({

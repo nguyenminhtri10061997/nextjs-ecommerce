@@ -47,6 +47,7 @@ const DashboardMenu = (props: TProps) => {
                                 <ListItemText primary={m.label} />
                                 {m.children ? (openMap[m.label] ? <ExpandLessIcon /> : <ExpandMoreIcon />) : null}
                             </ListItemButton>
+                            <LinkLoadingIndicator />
                         </Link>
                     )
                 }

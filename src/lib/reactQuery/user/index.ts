@@ -1,5 +1,5 @@
 import { APIEndpoint } from "@/app/api/apiEndpoint";
-import { idParamsDTO as idParamUser, putBodyDTO as putBodyUser } from "@/app/api/user/[id]/validator";
+import { idParamsDTO as idParamUser, PatchBodyDTO as PathBodyUserDTO } from "@/app/api/user/[id]/validator";
 import { DeleteUserBodyDTO, GetUserQueryDTO, PostUserCreateBodyDTO } from "@/app/api/user/validator";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { TAppResponseBody } from "@/types/api/common";
@@ -44,7 +44,7 @@ export const getUserDetail = async ({ queryKey }: QueryFunctionContext) => {
     return res.data.data;
 };
 
-export const putUser = async (variable: { id: output<typeof idParamUser>['id'], newUser: output<typeof putBodyUser> }) => {
+export const putUser = async (variable: { id: output<typeof idParamUser>['id'], newUser: output<typeof PathBodyUserDTO> }) => {
     const { id, newUser } = variable
     const res = await axiosInstance.put<TAppResponseBody<User>>(`${APIEndpoint.API_USER}/${id}`, newUser);
     return res.data.data;

@@ -1,5 +1,5 @@
 import { APIEndpoint } from "@/app/api/apiEndpoint";
-import { idParamsDTO as idParamsRoleDTO, putBodyDTO as putRoleBodyDTO } from "@/app/api/role/[id]/validator";
+import { idParamsDTO as idParamsRoleDTO, PatchBodyDTO as PatchRoleBodyDTO } from "@/app/api/role/[id]/validator";
 import { DeleteBodyDTO as DeleteRoleBodyDTO, GetQueryDTO as GetRoleQueryDTO, PostCreateBodyDTO as PostCreateRoleBodyDTO } from "@/app/api/role/validator";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { TAppResponseBody } from "@/types/api/common";
@@ -56,9 +56,9 @@ export const getRoleDetail = async ({ queryKey }: QueryFunctionContext) => {
     return res.data.data;
 };
 
-export const putRole = async (variable: { id: output<typeof idParamsRoleDTO>['id'], body: output<typeof putRoleBodyDTO> }) => {
+export const patchRole = async (variable: { id: output<typeof idParamsRoleDTO>['id'], body: output<typeof PatchRoleBodyDTO> }) => {
     const { id, body } = variable
-    const res = await axiosInstance.put<TAppResponseBody<Role>>(`${API_ENDPOINT}/${id}`, body);
+    const res = await axiosInstance.patch<TAppResponseBody<Role>>(`${API_ENDPOINT}/${id}`, body);
     return res.data.data;
 };
 

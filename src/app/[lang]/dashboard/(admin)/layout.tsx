@@ -80,7 +80,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+    <Box sx={{ height: '100vh' }}>
       <Drawer variant="persistent" anchor="left" open={isOpenDrawer}>
         <Box sx={{ width: 250 }}>
           <Toolbar sx={{ gap: 2 }}>
@@ -117,7 +117,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             }),
             display: "flex",
             flexDirection: "column",
-            height: "100vh",
+            float: "right",
+            height: '100%'
           },
         ]}
       >
@@ -176,11 +177,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </Box>
           </Toolbar>
         </AppBar>
-        <Box component="main" sx={{ m: 2 }}>
+        <Box component="main" sx={{ m: 2, flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
           <Breadcrumbs separator="›" aria-label="breadcrumb">
             {breadcrumbsRender}
           </Breadcrumbs>
-          {children}
+          <Box sx={{ flexGrow: 1 }}>
+            {children}
+          </Box>
         </Box>
       </Box>
       {query.isPending && !loading && (

@@ -3,10 +3,10 @@ import { EPermissionAction, EPermissionResource } from "@prisma/client";
 
 export type TDashBoardMenuItem = {
   label: string
-  to?: string
   perAction?: EPermissionAction
   perResource?: EPermissionResource
   icon?: React.ReactElement
+  to?: string
   children?: TDashBoardMenuItem[]
 }
 
@@ -36,8 +36,15 @@ export const DASHBOARD_MENU_ITEMS: TDashBoardMenuItem[] = [
         perAction: EPermissionAction.READ,
         perResource: EPermissionResource.PERMISSION,
       },
-    ]
+    ],
   },
+  {
+    label: "Attribute",
+    to: "/dashboard/attribute",
+    icon: <ContactPageIcon />,
+    perResource: EPermissionResource.ATTRIBUTE,
+    perAction: EPermissionAction.READ,
+  }
 ];
 
 export const ADMIN_DRAWER_WIDTH = 250

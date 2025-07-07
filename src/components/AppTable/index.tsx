@@ -164,248 +164,246 @@ const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
 
   const numSelected = Object.values(selectedHash).length;
   return (
-    <Box>
-      <Stack sx={{ height: "100%" }}>
-        <Toolbar disableGutters>
-          <Stack
-            direction="row"
-            alignItems="center"
-            gap={2}
-            flexGrow={1}
-            flexWrap={"wrap"}
-          >
-            {hasSearch && (
-              <Stack direction="row" alignItems="center" gap={2}>
-                <TextField
-                  size="small"
-                  placeholder="Input search"
-                  sx={{ width: 200 }}
-                  onChange={handleChangeSearchStr}
-                />
-                <Select
-                  size="small"
-                  sx={{ width: 150 }}
-                  onChange={handleChangeSearchKey}
-                  value={props.searchKey}
-                >
-                  {props.searchOpts?.map((s) => (
-                    <MenuItem key={String(s.value)} value={String(s.value)}>
-                      {s.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Stack>
-            )}
-            {props.filterList?.map((fl) => {
-              if (!filterListActive.includes(fl.label)) {
-                return null
-              }
-              switch (fl.type) {
-                case EFilterList.date:
-                  return <DatePicker key={fl.label} {...fl.componentProps} />;
-                case EFilterList.dateRange:
-                  return (
-                    <AppDateRangePicker key={fl.label} onChange={fl.onChange} />
-                  );
+    <Stack sx={{ height: "100%" }}>
+      <Toolbar disableGutters>
+        <Stack
+          direction="row"
+          alignItems="center"
+          gap={2}
+          flexGrow={1}
+          flexWrap={"wrap"}
+        >
+          {hasSearch && (
+            <Stack direction="row" alignItems="center" gap={2}>
+              <TextField
+                size="small"
+                placeholder="Input search"
+                sx={{ width: 200 }}
+                onChange={handleChangeSearchStr}
+              />
+              <Select
+                size="small"
+                sx={{ width: 150 }}
+                onChange={handleChangeSearchKey}
+                value={props.searchKey}
+              >
+                {props.searchOpts?.map((s) => (
+                  <MenuItem key={String(s.value)} value={String(s.value)}>
+                    {s.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Stack>
+          )}
+          {props.filterList?.map((fl) => {
+            if (!filterListActive.includes(fl.label)) {
+              return null
+            }
+            switch (fl.type) {
+              case EFilterList.date:
+                return <DatePicker key={fl.label} {...fl.componentProps} />;
+              case EFilterList.dateRange:
+                return (
+                  <AppDateRangePicker key={fl.label} onChange={fl.onChange} />
+                );
 
-                case EFilterList.select:
-                  return (
-                    <FormControl key={fl.label} sx={{ ml: 1 }}>
-                      <InputLabel>{fl.label}</InputLabel>
-                      <Select
-                        value={fl.value}
-                        label={fl.label}
-                        onChange={fl.onChange}
-                      >
-                        <MenuItem value={'all'}>All {fl.label}</MenuItem>
-                        {fl.options.map(o => (
+              case EFilterList.select:
+                return (
+                  <FormControl key={fl.label} sx={{ ml: 1 }}>
+                    <InputLabel>{fl.label}</InputLabel>
+                    <Select
+                      value={fl.value}
+                      label={fl.label}
+                      onChange={fl.onChange}
+                    >
+                      <MenuItem value={'all'}>All {fl.label}</MenuItem>
+                      {fl.options.map(o => (
 
-                          <MenuItem value={o.value}>{o.label}</MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  );
-              }
-            })}
-          </Stack>
-          <Stack direction="row" gap={1} alignItems="center">
-            {actions}
-            {onClickRefresh && (
-              <Tooltip title="Refresh Table">
-                <IconButton onClick={onClickRefresh}>
-                  <RefreshIcon />
+                        <MenuItem value={o.value}>{o.label}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                );
+            }
+          })}
+        </Stack>
+        <Stack direction="row" gap={1} alignItems="center">
+          {actions}
+          {onClickRefresh && (
+            <Tooltip title="Refresh Table">
+              <IconButton onClick={onClickRefresh}>
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {props.filterList?.length && (
+            <>
+              <Tooltip title="Filter list">
+                <IconButton onClick={handleClickFilterListBtn}>
+                  <FilterListIcon />
                 </IconButton>
               </Tooltip>
-            )}
-            {props.filterList?.length && (
-              <>
-                <Tooltip title="Filter list">
-                  <IconButton onClick={handleClickFilterListBtn}>
-                    <FilterListIcon />
-                  </IconButton>
-                </Tooltip>
-                <Menu
-                  anchorEl={anchorElFilterList}
-                  open={isOpenMenuFilterList}
-                  onClose={handleCloseMenuFilterList}
-                  slotProps={{
-                    list: {
-                      "aria-labelledby": "basic-button",
-                    },
-                  }}
-                >
-                  {props.filterList.map((i) => (
-                    <ListItem
-                      key={i.label}
-                      secondaryAction={
-                        <Checkbox
-                          edge="end"
-                          onChange={handleClickToggleFilterList(i.label)}
-                          checked={filterListActive.includes(i.label)}
-                        />
-                      }
-                    >
-                      {i.label}
-                    </ListItem>
-                  ))}
-                </Menu>
-              </>
-            )}
-          </Stack>
-        </Toolbar>
-        <TableContainer
-          sx={{
-            flexGrow: 1,
-          }}
-        >
-          <Table stickyHeader={!!isStickyHeader} aria-label="sticky table">
-            <TableHead>
-              <TableRow>
-                {hasSelect && (
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      color="primary"
-                      indeterminate={numSelected > 0 && numSelected < data.length}
-                      checked={numSelected > 0 && numSelected >= data.length}
-                      onClick={handleToggleAllClick}
-                    />
-                  </TableCell>
-                )}
-                {columns.map((col) => {
-                  if (col.key === "actionColumn") {
-                    return (
-                      <TableCell
-                        key={String(col.key)}
-                        sx={{
-                          right: 0,
-                          backgroundColor:
-                            theme.vars?.palette.background.default,
-                          borderLeft: `1px solid ${theme.vars?.palette?.TableCell?.border}`,
-                          minWidth: col.minWidth,
-                          width: col.width,
-                        }}
-                      >
-                        {col.header}
-                      </TableCell>
-                    );
-                  }
-
+              <Menu
+                anchorEl={anchorElFilterList}
+                open={isOpenMenuFilterList}
+                onClose={handleCloseMenuFilterList}
+                slotProps={{
+                  list: {
+                    "aria-labelledby": "basic-button",
+                  },
+                }}
+              >
+                {props.filterList.map((i) => (
+                  <ListItem
+                    key={i.label}
+                    secondaryAction={
+                      <Checkbox
+                        edge="end"
+                        onChange={handleClickToggleFilterList(i.label)}
+                        checked={filterListActive.includes(i.label)}
+                      />
+                    }
+                  >
+                    {i.label}
+                  </ListItem>
+                ))}
+              </Menu>
+            </>
+          )}
+        </Stack>
+      </Toolbar>
+      <TableContainer
+        sx={{
+          flexGrow: 1,
+        }}
+      >
+        <Table stickyHeader={!!isStickyHeader} aria-label="sticky table">
+          <TableHead>
+            <TableRow>
+              {hasSelect && (
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    color="primary"
+                    indeterminate={numSelected > 0 && numSelected < data.length}
+                    checked={numSelected > 0 && numSelected >= data.length}
+                    onClick={handleToggleAllClick}
+                  />
+                </TableCell>
+              )}
+              {columns.map((col) => {
+                if (col.key === "actionColumn") {
                   return (
                     <TableCell
                       key={String(col.key)}
                       sx={{
+                        right: 0,
+                        backgroundColor:
+                          theme.vars?.palette.background.default,
+                        borderLeft: `1px solid ${theme.vars?.palette?.TableCell?.border}`,
                         minWidth: col.minWidth,
+                        width: col.width,
                       }}
                     >
-                      {col.canSort ? (
-                        <TableSortLabel
-                          active={orderQuery?.orderKey === col.key}
-                          direction={orderQuery?.orderType}
-                          onClick={() => handleClickOrder?.(col.key as keyof T)}
-                        >
-                          {col.header}
-                        </TableSortLabel>
-                      ) : (
-                        col.header
-                      )}
+                      {col.header}
                     </TableCell>
                   );
-                })}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {data.length === 0 && !isLoading && (
-                <TableRow>
-                  <TableCell colSpan={columns.length + 1} align="center">
-                    No data found
-                  </TableCell>
-                </TableRow>
-              )}
-              {isLoading && (
-                <TableRow>
-                  <TableCell colSpan={columns.length + 1} align="center">
-                    <CircularProgress />
-                  </TableCell>
-                </TableRow>
-              )}
-              {!isLoading && data.map((row) => {
-                const isItemSelected = !!selectedHash[row.id];
+                }
+
                 return (
-                  <TableRow hover key={row.id} selected={isItemSelected}>
-                    {hasSelect && (
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          checked={isItemSelected}
-                          onClick={handleClickSelectRow(row.id)}
-                        />
-                      </TableCell>
+                  <TableCell
+                    key={String(col.key)}
+                    sx={{
+                      minWidth: col.minWidth,
+                    }}
+                  >
+                    {col.canSort ? (
+                      <TableSortLabel
+                        active={orderQuery?.orderKey === col.key}
+                        direction={orderQuery?.orderType}
+                        onClick={() => handleClickOrder?.(col.key as keyof T)}
+                      >
+                        {col.header}
+                      </TableSortLabel>
+                    ) : (
+                      col.header
                     )}
-                    {columns.map((col) => {
-                      if (col.key === "actionColumn") {
-                        return (
-                          <TableCell
-                            key={String(col.key)}
-                            sx={{
-                              position: "sticky",
-                              right: 0,
-                              backgroundColor:
-                                theme.vars?.palette.background.default,
-                              borderLeft: `1px solid ${theme.vars?.palette?.TableCell?.border}`,
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {col.render?.(row[col.key as keyof T], row)}
-                          </TableCell>
-                        );
-                      }
-                      return (
-                        <TableCell key={String(col.key)}>
-                          {col.render
-                            ? col.render(row[col.key], row)
-                            : String(row[col.key] || "")}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
+                  </TableCell>
                 );
               })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          sx={{
-            flexShrink: 0,
-          }}
-          component="div"
-          count={pagination.count}
-          page={pagination.currentPage}
-          rowsPerPageOptions={rowsPerPageOptions}
-          rowsPerPage={pagination.pageSize}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowPerPage}
-        />
-      </Stack>
-    </Box>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.length === 0 && !isLoading && (
+              <TableRow>
+                <TableCell colSpan={columns.length + 1} align="center">
+                  No data found
+                </TableCell>
+              </TableRow>
+            )}
+            {isLoading && (
+              <TableRow>
+                <TableCell colSpan={columns.length + 1} align="center">
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            )}
+            {!isLoading && data.map((row) => {
+              const isItemSelected = !!selectedHash[row.id];
+              return (
+                <TableRow hover key={row.id} selected={isItemSelected}>
+                  {hasSelect && (
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={isItemSelected}
+                        onClick={handleClickSelectRow(row.id)}
+                      />
+                    </TableCell>
+                  )}
+                  {columns.map((col) => {
+                    if (col.key === "actionColumn") {
+                      return (
+                        <TableCell
+                          key={String(col.key)}
+                          sx={{
+                            position: "sticky",
+                            right: 0,
+                            backgroundColor:
+                              theme.vars?.palette.background.default,
+                            borderLeft: `1px solid ${theme.vars?.palette?.TableCell?.border}`,
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {col.render?.(row[col.key as keyof T], row)}
+                        </TableCell>
+                      );
+                    }
+                    return (
+                      <TableCell key={String(col.key)}>
+                        {col.render
+                          ? col.render(row[col.key], row)
+                          : String(row[col.key] || "")}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        sx={{
+          flexShrink: 0,
+        }}
+        component="div"
+        count={pagination.count}
+        page={pagination.currentPage}
+        rowsPerPageOptions={rowsPerPageOptions}
+        rowsPerPage={pagination.pageSize}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowPerPage}
+      />
+    </Stack>
   );
 };
 

@@ -1,13 +1,14 @@
 "use client";
 
 import AppConfirmDialog from "@/components/AppConfirmDialog";
+import useAppConfirmDialog from "@/components/AppConfirmDialog/useAppConfirmDialog";
 import AppTable, { EFilterList, TColumn } from "@/components/AppTable";
-import useSelectTable from "@/hooks/useSelectTable";
+import LinkLoadingIndicator from "@/components/LinkLoadingIndicator";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import usePaginationAndSort from "@/hooks/usePaginationAndSort";
 import useSearch from "@/hooks/useSearch";
+import useSelectTable from "@/hooks/useSelectTable";
 import useTableDeleteRow from "@/hooks/useTableDeleteRow";
-import { useGetRoleListQuery } from "@/lib/reactQuery/role";
 import { ESearchType } from "@/lib/zod/paginationDTO";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -18,36 +19,37 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { Role } from "@prisma/client";
+import { Attribute, } from "@prisma/client";
 import { UseMutationResult } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import usePage from "./usePage";
-import LinkLoadingIndicator from "@/components/LinkLoadingIndicator";
+import { useGetAttributeListQuery } from "@/lib/reactQuery/attribute";
 
 export default function User() {
   const { showAlert } = useAlertContext();
   const { selectedHash, selectedLength, setSelectedHash } = useSelectTable();
   const { pagination, orderQuery, setPagination, setOrderQuery } =
-    usePaginationAndSort<keyof Role>({
+    usePaginationAndSort<keyof Attribute>({
       defaultOrder: {
         orderKey: "createdAt",
         orderType: "desc",
       },
     });
   const { searchKey, searchStr, searchType, setSearchKey, setSearchStr } =
-    useSearch<keyof Role>({
+    useSearch<keyof Attribute>({
       defaultSearchKey: "name",
       searchType: ESearchType.contains,
     });
 
-  const [isOpenConfirm, setIsOpenConfirm] = useState(false);
+  const {
+    isOpenConfirm,
+    setIsOpenConfirm,
+  } = useAppConfirmDialog()
 
   const {
     mutation,
-    dateRange,
-    setDateRange,
   } = usePage({ setSelectedHash, setIsOpenConfirm });
   const {
     isOkMany,
@@ -61,8 +63,7 @@ export default function User() {
     setIsOpenConfirm,
   })
 
-  const query = useGetRoleListQuery({
-    pagination: pagination,
+  const query = useGetAttributeListQuery({
     orderQuery: {
       orderKey: orderQuery.orderKey!,
       orderType: orderQuery.orderType!,
@@ -72,23 +73,16 @@ export default function User() {
       searchStr,
       searchType,
     },
-    dateRangeQuery:
-      dateRange?.from && dateRange.to
-        ? {
-          startDate: dateRange.from,
-          endDate: dateRange.to,
-        }
-        : undefined,
   });
 
-  const columns: TColumn<Role>[] = useMemo(
+  const columns: TColumn<Attribute>[] = useMemo(
     () => [
       {
         key: "name",
         header: "Full Name",
       },
       {
-        key: "description",
+        key: "slug",
         header: "Description",
       },
       {
@@ -110,7 +104,7 @@ export default function User() {
         render: (_, row) => {
           return (
             <Stack direction="row">
-              <Link href={`role/${row.id}`}>
+              <Link href={`attribute/${row.id}`}>
                 <LinkLoadingIndicator />
                 <IconButton>
                   <EditIcon color="primary" />
@@ -143,7 +137,7 @@ export default function User() {
       }}
     >
       <Box sx={{ flexShrink: 0 }}>
-        <Typography variant="h4">Role Page</Typography>
+        <Typography variant="h4">Attribute Page</Typography>
       </Box>
       <Box
         sx={{
@@ -158,13 +152,20 @@ export default function User() {
           columns={columns}
           pagination={{
             ...pagination,
-            count: query.data?.pagination.count || 0,
+            count: query.data?.length || 0,
           }}
           selectedHash={selectedHash}
-          data={query.data?.data || []}
+          data={query.data || []}
           orderQuery={orderQuery}
           actions={
             <Stack direction="row" alignItems="center" spacing={2}>
+              <Link href="attribute/create">
+                <LinkLoadingIndicator />
+                <Button variant="contained" endIcon={<AddIcon />}>
+                  Create
+                </Button>
+              </Link>
+
               <Badge badgeContent={selectedLength} color="warning">
                 <Button
                   disabled={!selectedLength}
@@ -175,13 +176,6 @@ export default function User() {
                   Delete
                 </Button>
               </Badge>
-
-              <Link href="role/create">
-                <LinkLoadingIndicator />
-                <Button variant="contained" endIcon={<AddIcon />}>
-                  Create
-                </Button>
-              </Link>
             </Stack>
           }
           searchKey={searchKey}
@@ -189,15 +183,6 @@ export default function User() {
             {
               label: "Name",
               value: "name",
-            },
-          ]}
-          filterList={[
-            {
-              type: EFilterList.dateRange,
-              label: "Date",
-              onChange: (date) => {
-                setDateRange(date);
-              },
             },
           ]}
           setOrderQuery={setOrderQuery}

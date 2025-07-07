@@ -10,4 +10,6 @@ export class APIEndpoint {
     static API_PERMISSION = '/api/permission'
 
     static API_ROLE = '/api/role'
+
+    static API_ATTRIBUTE = '/api/attribute'
 }

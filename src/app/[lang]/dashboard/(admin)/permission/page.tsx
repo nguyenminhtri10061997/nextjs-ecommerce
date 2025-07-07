@@ -68,12 +68,11 @@ export default function User() {
       <Box
         sx={{
           flexGrow: 1,
-          maxHeight: "75vh",
         }}
       >
         <AppTable
           onClickRefresh={query.refetch}
-          isLoading={query.isLoading}
+          isLoading={query.isLoading || query.isRefetching}
           isStickyHeader
           columns={columns}
           pagination={{

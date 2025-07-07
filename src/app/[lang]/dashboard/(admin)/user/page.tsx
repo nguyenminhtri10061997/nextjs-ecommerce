@@ -140,22 +140,21 @@ export default function User() {
         display: "flex",
         flexDirection: "column",
         gap: 1,
-        height: "100%",
+        height: '100%',
       }}
     >
-      <Box sx={{ flexShrink: 0 }}>
+      <Box>
         <Typography variant="h4">User Page</Typography>
       </Box>
       <Box
         sx={{
           flexGrow: 1,
-          maxHeight: "75vh",
         }}
       >
         <AppTable
           hasSelect
           onClickRefresh={query.refetch}
-          isLoading={query.isLoading}
+          isLoading={query.isLoading || query.isRefetching}
           isStickyHeader
           columns={columns}
           pagination={{
@@ -167,6 +166,11 @@ export default function User() {
           orderQuery={orderQuery}
           actions={
             <Stack direction="row" alignItems="center" spacing={2}>
+              <Link href="user/create">
+                <Button variant="contained" endIcon={<AddIcon />}>
+                  Create
+                </Button>
+              </Link>
               <Badge badgeContent={selectedLength} color="warning">
                 <Button
                   disabled={!selectedLength}
@@ -177,12 +181,6 @@ export default function User() {
                   Delete
                 </Button>
               </Badge>
-
-              <Link href="user/create">
-                <Button variant="contained" endIcon={<AddIcon />}>
-                  Create
-                </Button>
-              </Link>
             </Stack>
           }
           searchKey={searchKey}

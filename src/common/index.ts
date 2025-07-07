@@ -28,3 +28,14 @@ export const getOrderBy = (orderQuery?: TOrderQuery) => {
     }
     return {}
 }
+
+export const textToSlug = (text: string): string => {
+  return text
+    .normalize("NFD")                      // tách dấu Unicode (vd: "ấ" => "a" + "̂" + "́")
+    .replace(/[\u0300-\u036f]/g, "")       // xoá các ký tự dấu
+    .toLowerCase()                         // viết thường
+    .trim()                                // xoá khoảng trắng đầu/cuối
+    .replace(/[^a-z0-9\s-]/g, "")          // xoá ký tự đặc biệt, giữ lại chữ, số, khoảng trắng và dấu "-"
+    .replace(/\s+/g, "-")                  // thay khoảng trắng bằng "-"
+    .replace(/-+/g, "-");                  // xoá dấu "-" lặp lại
+}
