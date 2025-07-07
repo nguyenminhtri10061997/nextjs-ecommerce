@@ -9,7 +9,7 @@ import usePaginationAndSort from "@/hooks/usePaginationAndSort";
 import useSearch from "@/hooks/useSearch";
 import useSelectTable from "@/hooks/useSelectTable";
 import useTableDeleteRow from "@/hooks/useTableDeleteRow";
-import { useGetAttributeListQuery } from "@/lib/reactQuery/attribute";
+import { useGetBrandListQuery } from "@/lib/reactQuery/brand";
 import { ESearchType } from "@/lib/zod/paginationDTO";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -20,7 +20,7 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { Attribute } from "@prisma/client";
+import { Brand } from "@prisma/client";
 import { UseMutationResult } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import Link from "next/link";
@@ -31,14 +31,14 @@ export default function User() {
   const { showAlert } = useAlertContext();
   const { selectedHash, selectedLength, setSelectedHash } = useSelectTable();
   const { pagination, orderQuery, setPagination, setOrderQuery } =
-    usePaginationAndSort<keyof Attribute>({
+    usePaginationAndSort<keyof Brand>({
       defaultOrder: {
         orderKey: "createdAt",
         orderType: "desc",
       },
     });
   const { searchKey, searchStr, searchType, setSearchKey, setSearchStr } =
-    useSearch<keyof Attribute>({
+    useSearch<keyof Brand>({
       defaultSearchKey: "name",
       searchType: ESearchType.contains,
     });
@@ -58,7 +58,7 @@ export default function User() {
     setIsOpenConfirm,
   });
 
-  const query = useGetAttributeListQuery({
+  const query = useGetBrandListQuery({
     orderQuery: {
       orderKey: orderQuery.orderKey!,
       orderType: orderQuery.orderType!,
@@ -70,7 +70,7 @@ export default function User() {
     },
   });
 
-  const columns: TColumn<Attribute>[] = useMemo(
+  const columns: TColumn<Brand>[] = useMemo(
     () => [
       {
         key: "name",
@@ -84,13 +84,13 @@ export default function User() {
         key: "createdAt",
         header: "Created At",
         canSort: true,
-        render: (val) => dayjs(val).format("YYYY/MM/DD hh:mm:ss"),
+        render: (val) => dayjs(val as Date).format("YYYY/MM/DD hh:mm:ss"),
       },
       {
         key: "updatedAt",
         header: "Updated At",
         canSort: true,
-        render: (val) => dayjs(val).format("YYYY/MM/DD hh:mm:ss"),
+        render: (val) => dayjs(val as Date).format("YYYY/MM/DD hh:mm:ss"),
       },
       {
         key: "actionColumn",
@@ -99,7 +99,7 @@ export default function User() {
         render: (_, row) => {
           return (
             <Stack direction="row">
-              <Link href={`attribute/${row.id}`}>
+              <Link href={`brand/${row.id}`}>
                 <LinkLoadingIndicator />
                 <IconButton>
                   <EditIcon color="primary" />
@@ -132,7 +132,7 @@ export default function User() {
       }}
     >
       <Box sx={{ flexShrink: 0 }}>
-        <Typography variant="h4">Attribute Page</Typography>
+        <Typography variant="h4">Brand Page</Typography>
       </Box>
       <Box
         sx={{
@@ -154,7 +154,7 @@ export default function User() {
           orderQuery={orderQuery}
           actions={
             <Stack direction="row" alignItems="center" spacing={2}>
-              <Link href="attribute/create">
+              <Link href="brand/create">
                 <LinkLoadingIndicator />
                 <Button variant="contained" endIcon={<AddIcon />}>
                   Create

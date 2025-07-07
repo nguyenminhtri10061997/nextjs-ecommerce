@@ -100,7 +100,7 @@ export const PATCH = withValidateFieldHandler(
           slug,
         };
 
-        if (attributeValues?.length) {
+        if (attributeValues) {
           const existingIds = new Set(
             existing.attributeValues.map((v) => v.id)
           );

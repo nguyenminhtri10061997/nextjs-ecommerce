@@ -1,26 +1,26 @@
 "use client";
 
-import { useAlertContext } from "@/hooks/useAlertContext";
 import useFormRef from "@/hooks/useFormRef";
-import { queryClient } from "@/lib/queryClient";
-import { attributeKeys, postCreateAttribute } from "@/lib/reactQuery/attribute";
-import { TAppResponseBody } from "@/types/api/common";
+import { TForm } from "../_components/brandForm/useIndex";
+import { SubmitHandler } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
+import { brandKeys, postCreateBrand } from "@/lib/reactQuery/brand";
+import { useAlertContext } from "@/hooks/useAlertContext";
+import { queryClient } from "@/lib/queryClient";
+import { TAppResponseBody } from "@/types/api/common";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/attributeForm/useIndex";
 
 export const usePage = () => {
   const router = useRouter();
   const { showAlert } = useAlertContext();
 
   const mutation = useMutation({
-    mutationFn: postCreateAttribute,
+    mutationFn: postCreateBrand,
     onSuccess: async () => {
-      showAlert("create Attribute success");
-      await queryClient.invalidateQueries({ queryKey: attributeKeys.lists() });
-      router.push("/dashboard/attribute");
+      showAlert("create Brand success");
+      router.push("/dashboard/brand");
+      await queryClient.invalidateQueries({ queryKey: brandKeys.lists() });
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;

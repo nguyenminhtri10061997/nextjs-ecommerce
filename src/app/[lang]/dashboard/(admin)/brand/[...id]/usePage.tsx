@@ -3,18 +3,14 @@
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
-import {
-  attributeKeys,
-  getAttributeDetail,
-  patchAttribute,
-} from "@/lib/reactQuery/attribute";
+import { brandKeys, getBrandDetail, patchBrand } from "@/lib/reactQuery/brand";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/attributeForm/useIndex";
+import { TForm } from "../_components/brandForm/useIndex";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
@@ -25,20 +21,20 @@ export const usePage = () => {
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
 
   const query = useQuery({
-    queryKey: attributeKeys.detail(id),
-    queryFn: getAttributeDetail,
+    queryKey: brandKeys.detail(id),
+    queryFn: getBrandDetail,
     enabled: !!id,
   });
 
   const mutation = useMutation({
-    mutationFn: patchAttribute,
+    mutationFn: patchBrand,
     onSuccess: async () => {
-      showAlert("Update Attribute success");
+      showAlert("Update Brand success");
+      router.push("/dashboard/brand");
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: attributeKeys.detail(id) }),
-        queryClient.invalidateQueries({ queryKey: attributeKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: brandKeys.detail(id) }),
+        queryClient.invalidateQueries({ queryKey: brandKeys.lists() }),
       ]);
-      router.push("/dashboard/attribute");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -46,17 +42,12 @@ export const usePage = () => {
     },
   });
 
-  const handleFormSubmit: SubmitHandler<TForm> = async ({
-    name,
-    slug,
-    attributeValues,
-  }) => {
+  const handleFormSubmit: SubmitHandler<TForm> = async ({ name, slug }) => {
     mutation.mutate({
       id,
       body: {
         name,
         slug,
-        attributeValues,
       },
     });
   };
@@ -67,7 +58,7 @@ export const usePage = () => {
 
   useEffect(() => {
     if (query.data?.id) {
-      const { name, slug, attributeValues } = query.data;
+      const { name, slug } = query.data;
       if (breadcrumbs.length === 3) {
         setBreadCrumbs(
           breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.name)
@@ -76,7 +67,6 @@ export const usePage = () => {
       formRef.current?.reset({
         name,
         slug,
-        attributeValues,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

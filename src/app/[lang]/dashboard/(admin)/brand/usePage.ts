@@ -1,12 +1,11 @@
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { TSelectedHash } from "@/hooks/useSelectTable";
 import { queryClient } from "@/lib/queryClient";
-import { attributeKeys, deleteAttributes } from "@/lib/reactQuery/attribute";
+import { brandKeys, deleteBrands } from "@/lib/reactQuery/brand";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { Dispatch, SetStateAction, useState } from "react";
-import { DateRange } from "react-day-picker";
+import { Dispatch, SetStateAction } from "react";
 
 type TProps = {
   setSelectedHash: Dispatch<SetStateAction<TSelectedHash>>;
@@ -16,20 +15,19 @@ type TProps = {
 export default function usePage(props: TProps) {
   const { setIsOpenConfirm } = props;
   const { showAlert } = useAlertContext();
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const mutation = useMutation({
-    mutationFn: deleteAttributes,
+    mutationFn: deleteBrands,
     onSuccess: async (_, variable) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: attributeKeys.lists() }),
-        queryClient.invalidateQueries({ queryKey: attributeKeys.details() }),
+        queryClient.invalidateQueries({ queryKey: brandKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: brandKeys.details() }),
       ]);
       setIsOpenConfirm(false);
       if (variable.length > 1) {
         props.setSelectedHash({});
       }
-      showAlert("delete Attribute success");
+      showAlert("delete Brand success");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -40,7 +38,5 @@ export default function usePage(props: TProps) {
 
   return {
     mutation,
-    dateRange,
-    setDateRange,
   };
 }

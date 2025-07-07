@@ -2,13 +2,13 @@ import ContactPageIcon from "@mui/icons-material/ContactPage";
 import { EPermissionAction, EPermissionResource } from "@prisma/client";
 
 export type TDashBoardMenuItem = {
-  label: string
-  perAction?: EPermissionAction
-  perResource?: EPermissionResource
-  icon?: React.ReactElement
-  to?: string
-  children?: TDashBoardMenuItem[]
-}
+  label: string;
+  perAction?: EPermissionAction;
+  perResource?: EPermissionResource;
+  icon?: React.ReactElement;
+  to?: string;
+  children?: TDashBoardMenuItem[];
+};
 
 export const DASHBOARD_MENU_ITEMS: TDashBoardMenuItem[] = [
   {
@@ -16,7 +16,7 @@ export const DASHBOARD_MENU_ITEMS: TDashBoardMenuItem[] = [
     icon: <ContactPageIcon />,
     children: [
       {
-        label: 'User',
+        label: "User",
         to: "/dashboard/user",
         icon: <ContactPageIcon />,
         perResource: EPermissionResource.USER,
@@ -44,7 +44,14 @@ export const DASHBOARD_MENU_ITEMS: TDashBoardMenuItem[] = [
     icon: <ContactPageIcon />,
     perResource: EPermissionResource.ATTRIBUTE,
     perAction: EPermissionAction.READ,
-  }
+  },
+  {
+    label: "Brand",
+    to: "/dashboard/brand",
+    icon: <ContactPageIcon />,
+    perResource: EPermissionResource.BRAND,
+    perAction: EPermissionAction.READ,
+  },
 ];
 
-export const ADMIN_DRAWER_WIDTH = 250
+export const ADMIN_DRAWER_WIDTH = 250;
