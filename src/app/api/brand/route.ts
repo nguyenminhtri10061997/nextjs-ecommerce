@@ -84,9 +84,6 @@ export const POST = withValidateFieldHandler(
         let logoImage;
         if (logoImgFile) {
           const fileKey = await AppS3Client.s3CreateFile(logoImgFile);
-          console.log({
-            fileKey
-          })
           logoImage = fileKey;
         }
 
@@ -112,6 +109,22 @@ export const DELETE = withValidateFieldHandler(
     withVerifyCanDoAction(
       { resource: EPermissionResource.BRAND, action: EPermissionAction.DELETE },
       async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
+        const { ids } = ctx.bodyParse!;
+        const exists = await prisma.brand.findMany({
+          where: {
+            id: {
+              in: ids,
+            },
+          },
+        });
+        const urls = exists
+          .map((i) => i.logoImage)
+          .filter((url) => url !== null);
+        if (urls.length) {
+          await AppS3Client.s3DeleteFiles(
+            exists.map((i) => i.logoImage).filter((url) => url !== null)
+          );
+        }
         const res = await prisma.brand.deleteMany({
           where: { id: { in: ctx.bodyParse!.ids } },
         });

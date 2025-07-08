@@ -11,6 +11,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SubmitHandler } from "react-hook-form";
 import { TForm } from "../_components/brandForm/useIndex";
+import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
@@ -18,8 +19,10 @@ export const usePage = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { showAlert } = useAlertContext();
+  const { setLoading } = useLoadingCtx();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
   const [file, setFile] = useState<File | null>();
+  const [urlImg, setUrlImg] = useState<string | null>();
 
   const query = useQuery({
     queryKey: brandKeys.detail(id),
@@ -44,11 +47,18 @@ export const usePage = () => {
   });
 
   const handleFormSubmit: SubmitHandler<TForm> = async ({ name, slug }) => {
+    let logoImgFile
+    if (file) {
+      logoImgFile = file
+    } else if (urlImg === null) {
+      logoImgFile = null
+    }
     mutation.mutate({
       id,
       body: {
         name,
         slug,
+        logoImgFile,
       },
     });
   };
@@ -57,9 +67,18 @@ export const usePage = () => {
     handleFormSubmit,
   });
 
+  const handleChangeFile = (file: File) => {
+    setFile(file);
+  };
+
+  const handleDeleteFile = () => {
+    setFile(null);
+    setUrlImg(null)
+  };
+
   useEffect(() => {
     if (query.data?.id) {
-      const { name, slug } = query.data;
+      const { name, slug, logoImage } = query.data;
       if (breadcrumbs.length === 3) {
         setBreadCrumbs(
           breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.name)
@@ -69,16 +88,23 @@ export const usePage = () => {
         name,
         slug,
       });
+      setUrlImg(logoImage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);
+
+  useEffect(() => {
+    setLoading(query.isLoading);
+  }, [query.isLoading, setLoading]);
 
   return {
     formRef,
     mutation,
     file,
+    urlImg,
     handleSetForm,
     handleClickSubmitForm,
-    setFile,
+    handleChangeFile,
+    handleDeleteFile,
   };
 };

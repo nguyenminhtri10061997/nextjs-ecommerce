@@ -6,8 +6,9 @@ import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
 import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
 import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
 import prisma from "@/lib/prisma";
-import { EPermissionAction, EPermissionResource } from "@prisma/client";
+import { Brand, EPermissionAction, EPermissionResource } from "@prisma/client";
 import { IdParamsDTO, PatchBodyDTO } from "./validator";
+import AppS3Client from "@/lib/s3";
 
 export const GET = withValidateFieldHandler(
   IdParamsDTO,
@@ -28,13 +29,16 @@ export const GET = withValidateFieldHandler(
           });
         }
 
-        return AppResponse.json({ status: 200, data: brand });
+        return AppResponse.json({ status: 200, data: {
+          ...brand,
+          logoImage: AppS3Client.getS3ImgFullUrl(brand.logoImage)
+        } as Brand });
       }
     )
   )
 );
 
-export const PUT = withValidateFieldHandler(
+export const PATCH = withValidateFieldHandler(
   IdParamsDTO,
   null,
   PatchBodyDTO,
@@ -46,7 +50,7 @@ export const PUT = withValidateFieldHandler(
         ctx: THofContext<typeof IdParamsDTO, never, typeof PatchBodyDTO>
       ) => {
         const { id } = ctx.paramParse!;
-        const { name, slug, logoImage, isActive } = ctx.bodyParse!;
+        const { name, slug, logoImgFile, isActive } = ctx.bodyParse!;
 
         const brand = await prisma.brand.findUnique({ where: { id } });
         if (!brand) {
@@ -59,6 +63,9 @@ export const PUT = withValidateFieldHandler(
         if (name || slug) {
           const exists = await prisma.brand.findFirst({
             where: {
+              id: {
+                not: brand.id,
+              },
               OR: [
                 {
                   name,
@@ -82,6 +89,18 @@ export const PUT = withValidateFieldHandler(
                 message: "Slug already exist",
               });
             }
+          }
+        }
+
+        let logoImage;
+        if (logoImgFile !== undefined) {
+          if (logoImgFile !== null) {
+            logoImage = await AppS3Client.s3CreateFile(logoImgFile);
+          } else {
+            logoImage = null
+          }
+          if (brand.logoImage) {
+            await AppS3Client.s3DeleteFile(brand.logoImage);
           }
         }
 

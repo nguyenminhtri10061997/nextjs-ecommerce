@@ -10,13 +10,14 @@ import AppImageUpload from "@/components/AppImageUpload";
 
 type TProps = {
   file?: File | null;
+  logoUrl?: string | null
   onGetForm: (form: UseFormReturn<TForm>) => void;
-  setFile?: React.Dispatch<File | null>;
+  onChangeFile?: (file: File) => void
+  onDeleteFile?: (file?: File | null, url?: TProps['logoUrl']) => void
 };
 export default function Index(props: TProps) {
-  const { form, handleChangeFile, handleDeleteFile } = useIndex({
-    setFile: props.setFile,
-  });
+  const { form } = useIndex();
+  const { onChangeFile, onDeleteFile } = props
 
   useEffect(() => {
     props.onGetForm(form);
@@ -81,8 +82,9 @@ export default function Index(props: TProps) {
       />
       <AppImageUpload
         file={props.file}
-        onChange={handleChangeFile}
-        onDelete={handleDeleteFile}
+        url={props.logoUrl}
+        onChange={onChangeFile}
+        onDelete={onDeleteFile}
       />
     </Stack>
   );

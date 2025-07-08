@@ -1,9 +1,9 @@
 import { AppError } from "@/common/appError";
 import { AppResponse } from "@/common/appResponse";
 import { NextRequest } from "next/server";
+import qs from "qs";
 import { core, ZodObject } from "zod/v4";
 import { THofContext } from "./type";
-import qs from "qs";
 
 const convertMessage = (issues: core.$ZodIssue[]) => {
   return issues.map((i) => `${String(i.path?.["0"])}: ${i.message}`).join(", ");
@@ -61,7 +61,13 @@ export function withValidateFieldHandler<
         const obj: Record<string, unknown> = {};
 
         for (const [key, value] of formData.entries()) {
-          obj[key] = value instanceof File ? value : String(value);
+          if (value instanceof File) {
+            obj[key] = value;
+          } else if (value === "") {
+            obj[key] = null;
+          } else {
+            obj[key] = value;
+          }
         }
 
         body = obj;

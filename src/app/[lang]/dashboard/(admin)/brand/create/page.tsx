@@ -8,8 +8,14 @@ import BrandForm from "../_components/brandForm";
 import { usePage } from "./usePage";
 
 export default function Page() {
-  const { mutation, file, handleSetForm, handleClickSubmitForm, setFile } =
-    usePage();
+  const {
+    mutation,
+    file,
+    handleSetForm,
+    handleClickSubmitForm,
+    handleChangeFile,
+    handleDeleteFile,
+  } = usePage();
 
   return (
     <Box>
@@ -21,7 +27,12 @@ export default function Page() {
         sx={{ mt: 2 }}
         onSubmit={handleClickSubmitForm}
       >
-        <BrandForm onGetForm={handleSetForm} file={file} setFile={setFile} />
+        <BrandForm
+          onGetForm={handleSetForm}
+          file={file}
+          onChangeFile={handleChangeFile}
+          onDeleteFile={handleDeleteFile}
+        />
         <Stack direction={"row-reverse"}>
           <Button
             sx={{

@@ -2,7 +2,8 @@ import { APIEndpoint } from "@/app/api/apiEndpoint";
 import { IdParamsDTO, PatchBodyDTO } from "@/app/api/brand/[id]/validator";
 import {
   DeleteBodyDTO,
-  GetQueryDTO
+  GetQueryDTO,
+  PostCreateBodyDTO,
 } from "@/app/api/brand/validator";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { TAppResponseBody } from "@/types/api/common";
@@ -39,12 +40,29 @@ export function useGetBrandListQuery(query?: output<typeof GetQueryDTO>) {
   });
 }
 
+const convertBodyToFormData = (
+  body: output<typeof PostCreateBodyDTO> | output<typeof PatchBodyDTO>
+) => {
+  const formData = new FormData();
+  if (body.logoImgFile !== undefined) {
+    formData.append("logoImgFile", body.logoImgFile || "");
+  }
+
+  Object.keys(body).forEach((key) => {
+    if (key === "logoImgFile") {
+      return;
+    }
+    formData.append(key, body[key as keyof typeof body] as string);
+  });
+  return formData;
+};
+
 export const postCreateBrand = async (
-  body: FormData
+  body: output<typeof PostCreateBodyDTO>
 ) => {
   const res = await axiosInstance.post<TAppResponseBody<Brand>>(
     API_ENDPOINT,
-    body
+    convertBodyToFormData(body)
   );
   return res.data;
 };
@@ -64,7 +82,7 @@ export const patchBrand = async (variable: {
   const { id, body } = variable;
   const res = await axiosInstance.patch<TAppResponseBody<Brand>>(
     `${API_ENDPOINT}/${id}`,
-    body
+    convertBodyToFormData(body)
   );
   return res.data.data;
 };

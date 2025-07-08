@@ -1,9 +1,7 @@
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
-  Avatar,
   Box,
-  Button,
   Divider,
   IconButton,
   Modal,
@@ -12,124 +10,126 @@ import {
 } from "@mui/material";
 import Image from "next/image";
 import React, { useMemo, useState } from "react";
+import EmptyImage from "../../../public/empty-img.svg";
 
 type TProps = {
   onChange?: (file: File) => void;
-  onDelete?: (file: File) => void;
+  onDelete?: (file?: File | null, url?: TProps['url']) => void
   file?: File | null;
+  url?: string | null;
 };
 
 export default function AppImageUpload(props: TProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [hover, setHover] = useState(false);
   const theme = useTheme();
+  const { url, file, onChange, onDelete } = props;
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      props.onChange?.(file);
+      onChange?.(file);
     }
   };
 
   const handleClickDelete = () => {
-    props.onDelete?.(props.file!);
+    onDelete?.(file, url);
   };
 
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
 
   const imageUrl = useMemo(() => {
-    if (props.file) {
-      return URL.createObjectURL(props.file);
+    if (file) {
+      return URL.createObjectURL(file);
+    } else if (url) {
+      return url;
     }
-  }, [props.file]);
+  }, [file, url]);
 
   return (
-    <>
-      <Box>
-        <Button variant="contained" component="label">
-          Pick Image
-          <input
-            hidden
-            accept="image/*"
-            type="file"
-            onChange={handleImageChange}
-          />
-        </Button>
-      </Box>
-
-      <Box
+    <Box
+      sx={{
+        position: "relative",
+        width: 150,
+        height: 150,
+        borderRadius: 2,
+        overflow: "hidden",
+        cursor: "pointer",
+        border: "1px dashed gray",
+      }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <IconButton
+        component="label"
         sx={{
-          position: "relative",
-          width: 150,
-          height: 150,
-          borderRadius: 2,
-          overflow: "hidden",
-          cursor: "pointer",
-          border: "1px dashed gray",
+          position: "absolute",
+          width: "100%",
+          height: "100%",
         }}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
       >
-        {!!props.file && (
-          <>
-            <Avatar
-              src={imageUrl}
-              variant="rounded"
-              sx={{ width: "100%", height: "100%" }}
-            />
-            {hover && (
-              <Stack
-                direction="row"
-                justifyContent="center"
-                alignItems="center"
-                position="absolute"
-                bgcolor={theme.vars?.palette.Chip.defaultBorder}
-                top="50%"
-                left="50%"
-                borderRadius={20}
-                sx={{
-                  transform: "translate(-50%, -50%)",
-                }}
-              >
-                <IconButton onClick={handleOpenModal}>
-                  <VisibilityIcon />
-                </IconButton>
-                <Divider orientation="vertical" variant="middle" flexItem />
-                <IconButton onClick={handleClickDelete}>
-                  <DeleteIcon />
-                </IconButton>
-              </Stack>
-            )}
-            <Modal open={modalOpen} onClose={handleCloseModal}>
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  bgcolor: "background.paper",
-                  boxShadow: 24,
-                  borderRadius: 2,
-                  p: 2,
-                  maxWidth: "90vw",
-                  maxHeight: "90vh",
-                  overflow: "auto",
-                }}
-              >
-                {imageUrl && (
-                  <Image
-                    src={imageUrl}
-                    alt="Uploaded Preview"
-                    width={800}
-                    height={800}
-                  />
-                )}
-              </Box>
-            </Modal>
-          </>
-        )}
-      </Box>
-    </>
+        <Image src={EmptyImage} alt="Uploaded Preview" width={50} height={50} />
+        <input
+          hidden
+          accept="image/*"
+          type="file"
+          onChange={handleImageChange}
+        />
+      </IconButton>
+      {imageUrl && (
+        <>
+          <Image
+            src={imageUrl}
+            fill
+            objectFit="contain"
+            alt="empty-image"
+            style={{
+              backgroundColor: "white",
+            }}
+          />
+          {hover && (
+            <Stack
+              direction="row"
+              justifyContent="center"
+              alignItems="center"
+              position="absolute"
+              bgcolor={theme.vars?.palette.Chip.defaultBorder}
+              top="50%"
+              left="50%"
+              borderRadius={20}
+              sx={{
+                transform: "translate(-50%, -50%)",
+              }}
+            >
+              <IconButton onClick={handleOpenModal}>
+                <VisibilityIcon />
+              </IconButton>
+              <Divider orientation="vertical" variant="middle" flexItem />
+              <IconButton onClick={handleClickDelete}>
+                <DeleteIcon />
+              </IconButton>
+            </Stack>
+          )}
+          <Modal open={modalOpen} onClose={handleCloseModal}>
+            <Box
+              sx={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: "80vw",
+                bgcolor: "background.paper",
+                border: "2px solid #000",
+                boxShadow: 24,
+                p: 4,
+              }}
+            >
+              {imageUrl && <Image src={imageUrl} alt="Uploaded Preview" fill />}
+            </Box>
+          </Modal>
+        </>
+      )}
+    </Box>
   );
 }

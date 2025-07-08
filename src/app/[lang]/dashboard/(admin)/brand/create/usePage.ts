@@ -31,21 +31,20 @@ export const usePage = () => {
   });
 
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
-    const formData = new FormData()
-    if (file) {
-      formData.append("logoImgFile", file)
-    }
-
-    (Object.keys(data) as Array<keyof typeof data>).forEach((key) => {
-      formData.append(key, data[key] as string);
-    });
-
-    mutation.mutate(formData);
+    mutation.mutate(data);
   };
 
   const { formRef, handleSetForm, handleClickSubmitForm } = useFormRef<TForm>({
     handleFormSubmit,
   });
+
+  const handleChangeFile = (file: File) => {
+    setFile(file);
+  };
+
+  const handleDeleteFile = () => {
+    setFile(null);
+  };
 
   return {
     formRef,
@@ -53,6 +52,7 @@ export const usePage = () => {
     file,
     handleSetForm,
     handleClickSubmitForm,
-    setFile
+    handleChangeFile,
+    handleDeleteFile,
   };
 };
