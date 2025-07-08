@@ -1,19 +1,16 @@
 import { getOrderBy } from "@/common";
 import { AppError } from "@/common/appError";
 import { AppResponse } from "@/common/appResponse";
+import { AppStatusCode } from "@/common/statusCode";
 import { THofContext } from "@/lib/HOF/type";
 import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
 import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
 import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
 import prisma from "@/lib/prisma";
+import AppS3Client from "@/lib/s3";
 import { ESearchType } from "@/lib/zod/paginationDTO";
 import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
-import {
-  DeleteBodyDTO,
-  GetQueryDTO,
-  PostCreateBodyDTO,
-} from "./validator";
-import { AppStatusCode } from "@/common/statusCode";
+import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator";
 
 export const GET = withValidateFieldHandler(
   null,
@@ -29,7 +26,8 @@ export const GET = withValidateFieldHandler(
         if (searchQuery?.searchKey && searchQuery?.searchStr) {
           const key = searchQuery.searchKey as keyof Prisma.BrandWhereInput;
           where[key] = {
-            [searchQuery.searchType || ESearchType.equals]: searchQuery.searchStr,
+            [searchQuery.searchType || ESearchType.equals]:
+              searchQuery.searchStr,
           } as never;
         }
 
@@ -54,7 +52,7 @@ export const POST = withValidateFieldHandler(
     withVerifyCanDoAction(
       { resource: EPermissionResource.BRAND, action: EPermissionAction.CREATE },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
-        const { name, slug, logoImage, isActive } = ctx.bodyParse!;
+        const { name, slug, logoImgFile, isActive } = ctx.bodyParse!;
 
         const exists = await prisma.brand.findFirst({
           where: {
@@ -65,16 +63,31 @@ export const POST = withValidateFieldHandler(
               {
                 slug,
               },
-            ]
-          }
-        })
+            ],
+          },
+        });
         if (exists) {
           if (exists.name === name) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
+            return AppError.json({
+              status: AppStatusCode.EXISTING,
+              message: "Name already exist",
+            });
           }
           if (exists.slug === slug) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+            return AppError.json({
+              status: AppStatusCode.EXISTING,
+              message: "Slug already exist",
+            });
           }
+        }
+
+        let logoImage;
+        if (logoImgFile) {
+          const fileKey = await AppS3Client.s3CreateFile(logoImgFile);
+          console.log({
+            fileKey
+          })
+          logoImage = fileKey;
         }
 
         const res = await prisma.brand.create({
@@ -83,7 +96,7 @@ export const POST = withValidateFieldHandler(
             name,
             slug,
             logoImage,
-          }
+          },
         });
         return AppResponse.json({ status: 200, data: res });
       }

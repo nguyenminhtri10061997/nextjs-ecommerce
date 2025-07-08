@@ -8,7 +8,7 @@ import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SubmitHandler } from "react-hook-form";
 import { TForm } from "../_components/brandForm/useIndex";
 
@@ -19,6 +19,7 @@ export const usePage = () => {
   const router = useRouter();
   const { showAlert } = useAlertContext();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
+  const [file, setFile] = useState<File | null>();
 
   const query = useQuery({
     queryKey: brandKeys.detail(id),
@@ -75,7 +76,9 @@ export const usePage = () => {
   return {
     formRef,
     mutation,
+    file,
     handleSetForm,
     handleClickSubmitForm,
+    setFile,
   };
 };

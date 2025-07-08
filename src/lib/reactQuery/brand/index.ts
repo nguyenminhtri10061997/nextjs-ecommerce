@@ -1,9 +1,8 @@
 import { APIEndpoint } from "@/app/api/apiEndpoint";
 import { IdParamsDTO, PatchBodyDTO } from "@/app/api/brand/[id]/validator";
 import {
-    DeleteBodyDTO,
-    GetQueryDTO,
-    PostCreateBodyDTO,
+  DeleteBodyDTO,
+  GetQueryDTO
 } from "@/app/api/brand/validator";
 import { axiosInstance } from "@/lib/axiosInstance";
 import { TAppResponseBody } from "@/types/api/common";
@@ -41,7 +40,7 @@ export function useGetBrandListQuery(query?: output<typeof GetQueryDTO>) {
 }
 
 export const postCreateBrand = async (
-  body: output<typeof PostCreateBodyDTO>
+  body: FormData
 ) => {
   const res = await axiosInstance.post<TAppResponseBody<Brand>>(
     API_ENDPOINT,

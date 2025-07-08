@@ -10,10 +10,12 @@ import { queryClient } from "@/lib/queryClient";
 import { TAppResponseBody } from "@/types/api/common";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export const usePage = () => {
   const router = useRouter();
   const { showAlert } = useAlertContext();
+  const [file, setFile] = useState<File | null>();
 
   const mutation = useMutation({
     mutationFn: postCreateBrand,
@@ -29,7 +31,16 @@ export const usePage = () => {
   });
 
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
-    mutation.mutate(data);
+    const formData = new FormData()
+    if (file) {
+      formData.append("logoImgFile", file)
+    }
+
+    (Object.keys(data) as Array<keyof typeof data>).forEach((key) => {
+      formData.append(key, data[key] as string);
+    });
+
+    mutation.mutate(formData);
   };
 
   const { formRef, handleSetForm, handleClickSubmitForm } = useFormRef<TForm>({
@@ -39,7 +50,9 @@ export const usePage = () => {
   return {
     formRef,
     mutation,
+    file,
     handleSetForm,
     handleClickSubmitForm,
+    setFile
   };
 };

@@ -5,4 +5,5 @@ export class AppEnvironment {
     static POSTGRES_URL = process.env.POSTGRES_URL || ""
     static ACCESS_TOKEN_COOKIE_KEY = 'accessToken'
     static REFRESH_TOKEN_COOKIE_KEY = 'refreshToken'
+    static BUCKET_NAME = process.env.BUCKET_NAME
 }

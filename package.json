@@ -17,6 +17,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.842.0",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -36,6 +37,7 @@
     "framer-motion": "^12.20.1",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
+    "mime-types": "^3.0.1",
     "negotiator": "^1.0.0",
     "next": "15.3.3",
     "pg": "^8.16.0",
@@ -45,6 +47,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.57.0",
     "reflect-metadata": "^0.2.2",
+    "uuid": "^11.1.0",
     "zod": "^3.25.61"
   },
   "devDependencies": {
@@ -53,6 +56,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/lodash": "^4.17.19",
+    "@types/mime-types": "^3.0.1",
     "@types/node": "^20",
     "@types/qs": "^6.14.0",
     "@types/react": "^19",

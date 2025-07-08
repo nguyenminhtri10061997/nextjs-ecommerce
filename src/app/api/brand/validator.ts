@@ -13,7 +13,7 @@ export const GetQueryDTO = z.object({
 export const PostCreateBodyDTO = z.object({
   name: z.string().min(1),
   slug: z.string().min(1),
-  logoImage: z.string().nullable().optional(),
+  logoImgFile: z.file().nullable().optional(),
   isActive: z.boolean().optional(),
 });
 

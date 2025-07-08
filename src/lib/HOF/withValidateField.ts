@@ -6,8 +6,8 @@ import { THofContext } from "./type";
 import qs from "qs";
 
 const convertMessage = (issues: core.$ZodIssue[]) => {
-  return issues.map(i => `${String(i.path?.['0'])}: ${i.message}`).join(', ')
-}
+  return issues.map((i) => `${String(i.path?.["0"])}: ${i.message}`).join(", ");
+};
 
 export function withValidateFieldHandler<
   TParamsSchema extends ZodObject = never,
@@ -21,41 +21,53 @@ export function withValidateFieldHandler<
   handler: (
     req: NextRequest,
     ctx: T & {
-      paramParse?: THofContext['paramParse']
-      queryParse?: THofContext['queryParse']
-      bodyParse?: THofContext['bodyParse']
+      paramParse?: THofContext["paramParse"];
+      queryParse?: THofContext["queryParse"];
+      bodyParse?: THofContext["bodyParse"];
     }
-  ) => Promise<AppError | AppResponse>,
+  ) => Promise<AppError | AppResponse>
 ) {
   return async (req: NextRequest, ctx: T) => {
     const url = new URL(req.url);
 
-    let resultParam
+    let resultParam;
     if (paramSchema) {
       const params = await ctx.params;
       resultParam = paramSchema.safeParse(params);
       if (!resultParam.success) {
         return AppError.json({
-          message: convertMessage(resultParam.error.issues)
+          message: convertMessage(resultParam.error.issues),
         });
       }
     }
 
-    let queryResult
-    const queryStr = qs.parse(url.search.substring(1))
+    let queryResult;
+    const queryStr = qs.parse(url.search.substring(1));
     if (querySchema && Object.keys(queryStr).length) {
       queryResult = querySchema.safeParse(queryStr);
       if (!queryResult.success) {
         return AppError.json({
-          message: convertMessage(queryResult.error.issues)
+          message: convertMessage(queryResult.error.issues),
         });
       }
     }
 
+    let resultBody;
+    if (req.method !== "GET" && bodySchema) {
+      const isFormData = req.headers.get("content-type")?.includes("form-data");
+      let body: unknown;
+      if (isFormData) {
+        const formData = await req.formData();
+        const obj: Record<string, unknown> = {};
 
-    let resultBody
-    if (req.method !== 'GET' && bodySchema) {
-      const body = await req.json();
+        for (const [key, value] of formData.entries()) {
+          obj[key] = value instanceof File ? value : String(value);
+        }
+
+        body = obj;
+      } else {
+        body = await req.json();
+      }
       resultBody = bodySchema.safeParse(body);
       if (!resultBody.success) {
         return AppError.json({

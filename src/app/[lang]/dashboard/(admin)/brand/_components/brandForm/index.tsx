@@ -9,10 +9,14 @@ import { textToSlug } from "@/common";
 import AppImageUpload from "@/components/AppImageUpload";
 
 type TProps = {
+  file?: File | null;
   onGetForm: (form: UseFormReturn<TForm>) => void;
+  setFile?: React.Dispatch<File | null>;
 };
 export default function Index(props: TProps) {
-  const { form } = useIndex();
+  const { form, handleChangeFile, handleDeleteFile } = useIndex({
+    setFile: props.setFile,
+  });
 
   useEffect(() => {
     props.onGetForm(form);
@@ -75,7 +79,11 @@ export default function Index(props: TProps) {
           />
         )}
       />
-      <AppImageUpload />
+      <AppImageUpload
+        file={props.file}
+        onChange={handleChangeFile}
+        onDelete={handleDeleteFile}
+      />
     </Stack>
   );
 }
