@@ -34,7 +34,7 @@ export const GET = withValidateFieldHandler(
   )
 );
 
-export const PUT = withValidateFieldHandler(
+export const PATCH = withValidateFieldHandler(
   IdParamsDTO,
   null,
   PatchBodyDTO,

@@ -13,7 +13,7 @@ import {
   DeleteUserBodyDTO,
   PostUserCreateBodyDTO,
 } from "./validator";
-import { AuthService } from "@/modules/auth/authService";
+import { AuthService } from "@/lib/auth/authService";
 import { ESearchType } from "@/lib/zod/paginationDTO";
 import dayjs from "dayjs";
 

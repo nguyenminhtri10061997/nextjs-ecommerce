@@ -8,6 +8,7 @@ const AttributeValueDTO = z.object({
   id: z.uuid().optional(),
   name: z.string().min(1),
   slug: z.string().min(1),
+  displayOrder: z.number().nonnegative(),
 });
 
 export const PatchBodyDTO = z.object({

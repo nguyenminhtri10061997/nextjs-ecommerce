@@ -11,7 +11,7 @@ export const PostCreateBodyDTO = z.object({
   code: z.string().min(1),
   name: z.string().min(1),
   isActive: z.boolean().optional(),
-  isDefault: z.boolean().optional(),
+  isDefault: z.boolean().nullable().optional(),
 });
 
 export const DeleteBodyDTO = z.object({

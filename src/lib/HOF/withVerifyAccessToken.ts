@@ -1,8 +1,8 @@
 import { AppError } from "@/common/appError";
 import { AppResponse } from "@/common/appResponse";
 import { AppEnvironment } from "@/environment/appEnvironment";
-import { JwtService } from "@/modules/auth/jwtService";
-import { reGenTokenIfNotMatchVersion } from "@/modules/auth/session";
+import { JwtService } from "@/lib/auth/jwtService";
+import { reGenTokenIfNotMatchVersion } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { NextRequest } from "next/server";
 import { getToken } from "../dal";

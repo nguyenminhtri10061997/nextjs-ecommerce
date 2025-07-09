@@ -8,7 +8,7 @@ import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
 import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
 import { AppError } from "@/common/appError";
 import { AppStatusCode } from "@/common/statusCode";
-import { AuthService } from "@/modules/auth/authService";
+import { AuthService } from "@/lib/auth/authService";
 
 export const GET = withValidateFieldHandler(
   idParamsDTO,

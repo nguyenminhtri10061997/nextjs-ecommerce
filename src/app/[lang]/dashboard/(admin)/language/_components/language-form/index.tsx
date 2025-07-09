@@ -1,56 +1,35 @@
 "use client";
 
+import { Checkbox, FormControlLabel } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { useEffect } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import useIndex, { TForm } from "./useIndex";
-import { textToSlug } from "@/common";
-import AppImageUpload from "@/components/AppImageUpload";
-import { Checkbox, FormControlLabel } from "@mui/material";
 
 type TProps = {
-  file?: File | null;
-  logoUrl?: string | null;
+  editRowId?: string;
   onGetForm: (form: UseFormReturn<TForm>) => void;
-  onChangeFile?: (file: File) => void;
-  onDeleteFile?: (file?: File | null, url?: TProps["logoUrl"]) => void;
 };
 export default function Index(props: TProps) {
   const { form } = useIndex();
-  const { onChangeFile, onDeleteFile } = props;
 
   useEffect(() => {
     props.onGetForm(form);
   }, [form, props]);
 
-  useEffect(() => {
-    const callback = form.subscribe({
-      name: "name",
-      formState: {
-        values: true,
-      },
-      callback: ({ values }) => {
-        if (values.name) {
-          form.setValue("slug", textToSlug(values.name));
-        }
-      },
-    });
-
-    return () => callback();
-  }, [form]);
-
   const { control } = form;
 
   return (
     <Stack direction={"column"} gap={2}>
+
       <Controller
-        name="name"
+        name="code"
         control={control}
-        rules={{ required: "Name is required" }}
+        rules={{ required: "Code is required" }}
         render={({ field, fieldState }) => (
           <TextField
-            label="Name"
+            label="Code"
             fullWidth
             required
             error={!!fieldState.error}
@@ -62,14 +41,13 @@ export default function Index(props: TProps) {
           />
         )}
       />
-
       <Controller
-        name="slug"
+        name="name"
         control={control}
-        rules={{ required: "Slug is required" }}
+        rules={{ required: "Name is required" }}
         render={({ field, fieldState }) => (
           <TextField
-            label="Slug"
+            label="Name"
             fullWidth
             required
             error={!!fieldState.error}
@@ -98,11 +76,20 @@ export default function Index(props: TProps) {
         )}
       />
 
-      <AppImageUpload
-        file={props.file}
-        url={props.logoUrl}
-        onChange={onChangeFile}
-        onDelete={onDeleteFile}
+      <Controller
+        name="isDefault"
+        control={control}
+        render={({ field }) => (
+          <FormControlLabel
+            label="Is Default"
+            control={
+              <Checkbox
+                checked={field.value ?? false}
+                onChange={field.onChange}
+              />
+            }
+          />
+        )}
       />
     </Stack>
   );

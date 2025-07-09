@@ -2,9 +2,13 @@ import { textToSlug } from "@/common";
 import { Attribute, AttributeValue } from "@prisma/client";
 import { ChangeEvent } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { v4 } from "uuid";
 
 export type TForm = Pick<Attribute, "name" | "slug"> & {
-  attributeValues: Pick<AttributeValue, "name" | "slug">[];
+  attributeValues: (
+    Pick<AttributeValue, "name" | "slug">
+    & { idDnD: string }
+  )[];
 };
 
 export default function useIndex() {
@@ -22,6 +26,7 @@ export default function useIndex() {
 
   const handleAddAttValue = () => {
     attributeValueArrField.append({
+      idDnD: v4(),
       name: "",
       slug: "",
     });

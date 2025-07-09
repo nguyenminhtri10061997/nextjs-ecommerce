@@ -4,23 +4,15 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import BrandForm from "../_components/brandForm";
+import BrandForm from "../_components/language-form";
 import { usePage } from "./usePage";
 
 export default function Page() {
-  const {
-    mutation,
-    file,
-    urlImg,
-    handleSetForm,
-    handleClickSubmitForm,
-    handleChangeFile,
-    handleDeleteFile,
-  } = usePage();
+  const { query, mutation, handleSetForm, handleClickSubmitForm } = usePage();
 
   return (
     <Box>
-      <Typography variant="h4">Update Brand</Typography>
+      <Typography variant="h4">Update Language</Typography>
 
       <Box
         component="form"
@@ -28,13 +20,7 @@ export default function Page() {
         sx={{ mt: 2 }}
         onSubmit={handleClickSubmitForm}
       >
-        <BrandForm
-          onGetForm={handleSetForm}
-          file={file}
-          onChangeFile={handleChangeFile}
-          onDeleteFile={handleDeleteFile}
-          logoUrl={urlImg}
-        />
+        <BrandForm onGetForm={handleSetForm} editRowId={query.data?.id} />
         <Stack direction={"row-reverse"}>
           <Button
             sx={{

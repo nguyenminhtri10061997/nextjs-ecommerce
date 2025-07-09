@@ -24,21 +24,21 @@ import dayjs from "dayjs";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
 import usePage from "./usePage";
-import { ProductCategory } from "@prisma/client";
-import { useGetProductCategoryListQuery } from "@/lib/reactQuery/product-category";
+import { Language } from "@prisma/client";
+import { useGetLanguageListQuery } from "@/lib/reactQuery/language";
 
 export default function Page() {
   const { showAlert } = useAlertContext();
   const { selectedHash, selectedLength, setSelectedHash } = useSelectTable();
   const { pagination, orderQuery, setPagination, setOrderQuery } =
-    usePaginationAndSort<keyof ProductCategory>({
+    usePaginationAndSort<keyof Language>({
       defaultOrder: {
         orderKey: "createdAt",
         orderType: "desc",
       },
     });
   const { searchKey, searchStr, searchType, setSearchKey, setSearchStr } =
-    useSearch<keyof ProductCategory>({
+    useSearch<keyof Language>({
       defaultSearchKey: "name",
       searchType: ESearchType.contains,
     });
@@ -58,7 +58,7 @@ export default function Page() {
     setIsOpenConfirm,
   });
 
-  const query = useGetProductCategoryListQuery({
+  const query = useGetLanguageListQuery({
     orderQuery: {
       orderKey: orderQuery.orderKey!,
       orderType: orderQuery.orderType!,
@@ -70,20 +70,23 @@ export default function Page() {
     },
   });
 
-  const columns: TColumn<ProductCategory>[] = useMemo(
+  const columns: TColumn<Language>[] = useMemo(
     () => [
       {
         key: "name",
         header: "Name",
       },
       {
-        key: "slug",
+        key: "code",
         header: "Slug",
       },
       {
-        key: "displayOrder",
-        header: "Display Order",
-        canSort: true,
+        key: "isActive",
+        header: "Is Active",
+      },
+      {
+        key: "isDefault",
+        header: "Is Default",
       },
       {
         key: "createdAt",
@@ -104,7 +107,7 @@ export default function Page() {
         render: (_, row) => {
           return (
             <Stack direction="row">
-              <Link href={`product-category/${row.id}`}>
+              <Link href={`language/${row.id}`}>
                 <LinkLoadingIndicator />
                 <IconButton>
                   <EditIcon color="primary" />
@@ -159,7 +162,7 @@ export default function Page() {
           orderQuery={orderQuery}
           actions={
             <Stack direction="row" alignItems="center" spacing={2}>
-              <Link href="product-category/create">
+              <Link href="language/create">
                 <LinkLoadingIndicator />
                 <Button variant="contained" endIcon={<AddIcon />}>
                   Create

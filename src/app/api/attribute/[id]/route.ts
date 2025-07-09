@@ -22,7 +22,13 @@ export const GET = withValidateFieldHandler(
       async (_, ctx: THofContext<typeof IdParamsDTO>) => {
         const data = await prisma.attribute.findUnique({
           where: { id: ctx.paramParse!.id },
-          include: { attributeValues: true },
+          include: {
+            attributeValues: {
+              orderBy: {
+                displayOrder: "asc",
+              },
+            },
+          },
         });
 
         if (!data) {
@@ -118,9 +124,17 @@ export const PATCH = withValidateFieldHandler(
             deleteMany: { id: { in: toDelete } },
             updateMany: toUpdate.map((v) => ({
               where: { id: v.id },
-              data: { name: v.name },
+              data: {
+                name: v.name,
+                slug: v.slug,
+                displayOrder: v.displayOrder,
+              },
             })),
-            create: toCreate.map((v) => ({ name: v.name, slug: v.slug })),
+            create: toCreate.map((v) => ({
+              name: v.name,
+              slug: v.slug,
+              displayOrder: v.displayOrder,
+            })),
           };
         }
 

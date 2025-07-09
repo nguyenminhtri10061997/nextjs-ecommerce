@@ -7,7 +7,7 @@ import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
 import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
 import prisma from "@/lib/prisma";
 import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
-import { idParamsDTO, patchBodyDTO } from "./validator";
+import { idParamsDTO, PatchBodyDTO } from "./validator";
 
 export const GET = withValidateFieldHandler(
   idParamsDTO,
@@ -41,7 +41,7 @@ export const GET = withValidateFieldHandler(
 export const PUT = withValidateFieldHandler(
   idParamsDTO,
   null,
-  patchBodyDTO,
+  PatchBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
       {
@@ -50,7 +50,7 @@ export const PUT = withValidateFieldHandler(
       },
       async (
         _,
-        ctx: THofContext<typeof idParamsDTO, never, typeof patchBodyDTO>
+        ctx: THofContext<typeof idParamsDTO, never, typeof PatchBodyDTO>
       ) => {
         const { id } = ctx.paramParse!;
         const { name, description, permissionIds } = ctx.bodyParse!;

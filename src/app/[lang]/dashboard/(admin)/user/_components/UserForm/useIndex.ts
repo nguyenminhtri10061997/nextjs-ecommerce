@@ -3,16 +3,25 @@ import { useGetRoleListQuery } from "@/lib/reactQuery/role";
 import { Account, User } from "@prisma/client";
 import { useForm } from "react-hook-form";
 
-export type Inputs = Pick<User, 'fullName' | 'type'> & Pick<Account, 'username' | 'password' | 'isBanned' | 'isBlocked' | 'accessTokenVersion' | 'roleId'>;
+export type Inputs = Pick<User, "fullName" | "type"> &
+  Pick<
+    Account,
+    | "username"
+    | "password"
+    | "isBanned"
+    | "isBlocked"
+    | "accessTokenVersion"
+    | "roleId"
+  >;
 
-export default () => {
-    const queryRole = useGetRoleListQuery()
-    const form = useForm<Inputs>({
-        mode: "onBlur",
-    });
+export default function useIndex() {
+  const queryRole = useGetRoleListQuery();
+  const form = useForm<Inputs>({
+    mode: "onBlur",
+  });
 
-    return {
-        form,
-        queryRole,
-    };
-};
+  return {
+    form,
+    queryRole,
+  };
+}

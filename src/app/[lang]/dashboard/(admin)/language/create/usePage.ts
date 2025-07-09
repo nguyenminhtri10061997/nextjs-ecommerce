@@ -3,24 +3,26 @@
 import { useAlertContext } from "@/hooks/useAlertContext";
 import useFormRef from "@/hooks/useFormRef";
 import { queryClient } from "@/lib/queryClient";
-import { attributeKeys, postCreateAttribute } from "@/lib/reactQuery/attribute";
+import { postCreateLanguage, languageKeys } from "@/lib/reactQuery/language";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/attributeForm/useIndex";
+import { TForm } from "../_components/language-form/useIndex";
 
 export const usePage = () => {
   const router = useRouter();
   const { showAlert } = useAlertContext();
 
   const mutation = useMutation({
-    mutationFn: postCreateAttribute,
+    mutationFn: postCreateLanguage,
     onSuccess: async () => {
-      showAlert("create Attribute success");
-      await queryClient.invalidateQueries({ queryKey: attributeKeys.lists() });
-      router.push("/dashboard/attribute");
+      showAlert("create Language Success");
+      router.push("/dashboard/language");
+      await queryClient.invalidateQueries({
+        queryKey: languageKeys.lists(),
+      });
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -31,10 +33,7 @@ export const usePage = () => {
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
     mutation.mutate({
       ...data,
-      attributeValues: data.attributeValues.map((i, idx) => ({
-        ...i,
-        displayOrder: idx,
-      })),
+      isDefault: data.isDefault || false,
     });
   };
 

@@ -2,7 +2,7 @@ import { AppResponse } from "@/common/appResponse";
 import { AppEnvironment } from "@/environment/appEnvironment";
 import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
 import prisma from "@/lib/prisma";
-import { AuthService } from "@/modules/auth/authService";
+import { AuthService } from "@/lib/auth/authService";
 import { NextRequest } from "next/server";
 
 export const POST = withVerifyAccessToken(async (request: NextRequest, ctx) => {

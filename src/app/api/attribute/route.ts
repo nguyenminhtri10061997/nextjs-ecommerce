@@ -83,6 +83,7 @@ export const POST = withValidateFieldHandler(
               data: attributeValues.map(atv => ({
                 name: atv.name,
                 slug: atv.slug,
+                displayOrder: atv.displayOrder
             }))
             }
           }

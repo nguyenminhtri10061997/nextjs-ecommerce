@@ -3,20 +3,19 @@
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
+import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 import {
-  attributeKeys,
-  getAttributeDetail,
-  patchAttribute,
-} from "@/lib/reactQuery/attribute";
+  getLanguageDetail,
+  patchLanguage,
+  languageKeys,
+} from "@/lib/reactQuery/language";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useParams, useRouter } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/attributeForm/useIndex";
-import { useLoadingCtx } from "@/hooks/useLoadingCtx";
-import { v4 } from "uuid";
+import { TForm } from "../_components/language-form/useIndex";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
@@ -24,24 +23,24 @@ export const usePage = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { showAlert } = useAlertContext();
-  const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
   const { setLoading } = useLoadingCtx();
+  const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
 
   const query = useQuery({
-    queryKey: attributeKeys.detail(id),
-    queryFn: getAttributeDetail,
+    queryKey: languageKeys.detail(id),
+    queryFn: getLanguageDetail,
     enabled: !!id,
   });
 
   const mutation = useMutation({
-    mutationFn: patchAttribute,
+    mutationFn: patchLanguage,
     onSuccess: async () => {
-      showAlert("Update Attribute success");
+      showAlert("Update Language success");
+      router.push("/dashboard/language");
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: attributeKeys.detail(id) }),
-        queryClient.invalidateQueries({ queryKey: attributeKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: languageKeys.detail(id) }),
+        queryClient.invalidateQueries({ queryKey: languageKeys.lists() }),
       ]);
-      router.push("/dashboard/attribute");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -49,20 +48,12 @@ export const usePage = () => {
     },
   });
 
-  const handleFormSubmit: SubmitHandler<TForm> = async ({
-    name,
-    slug,
-    attributeValues,
-  }) => {
+  const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
     mutation.mutate({
       id,
       body: {
-        name,
-        slug,
-        attributeValues: attributeValues.map((i, idx) => ({
-          ...i,
-          displayOrder: idx,
-        })),
+        ...data,
+        isDefault: data.isDefault || false,
       },
     });
   };
@@ -73,20 +64,12 @@ export const usePage = () => {
 
   useEffect(() => {
     if (query.data?.id) {
-      const { name, slug, attributeValues } = query.data;
       if (breadcrumbs.length === 3) {
         setBreadCrumbs(
           breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.name)
         );
       }
-      formRef.current?.reset({
-        name,
-        slug,
-        attributeValues: attributeValues.map((i) => ({
-          ...i,
-          idDnD: v4(),
-        })),
-      });
+      formRef.current?.reset(query.data);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);
@@ -95,7 +78,16 @@ export const usePage = () => {
     setLoading(query.isLoading);
   }, [query.isLoading, setLoading]);
 
+  useEffect(() => {
+    if (query.isError) {
+      showAlert("Error Get Product Category", "error");
+      setLoading(false);
+      redirect("/dashboard/language");
+    }
+  }, [query.isError, showAlert, setLoading]);
+
   return {
+    query,
     formRef,
     mutation,
     handleSetForm,

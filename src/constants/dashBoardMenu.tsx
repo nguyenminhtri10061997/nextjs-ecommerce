@@ -53,6 +53,13 @@ export const DASHBOARD_MENU_ITEMS: TDashBoardMenuItem[] = [
     perAction: EPermissionAction.READ,
   },
   {
+    label: "Language",
+    to: "/dashboard/language",
+    icon: <ContactPageIcon />,
+    perResource: EPermissionResource.LANGUAGE,
+    perAction: EPermissionAction.READ,
+  },
+  {
     label: "Product Category",
     to: "/dashboard/product-category",
     icon: <ContactPageIcon />,

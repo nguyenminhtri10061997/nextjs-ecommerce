@@ -46,7 +46,7 @@ export const usePage = () => {
     },
   });
 
-  const handleFormSubmit: SubmitHandler<TForm> = async ({ name, slug }) => {
+  const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
     let logoImgFile;
     if (file) {
       logoImgFile = file;
@@ -56,8 +56,7 @@ export const usePage = () => {
     mutation.mutate({
       id,
       body: {
-        name,
-        slug,
+        ...data,
         logoImgFile,
       },
     });
@@ -78,7 +77,7 @@ export const usePage = () => {
 
   useEffect(() => {
     if (query.data?.id) {
-      const { name, slug, logoImage } = query.data;
+      const { name, slug, logoImage, isActive } = query.data;
       if (breadcrumbs.length === 3) {
         setBreadCrumbs(
           breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.name)
@@ -87,6 +86,7 @@ export const usePage = () => {
       formRef.current?.reset({
         name,
         slug,
+        isActive,
       });
       setUrlImg(logoImage);
     }

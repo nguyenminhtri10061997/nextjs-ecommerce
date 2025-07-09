@@ -1,7 +1,7 @@
 "use client";
 
 import { textToSlug } from "@/common";
-import AppSortableItem from "@/components/AppSortableItem";
+import AppSortableItem from "@/components/AppRowSortable";
 import {
   closestCenter,
   DndContext,
@@ -76,18 +76,26 @@ export default function Index(props: TProps) {
 
   const { control } = form;
 
-  // const handleDragEnd = (event: DragEndEvent) => {
-  //   const { active, over } = event;
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-  //   if (active.id !== over?.id) {
-  //     const oldIndex = attributeValueArrField.fields.findIndex((_, idx) => idx === active.id);
-  //     const newIndex = attributeValueArrField.fields.findIndex((_, idx) => idx === over?.id);
+    if (active.id !== over?.id) {
+      const attributeValuesFromForm = form.getValues("attributeValues");
+      const oldIndex = attributeValuesFromForm.findIndex(
+        (i) => i.idDnD === active.id
+      );
+      const newIndex = attributeValuesFromForm.findIndex(
+        (i) => i.idDnD === over?.id
+      );
 
-  //     const attributeValuesMoved = arrayMove(attributeValueArrField.fields, oldIndex, newIndex)
-  //     form.setValue('attributeValues', attributeValuesMoved)
-  //   }
-  // };
-
+      const attributeValuesMoved = arrayMove(
+        attributeValuesFromForm,
+        oldIndex,
+        newIndex
+      );
+      form.setValue("attributeValues", attributeValuesMoved);
+    }
+  };
   return (
     <Stack direction={"column"} gap={2}>
       <Controller
@@ -141,18 +149,18 @@ export default function Index(props: TProps) {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          // onDragEnd={handleDragEnd}
+          onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={attributeValueArrField.fields.map((i, idx) =>i.id)}
+            items={attributeValueArrField.fields.map((i) => i.idDnD)}
           >
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableBody>
-                {attributeValueArrField.fields.map((item, index) => (
-                  <AppSortableItem key={index} id={`${index}`}>
+                {attributeValueArrField.fields.map((i, idx) => (
+                  <AppSortableItem key={i.idDnD} id={i.idDnD}>
                     <TableCell>
                       <Controller
-                        name={`attributeValues.${index}.name`}
+                        name={`attributeValues.${idx}.name`}
                         control={control}
                         rules={{ required: "Name is required" }}
                         render={({ field, fieldState }) => (
@@ -163,10 +171,7 @@ export default function Index(props: TProps) {
                             error={!!fieldState.error}
                             helperText={fieldState.error?.message}
                             value={field.value ?? ""}
-                            onChange={handleChangeAttValue(
-                              index,
-                              field.onChange
-                            )}
+                            onChange={handleChangeAttValue(idx, field.onChange)}
                             onBlur={field.onBlur}
                             inputRef={field.ref}
                           />
@@ -175,7 +180,7 @@ export default function Index(props: TProps) {
                     </TableCell>
                     <TableCell>
                       <Controller
-                        name={`attributeValues.${index}.slug`}
+                        name={`attributeValues.${idx}.slug`}
                         control={control}
                         rules={{ required: "Slug is required" }}
                         render={({ field, fieldState }) => (
@@ -194,7 +199,7 @@ export default function Index(props: TProps) {
                       />
                     </TableCell>
                     <TableCell>
-                      <IconButton onClick={handleRemoveAttValue(index)}>
+                      <IconButton onClick={handleRemoveAttValue(idx)}>
                         <DeleteIcon />
                       </IconButton>
                     </TableCell>

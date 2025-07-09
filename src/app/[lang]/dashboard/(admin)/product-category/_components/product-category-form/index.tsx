@@ -176,16 +176,22 @@ export default function Index(props: TProps) {
             onBlur={field.onBlur}
             inputRef={field.ref}
           >
-            {query.data?.map((pc) => {
-              if (props.editRowId && pc.id === props.editRowId) {
-                return null;
-              }
-              return (
-                <MenuItem key={pc.id} value={pc.id}>
-                  {pc.name}
-                </MenuItem>
-              );
-            })}
+            {query.data?.length ? (
+              query.data?.map((pc) => {
+                if (props.editRowId && pc.id === props.editRowId) {
+                  return null;
+                }
+                return (
+                  <MenuItem key={pc.id} value={pc.id}>
+                    {pc.name}
+                  </MenuItem>
+                );
+              })
+            ) : (
+              <MenuItem disabled value="">
+                Loading...
+              </MenuItem>
+            )}
           </TextField>
         )}
       />
