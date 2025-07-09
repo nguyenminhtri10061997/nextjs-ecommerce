@@ -14,4 +14,6 @@ export class APIEndpoint {
     static API_ATTRIBUTE = '/api/attribute'
 
     static API_BRAND = '/api/brand'
+
+    static API_PRODUCT_CATEGORY = '/api/product-category'
 }

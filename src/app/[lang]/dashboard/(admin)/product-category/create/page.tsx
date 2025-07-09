@@ -4,32 +4,28 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import RoleForm from "../_components/RoleForm";
+import ProductCategoryForm from "../_components/product-category-form";
 import { usePage } from "./usePage";
 
 export default function Page() {
   const {
     mutation,
-    permissionSelected,
     handleSetForm,
-    handleClickSubmit,
-    handleChangeCheckbox,
+    handleClickSubmitForm,
   } = usePage();
 
   return (
     <Box>
-      <Typography variant="h4">Update Role</Typography>
+      <Typography variant="h4">Create Product Category</Typography>
 
       <Box
         component="form"
         noValidate
         sx={{ mt: 2 }}
-        onSubmit={handleClickSubmit}
+        onSubmit={handleClickSubmitForm}
       >
-        <RoleForm
+        <ProductCategoryForm
           onGetForm={handleSetForm}
-          permissionSelected={permissionSelected}
-          handleChangeCheckbox={handleChangeCheckbox}
         />
         <Stack direction={"row-reverse"}>
           <Button
@@ -40,7 +36,7 @@ export default function Page() {
             variant="contained"
             loading={mutation.isPending}
           >
-            Update
+            Create
           </Button>
         </Stack>
       </Box>

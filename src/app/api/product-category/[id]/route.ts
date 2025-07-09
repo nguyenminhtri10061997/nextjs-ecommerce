@@ -37,7 +37,7 @@ export const GET = withValidateFieldHandler(
   )
 );
 
-export const PUT = withValidateFieldHandler(
+export const PATCH = withValidateFieldHandler(
   IdParamsDTO,
   null,
   PatchBodyDTO,
@@ -76,6 +76,9 @@ export const PUT = withValidateFieldHandler(
         if (name || slug) {
           const exists = await prisma.productCategory.findFirst({
             where: {
+              id: {
+                not: existing.id,
+              },
               OR: [
                 {
                   name,

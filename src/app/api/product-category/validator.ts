@@ -4,18 +4,18 @@ import { ProductCategory } from "@prisma/client";
 
 export const GetQueryDTO = z.object({
   orderQuery: OrderQueryDTO.shape.orderQuery.optional(),
-  searchQuery: SearchQueryDTO(["name", "seoTitle"] as (keyof ProductCategory)[]).shape.searchQuery.optional(),
+  searchQuery: SearchQueryDTO(["name", "slug"] as (keyof ProductCategory)[]).shape.searchQuery.optional(),
 });
 
 export const PostCreateBodyDTO = z.object({
   name: z.string(),
   slug: z.string(),
-  seoTitle: z.string().optional(),
-  description: z.string().optional(),
-  seoDescription: z.string().optional(),
-  displayOrder: z.number().nonnegative().optional(),
+  seoTitle: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  seoDescription: z.string().nullable().optional(),
+  displayOrder: z.number().nonnegative().nullable().optional(),
   productCategoryParentId: z.uuid().nullable().optional(),
-  isActive: z.boolean().optional(),
+  isActive: z.boolean().nullable().optional(),
 });
 
 export const DeleteBodyDTO = z.object({

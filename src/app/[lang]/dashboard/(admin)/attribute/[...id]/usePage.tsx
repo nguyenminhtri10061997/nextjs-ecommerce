@@ -15,6 +15,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { SubmitHandler } from "react-hook-form";
 import { TForm } from "../_components/attributeForm/useIndex";
+import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
@@ -23,6 +24,7 @@ export const usePage = () => {
   const router = useRouter();
   const { showAlert } = useAlertContext();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
+  const { setLoading } = useLoadingCtx();
 
   const query = useQuery({
     queryKey: attributeKeys.detail(id),
@@ -81,6 +83,10 @@ export const usePage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);
+
+  useEffect(() => {
+    setLoading(query.isLoading)
+  }, [query.isLoading, setLoading])
 
   return {
     formRef,

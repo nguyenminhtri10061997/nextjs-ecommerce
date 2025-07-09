@@ -9,7 +9,6 @@ import usePaginationAndSort from "@/hooks/usePaginationAndSort";
 import useSearch from "@/hooks/useSearch";
 import useSelectTable from "@/hooks/useSelectTable";
 import useTableDeleteRow from "@/hooks/useTableDeleteRow";
-import { useGetBrandListQuery } from "@/lib/reactQuery/brand";
 import { ESearchType } from "@/lib/zod/paginationDTO";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -20,25 +19,26 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import { Brand } from "@prisma/client";
 import { UseMutationResult } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
 import usePage from "./usePage";
+import { ProductCategory } from "@prisma/client";
+import { useGetProductCategoryListQuery } from "@/lib/reactQuery/product-category";
 
 export default function Page() {
   const { showAlert } = useAlertContext();
   const { selectedHash, selectedLength, setSelectedHash } = useSelectTable();
   const { pagination, orderQuery, setPagination, setOrderQuery } =
-    usePaginationAndSort<keyof Brand>({
+    usePaginationAndSort<keyof ProductCategory>({
       defaultOrder: {
         orderKey: "createdAt",
         orderType: "desc",
       },
     });
   const { searchKey, searchStr, searchType, setSearchKey, setSearchStr } =
-    useSearch<keyof Brand>({
+    useSearch<keyof ProductCategory>({
       defaultSearchKey: "name",
       searchType: ESearchType.contains,
     });
@@ -58,7 +58,7 @@ export default function Page() {
     setIsOpenConfirm,
   });
 
-  const query = useGetBrandListQuery({
+  const query = useGetProductCategoryListQuery({
     orderQuery: {
       orderKey: orderQuery.orderKey!,
       orderType: orderQuery.orderType!,
@@ -70,15 +70,15 @@ export default function Page() {
     },
   });
 
-  const columns: TColumn<Brand>[] = useMemo(
+  const columns: TColumn<ProductCategory>[] = useMemo(
     () => [
       {
         key: "name",
-        header: "Full Name",
+        header: "Name",
       },
       {
         key: "slug",
-        header: "Description",
+        header: "Slug",
       },
       {
         key: "createdAt",
@@ -99,7 +99,7 @@ export default function Page() {
         render: (_, row) => {
           return (
             <Stack direction="row">
-              <Link href={`brand/${row.id}`}>
+              <Link href={`product-category/${row.id}`}>
                 <LinkLoadingIndicator />
                 <IconButton>
                   <EditIcon color="primary" />
@@ -132,7 +132,7 @@ export default function Page() {
       }}
     >
       <Box sx={{ flexShrink: 0 }}>
-        <Typography variant="h4">Brand Page</Typography>
+        <Typography variant="h4">Product Category Page</Typography>
       </Box>
       <Box
         sx={{
@@ -154,7 +154,7 @@ export default function Page() {
           orderQuery={orderQuery}
           actions={
             <Stack direction="row" alignItems="center" spacing={2}>
-              <Link href="brand/create">
+              <Link href="product-category/create">
                 <LinkLoadingIndicator />
                 <Button variant="contained" endIcon={<AddIcon />}>
                   Create

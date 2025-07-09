@@ -3,15 +3,15 @@
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
-import { brandKeys, getBrandDetail, patchBrand } from "@/lib/reactQuery/brand";
+import { useLoadingCtx } from "@/hooks/useLoadingCtx";
+import { getProductCategoryDetail, patchProductCategory, productCategoryKeys } from "@/lib/reactQuery/product-category";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { redirect, useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/brandForm/useIndex";
-import { useLoadingCtx } from "@/hooks/useLoadingCtx";
+import { TForm } from "../_components/product-category-form/useIndex";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
@@ -21,23 +21,21 @@ export const usePage = () => {
   const { showAlert } = useAlertContext();
   const { setLoading } = useLoadingCtx();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
-  const [file, setFile] = useState<File | null>();
-  const [urlImg, setUrlImg] = useState<string | null>();
 
   const query = useQuery({
-    queryKey: brandKeys.detail(id),
-    queryFn: getBrandDetail,
+    queryKey: productCategoryKeys.detail(id),
+    queryFn: getProductCategoryDetail,
     enabled: !!id,
   });
 
   const mutation = useMutation({
-    mutationFn: patchBrand,
+    mutationFn: patchProductCategory,
     onSuccess: async () => {
-      showAlert("Update Brand success");
-      router.push("/dashboard/brand");
+      showAlert("Update ProductCategory success");
+      router.push("/dashboard/product-category");
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: brandKeys.detail(id) }),
-        queryClient.invalidateQueries({ queryKey: brandKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: productCategoryKeys.detail(id) }),
+        queryClient.invalidateQueries({ queryKey: productCategoryKeys.lists() }),
       ]);
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
@@ -46,20 +44,10 @@ export const usePage = () => {
     },
   });
 
-  const handleFormSubmit: SubmitHandler<TForm> = async ({ name, slug }) => {
-    let logoImgFile;
-    if (file) {
-      logoImgFile = file;
-    } else if (urlImg === null) {
-      logoImgFile = null;
-    }
+  const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
     mutation.mutate({
       id,
-      body: {
-        name,
-        slug,
-        logoImgFile,
-      },
+      body: data,
     });
   };
 
@@ -67,18 +55,17 @@ export const usePage = () => {
     handleFormSubmit,
   });
 
-  const handleChangeFile = (file: File) => {
-    setFile(file);
-  };
-
-  const handleDeleteFile = () => {
-    setFile(null);
-    setUrlImg(null);
-  };
-
   useEffect(() => {
     if (query.data?.id) {
-      const { name, slug, logoImage } = query.data;
+      const {
+        name,
+        slug,
+        seoTitle,description,
+        seoDescription,
+        displayOrder,
+        isActive,
+        productCategoryParentId,
+      } = query.data;
       if (breadcrumbs.length === 3) {
         setBreadCrumbs(
           breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.name)
@@ -87,8 +74,12 @@ export const usePage = () => {
       formRef.current?.reset({
         name,
         slug,
+        seoTitle,description,
+        seoDescription,
+        displayOrder,
+        isActive,
+        productCategoryParentId,
       });
-      setUrlImg(logoImage);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);
@@ -97,22 +88,19 @@ export const usePage = () => {
     setLoading(query.isLoading);
   }, [query.isLoading, setLoading]);
 
-  useEffect(() => {
-    if (query.isError) {
-      showAlert("Error Get Brand", "error");
-      setLoading(false);
-      redirect("/dashboard/brand");
-    }
-  }, [query.isError, showAlert, setLoading]);
+    useEffect(() => {
+      if (query.isError) {
+        showAlert("Error Get Product Category", "error");
+        setLoading(false);
+        redirect("/dashboard/product-category");
+      }
+    }, [query.isError, showAlert, setLoading]);
 
   return {
+    query,
     formRef,
     mutation,
-    file,
-    urlImg,
     handleSetForm,
     handleClickSubmitForm,
-    handleChangeFile,
-    handleDeleteFile,
   };
 };

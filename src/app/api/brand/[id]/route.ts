@@ -28,10 +28,11 @@ export const GET = withValidateFieldHandler(
             message: "Brand not found",
           });
         }
+        console.log(brand.logoImage)
 
         return AppResponse.json({ status: 200, data: {
           ...brand,
-          logoImage: AppS3Client.getS3ImgFullUrl(brand.logoImage)
+          logoImage: brand.logoImage ? AppS3Client.getS3ImgFullUrl(brand.logoImage) : brand.logoImage,
         } as Brand });
       }
     )
