@@ -6,7 +6,6 @@ import {
 import FilterListIcon from "@mui/icons-material/FilterList";
 import RefreshIcon from '@mui/icons-material/Refresh';
 import {
-  Box,
   FormControl,
   IconButton,
   InputLabel,
@@ -17,7 +16,7 @@ import {
   SelectChangeEvent,
   TextField,
   Toolbar,
-  Tooltip,
+  Tooltip
 } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -35,9 +34,9 @@ import { DatePicker, DatePickerProps } from "@mui/x-date-pickers";
 import { Dispatch, SetStateAction, useMemo } from "react";
 import { DateRange, DayPickerProps } from "react-day-picker";
 import "react-day-picker/style.css";
+import { TSelectedHash } from "../../hooks/useSelectTable";
 import AppDateRangePicker from "../AppDateRangePicker";
 import useIndex from "./useIndex";
-import { TSelectedHash } from "../../hooks/useSelectTable";
 
 export type TColumn<T> = {
   key: keyof T | "actionColumn";
@@ -218,8 +217,7 @@ const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
                     >
                       <MenuItem value={'all'}>All {fl.label}</MenuItem>
                       {fl.options.map(o => (
-
-                        <MenuItem value={o.value}>{o.label}</MenuItem>
+                        <MenuItem key={o.label} value={o.value}>{o.label}</MenuItem>
                       ))}
                     </Select>
                   </FormControl>

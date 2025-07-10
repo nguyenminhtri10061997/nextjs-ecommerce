@@ -8,7 +8,6 @@ import { Controller, UseFormReturn } from "react-hook-form";
 import useIndex, { TForm } from "./useIndex";
 
 type TProps = {
-  editRowId?: string;
   onGetForm: (form: UseFormReturn<TForm>) => void;
 };
 export default function Index(props: TProps) {

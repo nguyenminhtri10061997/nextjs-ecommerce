@@ -4,15 +4,19 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import BrandForm from "../_components/language-form";
+import ProductTagForm from "../_components/product-tag-form";
 import { usePage } from "./usePage";
 
 export default function Page() {
-  const { mutation, handleSetForm, handleClickSubmitForm } = usePage();
+  const {
+    mutation,
+    handleSetForm,
+    handleClickSubmitForm,
+  } = usePage();
 
   return (
     <Box>
-      <Typography variant="h4">Update Language</Typography>
+      <Typography variant="h4">Create Product Category</Typography>
 
       <Box
         component="form"
@@ -20,7 +24,9 @@ export default function Page() {
         sx={{ mt: 2 }}
         onSubmit={handleClickSubmitForm}
       >
-        <BrandForm onGetForm={handleSetForm} />
+        <ProductTagForm
+          onGetForm={handleSetForm}
+        />
         <Stack direction={"row-reverse"}>
           <Button
             sx={{
@@ -30,7 +36,7 @@ export default function Page() {
             variant="contained"
             loading={mutation.isPending}
           >
-            Update
+            Create
           </Button>
         </Stack>
       </Box>

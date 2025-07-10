@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import BrandForm from "../_components/language-form";
+import BrandForm from "../_components/product-tag-form";
 import { usePage } from "./usePage";
 
 export default function Page() {
@@ -12,7 +12,7 @@ export default function Page() {
 
   return (
     <Box>
-      <Typography variant="h4">Update Language</Typography>
+      <Typography variant="h4">Update Product Tag</Typography>
 
       <Box
         component="form"

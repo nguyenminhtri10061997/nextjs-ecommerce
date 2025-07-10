@@ -39,6 +39,7 @@ enum EPermissionResource {
     PRODUCT_OPTION
     PRODUCT_STATUS
     PRODUCT_RATING
+    PRODUCT_TAG
 }
 
 // Tables

@@ -11,13 +11,13 @@ export const PostCreateBodyDTO = z.object({
   code: z.string().min(1),
   name: z.string().min(1),
   slug: z.string().min(1),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   expiredAfterDays: z.number().nonnegative().optional().nullable(),
   displayType: z.enum(ETagDisplayType),
-  image: z.string().optional(),
-  bgColor: z.string().optional(),
-  textColor: z.string().optional(),
-  displayOrder: z.number().nonnegative().optional(),
+  image: z.string().nullable().optional(),
+  bgColor: z.string().nullable().optional(),
+  textColor: z.string().nullable().optional(),
+  displayOrder: z.number().nonnegative().nullable().optional(),
   isActive: z.boolean().optional(),
 });
 

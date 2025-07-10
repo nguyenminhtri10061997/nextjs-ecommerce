@@ -66,6 +66,13 @@ export const DASHBOARD_MENU_ITEMS: TDashBoardMenuItem[] = [
     perResource: EPermissionResource.PRODUCT_CATEGORY,
     perAction: EPermissionAction.READ,
   },
+  {
+    label: "Product Tag",
+    to: "/dashboard/product-tag",
+    icon: <ContactPageIcon />,
+    perResource: EPermissionResource.PRODUCT_CATEGORY,
+    perAction: EPermissionAction.READ,
+  },
 ];
 
 export const ADMIN_DRAWER_WIDTH = 250;

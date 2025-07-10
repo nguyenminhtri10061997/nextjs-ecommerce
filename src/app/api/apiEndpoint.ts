@@ -18,4 +18,6 @@ export class APIEndpoint {
   static API_PRODUCT_CATEGORY = "/api/product-category";
 
   static API_LANGUAGE = "/api/language";
+
+  static API_PRODUCT_TAG = "/api/product-tag";
 }

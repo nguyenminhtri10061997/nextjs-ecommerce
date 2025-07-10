@@ -5,17 +5,17 @@ import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
 import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 import {
-  getLanguageDetail,
-  patchLanguage,
-  languageKeys,
-} from "@/lib/reactQuery/language";
+  getProductTagDetail,
+  patchProductTag,
+  productTagKeys,
+} from "@/lib/reactQuery/product-tag";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { redirect, useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useTransition } from "react";
 import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/language-form/useIndex";
+import { TForm } from "../_components/product-tag-form/useIndex";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
@@ -24,23 +24,24 @@ export const usePage = () => {
   const router = useRouter();
   const { showAlert } = useAlertContext();
   const { setLoading } = useLoadingCtx();
+  const [isPending, startTransition] = useTransition();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
 
   const query = useQuery({
-    queryKey: languageKeys.detail(id),
-    queryFn: getLanguageDetail,
+    queryKey: productTagKeys.detail(id),
+    queryFn: getProductTagDetail,
     enabled: !!id,
   });
 
   const mutation = useMutation({
-    mutationFn: patchLanguage,
+    mutationFn: patchProductTag,
     onSuccess: async () => {
-      showAlert("Update Language success");
-      router.push("/dashboard/language");
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: languageKeys.detail(id) }),
-        queryClient.invalidateQueries({ queryKey: languageKeys.lists() }),
-      ]);
+      showAlert("Update Product Tag success");
+      startTransition(() => {
+        router.push("/dashboard/product-tag");
+        queryClient.invalidateQueries({ queryKey: productTagKeys.detail(id) });
+        queryClient.invalidateQueries({ queryKey: productTagKeys.lists() });
+      });
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -51,10 +52,7 @@ export const usePage = () => {
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
     mutation.mutate({
       id,
-      body: {
-        ...data,
-        isDefault: data.isDefault || false,
-      },
+      body: data,
     });
   };
 
@@ -79,10 +77,19 @@ export const usePage = () => {
   }, [query.isLoading, setLoading]);
 
   useEffect(() => {
-    if (query.isError) {
-      showAlert("Error Get Language", "error");
+    setLoading(isPending);
+    console.log("vao 1");
+    return () => {
+      console.log("vao 2");
       setLoading(false);
-      redirect("/dashboard/language");
+    };
+  }, [isPending, setLoading]);
+
+  useEffect(() => {
+    if (query.isError) {
+      showAlert("Error Get Product Tag", "error");
+      setLoading(false);
+      redirect("/dashboard/product-tag");
     }
   }, [query.isError, showAlert, setLoading]);
 

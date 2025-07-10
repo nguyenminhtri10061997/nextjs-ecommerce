@@ -40,3 +40,11 @@ export const getBaseFileName = (fileName: string) => {
   const baseName = hasExtension ? fileName.slice(0, lastDotIndex) : fileName;
   return baseName;
 };
+
+export function alphaToHex(a?: number) {
+  if (a == null) {
+    return ""
+  }
+  const hex = Math.round(a * 255).toString(16).padStart(2, '0');
+  return hex;
+}
