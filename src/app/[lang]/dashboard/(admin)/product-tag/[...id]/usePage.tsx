@@ -78,9 +78,7 @@ export const usePage = () => {
 
   useEffect(() => {
     setLoading(isPending);
-    console.log("vao 1");
     return () => {
-      console.log("vao 2");
       setLoading(false);
     };
   }, [isPending, setLoading]);

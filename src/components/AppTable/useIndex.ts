@@ -124,6 +124,7 @@ export default function UseIndex<T extends { id: string }>(props: TProps<T>) {
 
   useEffect(() => {
     props.setSelectedHash?.({})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.isLoading])
 
   return {
