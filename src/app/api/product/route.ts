@@ -163,7 +163,7 @@ export const POST = withValidateFieldHandler(
                   height: sku.height,
                   length: sku.length,
                   note: sku.note,
-                  isActive: sku.isActive,
+                  status: sku.status,
                   isDefault: sku.isDefault,
                   displayOrder: sku.displayOrder,
                   skuAttributeValues: {
@@ -190,33 +190,29 @@ export const POST = withValidateFieldHandler(
         }
 
         if (productOptions?.length) {
-          objCreate.productOptions = {
+          objCreate.productToOptions = {
             create: productOptions.map(
               (op) =>
                 ({
-                  productOptionId: op.productOptionId,
+                  optionId: op.optionId,
                   displayOrder: op.displayOrder,
                   isRequired: op.isRequired,
                   maxSelect: op.maxSelect,
-                  priceModifierType: op.priceModifierType,
-                  priceModifierValue: op.priceModifierValue,
-                } as Prisma.ProductToProductOptionUncheckedCreateWithoutProductInput)
+                  ProductToOptionToOptionItem: {
+                    createMany: {
+                      data: op.optionItems?.map(
+                        (opI) =>
+                          ({
+                            optionItemId: opI.optionItemId,
+                            displayOrder: opI.displayOrder,
+                            priceModifierType: opI.priceModifierType,
+                            priceModifierValue: opI.priceModifierValue,
+                          } as Prisma.ProductToOptionToOptionItemCreateManyProductToOptionInput)
+                      ),
+                    },
+                  },
+                } as Prisma.ProductToOptionUncheckedCreateWithoutProductInput)
             ),
-          };
-        }
-
-        if (productOptions?.length) {
-          objCreate.productOptions = {
-            createMany: {
-              data: productOptions.map((po) => ({
-                productOptionId: po.productOptionId,
-                displayOrder: po.displayOrder,
-                isRequired: po.isRequired,
-                maxSelect: po.maxSelect,
-                priceModifierType: po.priceModifierType,
-                priceModifierValue: po.priceModifierValue,
-              })),
-            },
           };
         }
 

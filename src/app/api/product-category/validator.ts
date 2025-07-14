@@ -3,7 +3,7 @@ import { OrderQueryDTO, SearchQueryDTO } from "@/lib/zod/paginationDTO";
 import { ProductCategory } from "@prisma/client";
 
 export const GetQueryDTO = z.object({
-  orderQuery: OrderQueryDTO.shape.orderQuery.optional(),
+  orderQuery: OrderQueryDTO(['createdAt', 'updatedAt'] as (keyof ProductCategory)[]).shape.orderQuery.optional(),
   searchQuery: SearchQueryDTO(["name", "slug"] as (keyof ProductCategory)[]).shape.searchQuery.optional(),
 });
 

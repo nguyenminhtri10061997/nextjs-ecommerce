@@ -3,7 +3,7 @@ import { ProductTag, ETagDisplayType } from "@prisma/client";
 import { z } from "zod/v4";
 
 export const GetQueryDTO = z.object({
-  orderQuery: OrderQueryDTO.shape.orderQuery.optional(),
+  orderQuery: OrderQueryDTO(['createdAt', 'updatedAt'] as (keyof ProductTag)[]).shape.orderQuery.optional(),
   searchQuery: SearchQueryDTO(["name", "slug"] as (keyof ProductTag)[]).shape.searchQuery.optional(),
 });
 

@@ -3,7 +3,7 @@ import { Brand } from "@prisma/client";
 import { z } from "zod/v4";
 
 export const GetQueryDTO = z.object({
-  orderQuery: OrderQueryDTO.shape.orderQuery.optional(),
+  orderQuery: OrderQueryDTO(['createdAt', 'updatedAt'] as (keyof Brand)[]).shape.orderQuery.optional(),
   searchQuery: SearchQueryDTO([
     "name",
     "slug",

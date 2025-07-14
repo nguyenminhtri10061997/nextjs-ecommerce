@@ -1,23 +1,22 @@
+import { EPriceModifierType, ESkuStatus, EStockStatus, EStockType } from "@prisma/client";
 import { z } from "zod/v4";
-import {
-  DateRangeQueryDTO,
-  OrderQueryDTO,
-  PagingQueryDTO,
-  SearchQueryDTO,
-} from "@/lib/zod/paginationDTO";
-import { EPriceModifierType, ESkuStatus, EStockType, Product } from "@prisma/client";
+
+export const IdParamsDTO = z.object({
+  id: z.uuid(),
+});
 
 const TranslationDTO = z.object({
   languageId: z.uuid(),
-  name: z.string(),
-  slug: z.string(),
-  seoTitle: z.string().optional(),
-  description: z.string().optional(),
-  seoDescription: z.string().optional(),
-  detail: z.string().optional(),
+  name: z.string().optional(),
+  slug: z.string().optional(),
+  seoTitle: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  seoDescription: z.string().nullable().optional(),
+  detail: z.string().nullable().optional(),
 });
 
 const ProductAttributeValueDTO = z.object({
+  id: z.uuid(),
   name: z.string(),
   slug: z.string(),
   image: z.string().optional(),
@@ -25,6 +24,7 @@ const ProductAttributeValueDTO = z.object({
 });
 
 const ProductAttributeDTO = z.object({
+  id: z.uuid(),
   name: z.string(),
   slug: z.string(),
   image: z.string().optional(),
@@ -41,22 +41,23 @@ const ProductSkuAttributeValue = z.object({
 
 const ProductSkuDTO = z
   .object({
-    sellerSku: z.string(),
-    stockStatus: z.enum(EStockType).optional(),
+    id: z.uuid(),
+    sellerSku: z.string().optional(),
+    stockStatus: z.enum(EStockStatus),
     stockType: z.enum(EStockType),
-    salePrice: z.number().min(0).optional(),
+    salePrice: z.number().min(0),
     price: z.number().min(0),
-    costPrice: z.number().min(0).optional(),
-    stock: z.number().optional(),
-    barcode: z.string().optional(),
-    weight: z.number().optional(),
-    width: z.number().optional(),
-    height: z.number().optional(),
-    length: z.number().optional(),
-    note: z.string().optional(),
+    costPrice: z.number().min(0),
+    stock: z.number(),
+    barcode: z.string(),
+    weight: z.number(),
+    width: z.number(),
+    height: z.number(),
+    length: z.number(),
+    note: z.string(),
     status: z.enum(ESkuStatus),
-    isDefault: z.boolean().optional(),
-    displayOrder: z.number().nonnegative().nullable().optional(),
+    isDefault: z.boolean(),
+    displayOrder: z.number().nonnegative().nullable(),
     skuAttributeValues: ProductSkuAttributeValue,
   })
   .check((ctx) => {
@@ -87,31 +88,21 @@ const ProductToOptionDTO = z.object({
 
 const ProductTagDTO = z.object({
   productTagId: z.uuid(),
-  expiredAt: z.date().min(new Date()).optional(),
+  expiredAt: z.date().min(new Date()).nullable().optional(),
 });
 
 // API
-
-export const GetQueryDTO = z.object({
-  pagination: PagingQueryDTO.shape.pagination.optional(),
-    orderQuery: OrderQueryDTO(['createdAt', 'updatedAt'] as (keyof Product)[]).shape.orderQuery.optional(),
-  searchQuery: SearchQueryDTO([
-    "name",
-  ] as (keyof Product)[]).shape.searchQuery.optional(),
-  dateRangeQuery: DateRangeQueryDTO.shape.dateRangeQuery.optional(),
-});
-
-export const PostCreateBodyDTO = z.object({
+export const PatchUpdateBodyDTO = z.object({
   productCategoryId: z.uuid().optional().nullable(),
   brandId: z.uuid().optional(),
-  code: z.string().min(1),
-  name: z.string().min(1),
-  slug: z.string().min(1),
-  seoTitle: z.string().optional(),
-  description: z.string().optional(),
-  seoDescription: z.string().optional(),
-  detail: z.string().optional(),
-  mainImage: z.string().optional(),
+  code: z.string().min(1).optional(),
+  name: z.string().min(1).optional(),
+  slug: z.string().min(1).optional(),
+  seoTitle: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  seoDescription: z.string().nullable().optional(),
+  detail: z.string().nullable().optional(),
+  mainImage: z.string().nullable().optional(),
   listImages: z.array(z.string()).optional(),
   isActive: z.boolean().optional(),
   viewCount: z.number().nonnegative().optional(),
@@ -122,8 +113,4 @@ export const PostCreateBodyDTO = z.object({
   translations: z.array(TranslationDTO).optional(),
   productTags: z.array(ProductTagDTO).optional(),
   productOptions: z.array(ProductToOptionDTO).optional(),
-});
-
-export const DeleteBodyDTO = z.object({
-  ids: z.array(z.uuid()),
 });

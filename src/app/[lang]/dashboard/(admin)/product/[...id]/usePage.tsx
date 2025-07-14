@@ -5,17 +5,17 @@ import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
 import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 import {
-  getProductTagDetail,
-  patchProductTag,
-  productTagKeys,
-} from "@/lib/reactQuery/product-tag";
+  getProductDetail,
+  patchProduct,
+  productKeys,
+} from "@/lib/reactQuery/product";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
 import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/product-tag-form/useIndex";
+import { TForm } from "../_components/product-form/useIndex";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
@@ -28,19 +28,19 @@ export const usePage = () => {
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
 
   const query = useQuery({
-    queryKey: productTagKeys.detail(id),
-    queryFn: getProductTagDetail,
+    queryKey: productKeys.detail(id),
+    queryFn: getProductDetail,
     enabled: !!id,
   });
 
   const mutation = useMutation({
-    mutationFn: patchProductTag,
+    mutationFn: patchProduct,
     onSuccess: async () => {
       showAlert("Update Product Tag success");
       startTransition(() => {
-        router.push("/dashboard/product-tag");
-        queryClient.invalidateQueries({ queryKey: productTagKeys.detail(id) });
-        queryClient.invalidateQueries({ queryKey: productTagKeys.lists() });
+        router.push("/dashboard/product");
+        queryClient.invalidateQueries({ queryKey: productKeys.detail(id) });
+        queryClient.invalidateQueries({ queryKey: productKeys.lists() });
       });
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
@@ -88,7 +88,7 @@ export const usePage = () => {
     if (query.isError) {
       showAlert("Error Get Product Tag", "error");
       setLoading(false);
-      redirect("/dashboard/product-tag");
+      redirect("/dashboard/product");
     }
   }, [query.isError, showAlert, setLoading]);
 

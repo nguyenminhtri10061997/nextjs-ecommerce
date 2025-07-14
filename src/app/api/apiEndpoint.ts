@@ -13,6 +13,8 @@ export class APIEndpoint {
 
   static API_ATTRIBUTE = "/api/attribute";
 
+  static API_OPTION = "/api/option";
+
   static API_BRAND = "/api/brand";
 
   static API_PRODUCT_CATEGORY = "/api/product-category";
@@ -20,4 +22,6 @@ export class APIEndpoint {
   static API_LANGUAGE = "/api/language";
 
   static API_PRODUCT_TAG = "/api/product-tag";
+
+  static API_PRODUCT = "/api/product";
 }

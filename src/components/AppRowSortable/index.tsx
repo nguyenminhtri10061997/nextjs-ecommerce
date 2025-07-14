@@ -22,7 +22,7 @@ export default function AppRowSortable(props: TProps) {
     <TableRow ref={setNodeRef} style={style}>
       <TableCell>
         <IconButton {...attributes} {...listeners}>
-          <DragIndicatorIcon />
+          <DragIndicatorIcon color="info" />
         </IconButton>
       </TableCell>
       {props.children}

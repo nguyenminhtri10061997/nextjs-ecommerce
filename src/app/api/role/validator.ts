@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 
 export const GetQueryDTO = z.object({
   pagination: PagingQueryDTO.shape.pagination.optional(),
-  orderQuery: OrderQueryDTO.shape.orderQuery.optional(),
+    orderQuery: OrderQueryDTO(['createdAt', 'updatedAt'] as (keyof Role)[]).shape.orderQuery.optional(),
   searchQuery: SearchQueryDTO(["name"] as (keyof Role)[]).shape.searchQuery.optional(),
   dateRangeQuery: DateRangeQueryDTO.shape.dateRangeQuery.optional(),
 });

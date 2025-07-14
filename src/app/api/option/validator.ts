@@ -1,29 +1,31 @@
 import { OrderQueryDTO, SearchQueryDTO } from "@/lib/zod/paginationDTO";
-import { Attribute } from "@prisma/client";
+import { Option } from "@prisma/client";
 import { z } from "zod/v4";
 
 export const GetQueryDTO = z.object({
   orderQuery: OrderQueryDTO([
     "createdAt",
     "updatedAt",
-  ] as (keyof Attribute)[]).shape.orderQuery.optional(),
+    "displayOrder",
+  ] as (keyof Option)[]).shape.orderQuery.optional(),
   searchQuery: SearchQueryDTO([
     "name",
     "slug",
-  ] as (keyof Attribute)[]).shape.searchQuery.optional(),
+  ] as (keyof Option)[]).shape.searchQuery.optional(),
 });
 
-const AttributeValueDTO = z.object({
+const OptionItemDTO = z.object({
   name: z.string().min(1),
   slug: z.string().min(1),
-  displayOrder: z.number().nonnegative().nullable().optional().optional(),
+  isActive: z.boolean().optional(),
+  displayOrder: z.number().nonnegative().nullable().optional(),
 });
 
 export const PostCreateBodyDTO = z.object({
   name: z.string().min(1),
   slug: z.string().min(1),
   displayOrder: z.number().nonnegative().nullable().optional(),
-  attributeValues: z.array(AttributeValueDTO).optional(),
+  optionItems: z.array(OptionItemDTO).optional(),
 });
 
 export const DeleteBodyDTO = z.object({

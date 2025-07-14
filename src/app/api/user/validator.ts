@@ -3,7 +3,7 @@ import { EUserOrAccountType, User } from "@prisma/client";
 import { z } from "zod/v4";
 
 export const GetUserQueryDTO = PagingQueryDTO.extend({
-  orderQuery: OrderQueryDTO.shape.orderQuery.optional(),
+    orderQuery: OrderQueryDTO(['createdAt', 'updatedAt'] as (keyof User)[]).shape.orderQuery.optional(),
   searchQuery: SearchQueryDTO(["type", "fullName"] as (keyof User)[]).shape.searchQuery.optional(),
   dateRangeQuery: DateRangeQueryDTO.shape.dateRangeQuery.optional(),
 });

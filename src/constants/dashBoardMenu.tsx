@@ -39,10 +39,24 @@ export const DASHBOARD_MENU_ITEMS: TDashBoardMenuItem[] = [
     ],
   },
   {
+    label: "Product",
+    to: "/dashboard/product",
+    icon: <ContactPageIcon />,
+    perResource: EPermissionResource.PRODUCT,
+    perAction: EPermissionAction.READ,
+  },
+  {
     label: "Attribute",
     to: "/dashboard/attribute",
     icon: <ContactPageIcon />,
     perResource: EPermissionResource.ATTRIBUTE,
+    perAction: EPermissionAction.READ,
+  },
+  {
+    label: "Option",
+    to: "/dashboard/option",
+    icon: <ContactPageIcon />,
+    perResource: EPermissionResource.OPTION,
     perAction: EPermissionAction.READ,
   },
   {

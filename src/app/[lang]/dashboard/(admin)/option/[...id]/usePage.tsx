@@ -3,19 +3,20 @@
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
-import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 import {
-  getProductTagDetail,
-  patchProductTag,
-  productTagKeys,
-} from "@/lib/reactQuery/product-tag";
+  optionKeys,
+  getOptionDetail,
+  patchOption,
+} from "@/lib/reactQuery/option";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { redirect, useParams, useRouter } from "next/navigation";
-import { useEffect, useTransition } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/product-tag-form/useIndex";
+import { TForm } from "../_components/optionForm/useIndex";
+import { useLoadingCtx } from "@/hooks/useLoadingCtx";
+import { v4 } from "uuid";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
@@ -23,25 +24,24 @@ export const usePage = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { showAlert } = useAlertContext();
-  const { setLoading } = useLoadingCtx();
-  const [isPending, startTransition] = useTransition();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
+  const { setLoading } = useLoadingCtx();
 
   const query = useQuery({
-    queryKey: productTagKeys.detail(id),
-    queryFn: getProductTagDetail,
+    queryKey: optionKeys.detail(id),
+    queryFn: getOptionDetail,
     enabled: !!id,
   });
 
   const mutation = useMutation({
-    mutationFn: patchProductTag,
+    mutationFn: patchOption,
     onSuccess: async () => {
-      showAlert("Update Product Tag success");
-      startTransition(() => {
-        router.push("/dashboard/product-tag");
-        queryClient.invalidateQueries({ queryKey: productTagKeys.detail(id) });
-        queryClient.invalidateQueries({ queryKey: productTagKeys.lists() });
-      });
+      showAlert("Update Option success");
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: optionKeys.detail(id) }),
+        queryClient.invalidateQueries({ queryKey: optionKeys.lists() }),
+      ]);
+      router.push("/dashboard/option");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -49,10 +49,21 @@ export const usePage = () => {
     },
   });
 
-  const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
+  const handleFormSubmit: SubmitHandler<TForm> = async ({
+    name,
+    slug,
+    optionItems,
+  }) => {
     mutation.mutate({
       id,
-      body: data,
+      body: {
+        name,
+        slug,
+        optionItems: optionItems.map((i, idx) => ({
+          ...i,
+          displayOrder: idx,
+        })),
+      },
     });
   };
 
@@ -62,35 +73,27 @@ export const usePage = () => {
 
   useEffect(() => {
     if (query.data?.id) {
+      const { name, slug, optionItems } = query.data;
       if (breadcrumbs.length === 3) {
         setBreadCrumbs(
-          breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.code)
+          breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.name)
         );
       }
-      formRef.current?.reset(query.data);
+      formRef.current?.reset({
+        name,
+        slug,
+        optionItems: optionItems.map((i) => ({
+          ...i,
+          idDnD: v4(),
+        })),
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);
 
-  console.log(query.isLoading)
   useEffect(() => {
     setLoading(query.isLoading);
   }, [query.isLoading, setLoading]);
-
-  useEffect(() => {
-    setLoading(isPending);
-    return () => {
-      setLoading(false);
-    };
-  }, [isPending, setLoading]);
-
-  useEffect(() => {
-    if (query.isError) {
-      showAlert("Error Get Product Tag", "error");
-      setLoading(false);
-      redirect("/dashboard/product-tag");
-    }
-  }, [query.isError, showAlert, setLoading]);
 
   return {
     formRef,

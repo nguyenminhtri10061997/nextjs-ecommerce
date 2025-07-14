@@ -20,10 +20,10 @@ export const GET = withValidateFieldHandler(
         action: EPermissionAction.READ,
       },
       async (_, ctx: THofContext<typeof IdParamsDTO>) => {
-        const data = await prisma.attribute.findUnique({
+        const data = await prisma.option.findUnique({
           where: { id: ctx.paramParse!.id },
           include: {
-            attributeValues: {
+            optionItems: {
               orderBy: {
                 displayOrder: "asc",
               },
@@ -32,7 +32,7 @@ export const GET = withValidateFieldHandler(
         });
 
         if (!data) {
-          return AppError.json({ status: 404, message: "Attribute not found" });
+          return AppError.json({ status: 404, message: "Option not found" });
         }
 
         return AppResponse.json({ status: 200, data });
@@ -56,21 +56,21 @@ export const PATCH = withValidateFieldHandler(
         ctx: THofContext<typeof IdParamsDTO, never, typeof PatchBodyDTO>
       ) => {
         const { id } = ctx.paramParse!;
-        const { name, slug, attributeValues } = ctx.bodyParse!;
+        const { name, slug, optionItems } = ctx.bodyParse!;
 
-        const existing = await prisma.attribute.findUnique({
+        const existing = await prisma.option.findUnique({
           where: { id },
-          include: { attributeValues: true },
+          include: { optionItems: true },
         });
         if (!existing) {
           return AppError.json({
             status: AppStatusCode.NOT_FOUND,
-            message: "Attribute not found",
+            message: "Option not found",
           });
         }
 
         if (name || slug) {
-          const exists = await prisma.attribute.findFirst({
+          const exists = await prisma.option.findFirst({
             where: {
               id: {
                 not: id,
@@ -101,28 +101,28 @@ export const PATCH = withValidateFieldHandler(
           }
         }
 
-        const objUpdate: Prisma.AttributeUpdateInput = {
+        const objUpdate: Prisma.OptionUpdateInput = {
           name,
           slug,
         };
 
-        if (attributeValues) {
+        if (optionItems) {
           const existingIds = new Set(
-            existing.attributeValues.map((v) => v.id)
+            existing.optionItems.map((v) => v.id)
           );
           const incomingIds = new Set(
-            attributeValues.map((v) => v.id).filter(Boolean)
+            optionItems.map((v) => v.id).filter(Boolean)
           );
 
           const toDelete = Array.from(existingIds).filter(
             (id) => !incomingIds.has(id!)
           );
-          const toUpdate = attributeValues.filter((v) => v.id);
-          const toCreate = attributeValues.filter((v) => !v.id);
+          const toUpdate = optionItems.filter((v) => v.id);
+          const toCreate = optionItems.filter((v) => !v.id);
 
-          objUpdate.attributeValues = {
+          objUpdate.optionItems = {
             deleteMany: { id: { in: toDelete } },
-            update: toUpdate.map((v) => ({
+            updateMany: toUpdate.map((v) => ({
               where: { id: v.id },
               data: {
                 name: v.name,
@@ -138,7 +138,7 @@ export const PATCH = withValidateFieldHandler(
           };
         }
 
-        const updated = await prisma.attribute.update({
+        const updated = await prisma.option.update({
           where: { id },
           data: objUpdate,
         });

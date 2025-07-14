@@ -36,10 +36,17 @@ enum EPermissionResource {
     LANGUAGE
     PRODUCT_CATEGORY
     ATTRIBUTE
-    PRODUCT_OPTION
+    OPTION
     PRODUCT_STATUS
     PRODUCT_RATING
     PRODUCT_TAG
+}
+
+enum ESkuStatus {
+    ACTIVE
+    INACTIVE_BY_SYSTEM
+    INACTIVE_BY_ADMIN
+    DELETED
 }
 
 // Tables
@@ -138,6 +145,13 @@ enum ETagDisplayType {
     TEXT_BACKGROUND
 }
 
+enum EOptionContext {
+    PRODUCT
+    //   ORDER
+    //   GIFT
+    //   SHIPPING
+}
+
 // Tables
 
 model Product {
@@ -160,14 +174,14 @@ model Product {
     createdAt         DateTime @default(now())
     updatedAt         DateTime @default(now()) @updatedAt
 
-    attributes      ProductAttribute[]
-    skus            ProductSku[]
-    translations    ProductTranslation[]
-    ratings         ProductRating[]
-    productTags     ProductToProductTag[]
-    productOptions  ProductToProductOption[]
-    ProductCategory ProductCategory?         @relation(fields: [productCategoryId], references: [id])
-    Brand           Brand?                   @relation(fields: [brandId], references: [id])
+    attributes       ProductAttribute[]
+    skus             ProductSku[]
+    translations     ProductTranslation[]
+    ratings          ProductRating[]
+    productTags      ProductToProductTag[]
+    productToOptions ProductToOption[]
+    ProductCategory  ProductCategory?      @relation(fields: [productCategoryId], references: [id])
+    Brand            Brand?                @relation(fields: [brandId], references: [id])
 }
 
 model Brand {
@@ -246,11 +260,12 @@ model ProductTranslation {
 }
 
 model Attribute {
-    id        String   @id @default(uuid())
-    name      String   @unique
-    slug      String   @unique
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
+    id           String   @id @default(uuid())
+    name         String   @unique
+    slug         String   @unique
+    displayOrder Int?
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @default(now()) @updatedAt
 
     attributeValues AttributeValue[]
 }
@@ -279,6 +294,8 @@ model ProductAttribute {
     product                  Product                    @relation(fields: [productId], references: [id])
     attributeValues          ProductAttributeValue[]
     ProductSkuAttributeValue ProductSkuAttributeValue[]
+
+    @@unique([productId, name])
 }
 
 model ProductAttributeValue {
@@ -293,6 +310,8 @@ model ProductAttributeValue {
 
     attribute          ProductAttribute           @relation(fields: [productAttributeId], references: [id])
     skuAttributeValues ProductSkuAttributeValue[]
+
+    @@unique([productAttributeId, name])
 }
 
 model ProductSku {
@@ -312,7 +331,7 @@ model ProductSku {
     length       Float?
     note         String
     displayOrder Int?
-    isActive     Boolean       @default(true)
+    status       ESkuStatus
     isDefault    Boolean
     createdAt    DateTime      @default(now())
     updatedAt    DateTime      @default(now()) @updatedAt
@@ -338,45 +357,65 @@ model ProductSkuAttributeValue {
     @@unique([productSkuId, productAttributeValueId], name: "productSkuId_productAttributeValueId")
 }
 
-model ProductOption {
-    id        String   @id @default(uuid())
-    name      String   @unique
-    slug      String   @unique
-    isActive  Boolean
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
+model Option {
+    id           String         @id @default(uuid())
+    name         String         @unique
+    slug         String         @unique
+    displayOrder Int?
+    isActive     Boolean        @default(true)
+    context      EOptionContext
+    createdAt    DateTime       @default(now())
+    updatedAt    DateTime       @default(now()) @updatedAt
 
-    items    ProductOptionItem[]
-    products ProductToProductOption[]
+    optionItems      OptionItem[]
+    productToOptions ProductToOption[]
 }
 
-model ProductOptionItem {
-    id              String   @id @default(uuid())
-    productOptionId String
-    name            String
-    slug            String
-    displayOrder    Int?
-    isActive        Boolean
-    createdAt       DateTime @default(now())
-    updatedAt       DateTime @default(now()) @updatedAt
+model OptionItem {
+    id           String   @id @default(uuid())
+    optionId     String
+    name         String
+    slug         String
+    displayOrder Int?
+    isActive     Boolean  @default(true)
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @default(now()) @updatedAt
 
-    option ProductOption @relation(fields: [productOptionId], references: [id])
+    Option                      Option                        @relation(fields: [optionId], references: [id])
+    ProductToOptionToOptionItem ProductToOptionToOptionItem[]
 }
 
-model ProductToProductOption {
+model ProductToOption {
+    id           String   @id @default(uuid())
+    productId    String
+    optionId     String
+    displayOrder Int?
+    isRequired   Boolean  @default(false)
+    maxSelect    Int?
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @default(now()) @updatedAt
+
+    product                     Product                       @relation(fields: [productId], references: [id])
+    option                      Option                        @relation(fields: [optionId], references: [id])
+    ProductToOptionToOptionItem ProductToOptionToOptionItem[]
+
+    @@unique([productId, optionId])
+}
+
+model ProductToOptionToOptionItem {
     id                 String             @id @default(uuid())
-    productId          String
-    productOptionId    String
+    productToOptionId  String
+    optionItemId       String
     displayOrder       Int?
-    isRequired         Boolean            @default(false)
-    maxSelect          Int
     priceModifierType  EPriceModifierType
     priceModifierValue Float
     createdAt          DateTime           @default(now())
     updatedAt          DateTime           @default(now()) @updatedAt
 
-    product Product       @relation(fields: [productId], references: [id])
-    option  ProductOption @relation(fields: [productOptionId], references: [id])
+    optionItem      OptionItem      @relation(fields: [optionItemId], references: [id])
+    productToOption ProductToOption @relation(fields: [productToOptionId], references: [id])
+
+    @@unique([productToOptionId, optionItemId])
 }
 
 model ProductTag {

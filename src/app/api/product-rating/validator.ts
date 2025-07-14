@@ -1,9 +1,10 @@
 import { DateRangeQueryDTO, OrderQueryDTO, PagingQueryDTO } from "@/lib/zod/paginationDTO";
+import { ProductRating } from "@prisma/client";
 import { z } from "zod/v4";
 
 export const GetQueryDTO = z.object({
   pagination: PagingQueryDTO.shape.pagination,
-  orderQuery: OrderQueryDTO.shape.orderQuery.optional(),
+    orderQuery: OrderQueryDTO(['createdAt', 'updatedAt'] as (keyof ProductRating)[]).shape.orderQuery.optional(),
   dateRangeQuery: DateRangeQueryDTO.shape.dateRangeQuery.optional(),
   ratings: z.array(z.number().min(0).max(5)).optional()
 });

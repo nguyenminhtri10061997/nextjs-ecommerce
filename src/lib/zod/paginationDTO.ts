@@ -7,12 +7,13 @@ export const PagingQueryDTO = z.object({
   }),
 });
 
-export const OrderQueryDTO = z.object({
-  orderQuery: z.object({
-    orderKey: z.string(),
-    orderType: z.enum(["asc", "desc"]),
-  }),
-});
+export const OrderQueryDTO = (IEnum: string[]) =>
+  z.object({
+    orderQuery: z.object({
+      orderKey: z.enum(IEnum),
+      orderType: z.enum(["asc", "desc"]),
+    }),
+  });
 
 export const DateRangeQueryDTO = z.object({
   dateRangeQuery: z
@@ -42,7 +43,6 @@ export const SearchQueryDTO = (IEnum: string[]) =>
     }),
   });
 
-
 export const LanguageQueryDTO = z.object({
-  language: z.string()
+  language: z.string(),
 });

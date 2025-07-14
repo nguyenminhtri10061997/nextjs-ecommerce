@@ -3,7 +3,7 @@ import { Language } from "@prisma/client";
 import { z } from "zod/v4";
 
 export const GetQueryDTO = z.object({
-  orderQuery: OrderQueryDTO.shape.orderQuery.optional(),
+  orderQuery: OrderQueryDTO(['createdAt', 'updatedAt'] as (keyof Language)[]).shape.orderQuery.optional(),
   searchQuery: SearchQueryDTO(["name", "code"] as (keyof Language)[]).shape.searchQuery.optional(),
 });
 
