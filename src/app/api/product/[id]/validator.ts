@@ -1,33 +1,30 @@
-import { EPriceModifierType, ESkuStatus, EStockStatus, EStockType } from "@prisma/client";
+import {
+  EAttributeStatus,
+  EPriceModifierType,
+  ESkuStatus,
+  EStockStatus,
+  EStockType,
+} from "@prisma/client";
 import { z } from "zod/v4";
 
 export const IdParamsDTO = z.object({
   id: z.uuid(),
 });
 
-const TranslationDTO = z.object({
-  languageId: z.uuid(),
-  name: z.string().optional(),
-  slug: z.string().optional(),
-  seoTitle: z.string().nullable().optional(),
-  description: z.string().nullable().optional(),
-  seoDescription: z.string().nullable().optional(),
-  detail: z.string().nullable().optional(),
-});
-
-const ProductAttributeValueDTO = z.object({
+export const ProductAttributeValueDTO = z.object({
   id: z.uuid(),
   name: z.string(),
   slug: z.string(),
   image: z.string().optional(),
+  status: z.enum([EAttributeStatus.ACTIVE, EAttributeStatus.INACTIVE_BY_ADMIN]),
   displayOrder: z.number().nonnegative().nullable().optional(),
 });
 
-const ProductAttributeDTO = z.object({
+export const ProductAttributeDTO = z.object({
   id: z.uuid(),
   name: z.string(),
   slug: z.string(),
-  image: z.string().optional(),
+  status: z.enum([EAttributeStatus.ACTIVE, EAttributeStatus.INACTIVE_BY_ADMIN]),
   displayOrder: z.number().nonnegative().nullable().optional(),
   attributeValues: z.array(ProductAttributeValueDTO),
 });
@@ -35,11 +32,12 @@ const ProductAttributeDTO = z.object({
 const ProductSkuAttributeValue = z.object({
   productAttributeId: z.string(),
   productAttributeValueId: z.string(),
+  status: z.enum([EAttributeStatus.ACTIVE, EAttributeStatus.INACTIVE_BY_ADMIN]),
   image: z.string().optional(),
   Label: z.string().optional(),
 });
 
-const ProductSkuDTO = z
+export const ProductSkuDTO = z
   .object({
     id: z.uuid(),
     sellerSku: z.string().optional(),
@@ -72,21 +70,23 @@ const ProductSkuDTO = z
   });
 
 const ProductToOptionToOptionItemDTO = z.object({
+  id: z.uuid(),
   optionItemId: z.uuid(),
   displayOrder: z.number().nonnegative().nullable().optional(),
   priceModifierType: z.enum(EPriceModifierType),
   priceModifierValue: z.number(),
-})
+});
 
-const ProductToOptionDTO = z.object({
+export const ProductToOptionDTO = z.object({
+  id: z.uuid(),
   optionId: z.uuid(),
   displayOrder: z.number().nonnegative().nullable().optional(),
   isRequired: z.boolean().optional(),
   maxSelect: z.number().nonnegative(),
-  optionItems: z.array(ProductToOptionToOptionItemDTO).optional()
+  optionItems: z.array(ProductToOptionToOptionItemDTO).optional(),
 });
 
-const ProductTagDTO = z.object({
+export const ProductTagDTO = z.object({
   productTagId: z.uuid(),
   expiredAt: z.date().min(new Date()).nullable().optional(),
 });
@@ -110,7 +110,6 @@ export const PatchUpdateBodyDTO = z.object({
 
   attributes: z.array(ProductAttributeDTO),
   skus: z.array(ProductSkuDTO),
-  translations: z.array(TranslationDTO).optional(),
   productTags: z.array(ProductTagDTO).optional(),
   productOptions: z.array(ProductToOptionDTO).optional(),
 });

@@ -44,7 +44,21 @@ enum EPermissionResource {
 
 enum ESkuStatus {
     ACTIVE
-    INACTIVE_BY_SYSTEM
+    // INACTIVE_BY_SYSTEM
+    INACTIVE_BY_ADMIN
+    DELETED
+}
+
+enum EAttributeStatus {
+    ACTIVE
+    // INACTIVE_BY_SYSTEM
+    INACTIVE_BY_ADMIN
+    DELETED
+}
+
+enum EAttributeValueStatus {
+    ACTIVE
+    // INACTIVE_BY_SYSTEM
     INACTIVE_BY_ADMIN
     DELETED
 }
@@ -283,13 +297,14 @@ model AttributeValue {
 }
 
 model ProductAttribute {
-    id           String   @id @default(uuid())
+    id           String           @id @default(uuid())
     productId    String
-    name         String   @unique
-    slug         String   @unique
+    name         String           @unique
+    slug         String           @unique
+    status       EAttributeStatus
     displayOrder Int?
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @default(now()) @updatedAt
+    createdAt    DateTime         @default(now())
+    updatedAt    DateTime         @default(now()) @updatedAt
 
     product                  Product                    @relation(fields: [productId], references: [id])
     attributeValues          ProductAttributeValue[]
@@ -299,14 +314,15 @@ model ProductAttribute {
 }
 
 model ProductAttributeValue {
-    id                 String   @id @default(uuid())
+    id                 String           @id @default(uuid())
     productAttributeId String
     name               String
     slug               String
     image              String?
     displayOrder       Int?
-    createdAt          DateTime @default(now())
-    updatedAt          DateTime @default(now()) @updatedAt
+    status             EAttributeValueStatus
+    createdAt          DateTime         @default(now())
+    updatedAt          DateTime         @default(now()) @updatedAt
 
     attribute          ProductAttribute           @relation(fields: [productAttributeId], references: [id])
     skuAttributeValues ProductSkuAttributeValue[]
@@ -317,7 +333,7 @@ model ProductAttributeValue {
 model ProductSku {
     id           String        @id @default(uuid())
     productId    String
-    sellerSku    String?       @unique
+    sellerSku    String?
     stockStatus  EStockStatus?
     stockType    EStockType
     salePrice    Float?
@@ -447,6 +463,8 @@ model ProductToProductTag {
 
     product    Product    @relation(fields: [productId], references: [id])
     productTag ProductTag @relation(fields: [productTagId], references: [id])
+
+    @@unique([productId, productTagId])
 }
 
 model ProductRating {
