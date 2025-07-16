@@ -13,6 +13,7 @@ import {
   ESkuStatus,
   Prisma,
 } from "@prisma/client";
+import { v4 } from "uuid";
 import { output } from "zod/v4";
 import {
   IdParamsDTO,
@@ -22,9 +23,7 @@ import {
   ProductSkuDTO,
   ProductTagDTO,
   ProductToOptionDTO,
-  TranslationDTO,
 } from "./validator";
-import { v4 } from "uuid";
 
 export const GET = withValidateFieldHandler(
   IdParamsDTO,
@@ -305,7 +304,7 @@ const syncProductTags = async (data: {
     )
   );
 
-  if (tagToBeCreates) {
+  if (tagToBeCreates.length) {
     prisma.productToProductTag.createMany({
       data: tagToBeCreates.map(
         (tag) =>
@@ -319,80 +318,170 @@ const syncProductTags = async (data: {
   }
 };
 
-
 const syncProductOptions = async (data: {
   productId: string;
   productOptions: output<typeof ProductToOptionDTO>[];
 }) => {
   const { productId, productOptions } = data;
-  const oldProductToProductToOption = await prisma.productToOption.findMany({
+  const oldProductToOption = await prisma.productToOption.findMany({
     where: {
       productId,
     },
     select: {
       id: true,
       optionId: true,
-      ProductToOptionToOptionItem: {
+      productToOptionToOptionItem: {
         select: {
-          id: true
-        }
-      }
+          id: true,
+          optionItemId: true,
+        },
+      },
     },
   });
 
-  const incomingProductToOptionIdsMap = new Set(
-    productOptions.map((item) => item.optionId)
-  );
+  const incomingProductToOptionIdSet = new Set<string>();
+  const incomingPTOToOptionIdSet = new Set<string>();
 
-  const curProductToOptionIdsMap = new Set(
-    oldProductToProductToOption.map((item) => item.optionId)
-  );
+  const curProductToOptionIdMap = new Map<
+    string,
+    (typeof oldProductToOption)[number]
+  >();
+  const curPTOToOptionItemIdSet = new Set<string>();
 
-  const productToOptionToBeDeletes = oldProductToProductToOption.filter(
-    (item) => !incomingProductToOptionIdsMap.has(item.optionId)
-  );
+  productOptions.forEach((po) => {
+    incomingProductToOptionIdSet.add(po.optionId);
 
-  const productToOptionToBeUpdates = productOptions.filter((po) => curProductToOptionIdsMap.has(po.optionId));
-
-
-  const productToOptionToBeCreates = productOptions.filter(
-    (item) => !curProductToOptionIdsMap.has(item.optionId)
-  );
-
-  if (productToOptionToBeDeletes.length) {
-    await prisma.productTag.deleteMany({
-      where: {
-        id: { in: productToOptionToBeDeletes.map((i) => i.id) },
-      },
+    po.optionItems?.forEach((poi) => {
+      incomingPTOToOptionIdSet.add(poi.optionItemId);
     });
-  }
+  });
+  const productToOptionIdToBeDeletes: string[] = [];
+  let productToOptionToOptionItemToBeDeletes: string[] = [];
 
-  await Promise.all(
-    productToOptionToBeUpdates.map((item) =>
-      prisma.productToOption.update({
+  oldProductToOption.forEach((pto) => {
+    curProductToOptionIdMap.set(pto.optionId, pto);
+    pto.productToOptionToOptionItem.forEach((ptoTOI) => {
+      curPTOToOptionItemIdSet.add(ptoTOI.optionItemId);
+    });
+
+    if (!incomingProductToOptionIdSet.has(pto.optionId)) {
+      productToOptionIdToBeDeletes.push(pto.id);
+      productToOptionToOptionItemToBeDeletes =
+        productToOptionToOptionItemToBeDeletes.concat(
+          pto.productToOptionToOptionItem.map((i) => i.id)
+        );
+    }
+  });
+
+  const productToOptionToBeUpdates: Prisma.ProductToOptionUpdateArgs[] = [];
+  const productToOptionToBeCreates: Prisma.ProductToOptionCreateManyInput[] =
+    [];
+
+  const productToOptionToOptionItemToBeUpdates: Prisma.ProductToOptionToOptionItemUpdateArgs[] =
+    [];
+  let productToOptionToOptionItemToBeCreates: Prisma.ProductToOptionToOptionItemCreateManyInput[] =
+    [];
+
+  productOptions.forEach((po) => {
+    const existPO = curProductToOptionIdMap.get(po.optionId);
+    if (existPO) {
+      productToOptionToBeUpdates.push({
         where: {
           productId_optionId: {
             productId,
-            optionId: item.optionId,
+            optionId: po.optionId,
           },
         },
         data: {
-          
+          displayOrder: po.displayOrder,
+          isRequired: po.isRequired,
+          maxSelect: po.maxSelect,
         },
-      })
-    )
+      });
+      po.optionItems?.forEach((oi) => {
+        const existsTOI = curPTOToOptionItemIdSet.has(oi.optionItemId);
+        if (existsTOI) {
+          productToOptionToOptionItemToBeUpdates.push({
+            where: {
+              productToOptionId_optionItemId: {
+                optionItemId: oi.optionItemId,
+                productToOptionId: existPO.id,
+              },
+            },
+            data: {
+              displayOrder: oi.displayOrder,
+              priceModifierType: oi.priceModifierType,
+              priceModifierValue: oi.priceModifierValue,
+            },
+          });
+        } else {
+          productToOptionToOptionItemToBeCreates.push({
+            optionItemId: oi.optionItemId,
+            productToOptionId: existPO.id,
+            displayOrder: oi.displayOrder,
+            priceModifierType: oi.priceModifierType,
+            priceModifierValue: oi.priceModifierValue,
+          });
+        }
+      });
+    } else {
+      const newPto: Prisma.ProductToOptionCreateManyInput = {
+        id: v4(),
+        productId,
+        optionId: po.optionId,
+        displayOrder: po.displayOrder,
+        isRequired: po.isRequired,
+        maxSelect: po.maxSelect,
+      };
+      productToOptionToBeCreates.push(newPto);
+      if (po.optionItems.length) {
+        productToOptionToOptionItemToBeCreates =
+          productToOptionToOptionItemToBeCreates.concat(
+            po.optionItems.map(
+              (oi) =>
+                ({
+                  optionItemId: oi.optionItemId,
+                  productToOptionId: newPto.id,
+                  displayOrder: oi.displayOrder,
+                  priceModifierType: oi.priceModifierType,
+                  priceModifierValue: oi.priceModifierValue,
+                } as Prisma.ProductToOptionToOptionItemCreateManyInput)
+            )
+          );
+      }
+    }
+  });
+
+  await Promise.all(
+    [
+      productToOptionToBeUpdates.map((data) =>
+        prisma.productToOption.update(data)
+      ),
+      productToOptionToOptionItemToBeUpdates.map((data) =>
+        prisma.productToOptionToOptionItem.update(data)
+      ),
+      productToOptionToBeCreates.length &&
+        prisma.productToOption.createMany({
+          data: productToOptionToBeCreates,
+        }),
+      productToOptionIdToBeDeletes.length &&
+        prisma.productToOption.deleteMany({
+          where: {
+            id: { in: productToOptionIdToBeDeletes },
+          },
+        }),
+      productToOptionToOptionItemToBeDeletes.length &&
+        prisma.productToOptionToOptionItem.deleteMany({
+          where: {
+            id: { in: productToOptionToOptionItemToBeDeletes },
+          },
+        }),
+    ].filter(Boolean)
   );
 
-  if (tagToBeCreates) {
-    prisma.productToProductToOption.createMany({
-      data: tagToBeCreates.map(
-        (tag) =>
-          ({
-            productId,
-            productTagId: tag.productTagId,
-            expiredAt: tag.expiredAt,
-          } as Prisma.ProductToProductToOptionCreateManyInput)
-      ),
+  if (productToOptionToOptionItemToBeCreates.length) {
+    await prisma.productToOptionToOptionItem.createMany({
+      data: productToOptionToOptionItemToBeCreates,
     });
   }
 };
@@ -485,7 +574,10 @@ export const PATCH = withValidateFieldHandler(
           }
 
           if (productOptions) {
-            await syncProductOptions({ productId: productFound.id, productOptions })
+            await syncProductOptions({
+              productId: productFound.id,
+              productOptions,
+            });
           }
 
           return AppResponse.json({ status: 200 });

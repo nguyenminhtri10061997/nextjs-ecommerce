@@ -1,5 +1,6 @@
 import {
   EAttributeStatus,
+  EAttributeValueStatus,
   EPriceModifierType,
   ESkuStatus,
   EStockStatus,
@@ -16,7 +17,7 @@ export const ProductAttributeValueDTO = z.object({
   name: z.string(),
   slug: z.string(),
   image: z.string().optional(),
-  status: z.enum([EAttributeStatus.ACTIVE, EAttributeStatus.INACTIVE_BY_ADMIN]),
+  status: z.enum([EAttributeValueStatus.ACTIVE, EAttributeValueStatus.INACTIVE_BY_ADMIN]),
   displayOrder: z.number().nonnegative().nullable().optional(),
 });
 
@@ -32,7 +33,6 @@ export const ProductAttributeDTO = z.object({
 const ProductSkuAttributeValue = z.object({
   productAttributeId: z.string(),
   productAttributeValueId: z.string(),
-  status: z.enum([EAttributeStatus.ACTIVE, EAttributeStatus.INACTIVE_BY_ADMIN]),
   image: z.string().optional(),
   Label: z.string().optional(),
 });
@@ -70,20 +70,18 @@ export const ProductSkuDTO = z
   });
 
 const ProductToOptionToOptionItemDTO = z.object({
-  id: z.uuid(),
   optionItemId: z.uuid(),
-  displayOrder: z.number().nonnegative().nullable().optional(),
+  displayOrder: z.number().nonnegative().nullable(),
   priceModifierType: z.enum(EPriceModifierType),
   priceModifierValue: z.number(),
 });
 
 export const ProductToOptionDTO = z.object({
-  id: z.uuid(),
   optionId: z.uuid(),
-  displayOrder: z.number().nonnegative().nullable().optional(),
-  isRequired: z.boolean().optional(),
+  displayOrder: z.number().nonnegative().nullable(),
+  isRequired: z.boolean(),
   maxSelect: z.number().nonnegative(),
-  optionItems: z.array(ProductToOptionToOptionItemDTO).optional(),
+  optionItems: z.array(ProductToOptionToOptionItemDTO),
 });
 
 export const ProductTagDTO = z.object({

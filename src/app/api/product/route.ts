@@ -11,6 +11,7 @@ import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
 import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator";
 import dayjs from "dayjs";
 import { TGetProductListResponse } from "@/types/api/product";
+import AppS3Client from "@/lib/s3";
 
 export const GET = withValidateFieldHandler(
   null,
@@ -87,9 +88,10 @@ export const POST = withValidateFieldHandler(
           slug,
           attributes,
           skus,
-          translations,
           productTags,
           productOptions,
+          mainImage,
+          listImages,
           ...omit
         } = ctx.bodyParse!;
 
@@ -115,12 +117,21 @@ export const POST = withValidateFieldHandler(
           });
         }
 
+        const mainImageUrl = await AppS3Client.s3CreateFile(mainImage);
+
         const objCreate: Prisma.ProductCreateInput = {
           code,
           name,
           slug,
+          mainImage: mainImageUrl,
+          listImages: [],
           ...omit,
         };
+
+        if (listImages?.length) {
+          const res = await AppS3Client.s3CreateFiles(listImages);
+          objCreate.listImages = res.successKeys;
+        }
 
         if (attributes?.length) {
           objCreate.attributes = {
@@ -129,6 +140,7 @@ export const POST = withValidateFieldHandler(
               slug: at.slug,
               image: at.image,
               displayOrder: at.displayOrder,
+              status: at.status,
 
               attributeValues: {
                 create: at.attributeValues.map(
@@ -138,6 +150,7 @@ export const POST = withValidateFieldHandler(
                       slug: atv.slug,
                       name: atv.name,
                       displayOrder: atv.displayOrder,
+                      status: atv.status,
                     } as Prisma.ProductAttributeValueCreateInput)
                 ),
               },
@@ -171,12 +184,6 @@ export const POST = withValidateFieldHandler(
                   },
                 } as Prisma.ProductSkuCreateWithoutProductInput)
             ),
-          };
-        }
-
-        if (translations?.length) {
-          objCreate.translations = {
-            create: translations,
           };
         }
 

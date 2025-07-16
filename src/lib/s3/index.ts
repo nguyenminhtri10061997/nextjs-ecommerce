@@ -6,6 +6,7 @@ import {
   PutObjectCommand,
   S3Client,
   ObjectIdentifier,
+  PutObjectCommandInput,
 } from "@aws-sdk/client-s3";
 import { extension as mimeExtension } from "mime-types";
 import { v4 } from "uuid";
@@ -34,6 +35,63 @@ export default class AppS3Client {
       })
     );
     return fileKey;
+  }
+
+  static async s3CreateFiles(files: File[]) {
+    if (!files.length) {
+      return { successKeys: [], failed: [] };
+    }
+    const putObjectCommands: PutObjectCommandInput[] = [];
+
+    for (const file of files) {
+      const baseName = getBaseFileName(file.name);
+
+      const contentType = file.type || "application/octet-stream";
+      const extension = mimeExtension(contentType);
+
+      const uuid = v4().slice(0, 8);
+      const fileKey = `${baseName}-${uuid}-${+new Date()}.${extension}`;
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+
+      putObjectCommands.push({
+        Bucket: this.bucketName,
+        Key: fileKey,
+        Body: buffer,
+        ContentType: contentType,
+      });
+    }
+
+    const resUpload = await Promise.allSettled(
+      putObjectCommands.map((i) => {
+        return new Promise(async (rs, rj) => {
+          try {
+            await this.s3Client.send(new PutObjectCommand(i));
+            rs(i.Key);
+          } catch (err) {
+            console.log("s3CreateFiles", err);
+            rj(err);
+          }
+        });
+      })
+    );
+
+    const successKeys: string[] = [];
+    const failed: { key: string, reason: unknown }[] = [];
+    resUpload.forEach((res, idx) => {
+      if (res.status === "fulfilled") {
+        successKeys.push(res.value as string);
+      } else {
+        failed.push({
+          key: putObjectCommands[idx].Key!,
+          reason: res.reason,
+        })
+      }
+    });
+    return {
+      successKeys,
+      failed,
+    };
   }
 
   static getS3ImgFullUrl(key?: string | null) {

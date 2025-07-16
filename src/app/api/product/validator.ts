@@ -5,23 +5,24 @@ import {
   PagingQueryDTO,
   SearchQueryDTO,
 } from "@/lib/zod/paginationDTO";
-import { EPriceModifierType, ESkuStatus, EStockType, Product } from "@prisma/client";
-
-const TranslationDTO = z.object({
-  languageId: z.uuid(),
-  name: z.string(),
-  slug: z.string(),
-  seoTitle: z.string().optional(),
-  description: z.string().optional(),
-  seoDescription: z.string().optional(),
-  detail: z.string().optional(),
-});
+import {
+  EAttributeStatus,
+  EAttributeValueStatus,
+  EPriceModifierType,
+  ESkuStatus,
+  EStockType,
+  Product,
+} from "@prisma/client";
 
 const ProductAttributeValueDTO = z.object({
   name: z.string(),
   slug: z.string(),
   image: z.string().optional(),
   displayOrder: z.number().nonnegative().nullable().optional(),
+  status: z.enum([
+    EAttributeValueStatus.ACTIVE,
+    EAttributeValueStatus.INACTIVE_BY_ADMIN,
+  ]),
 });
 
 const ProductAttributeDTO = z.object({
@@ -29,6 +30,7 @@ const ProductAttributeDTO = z.object({
   slug: z.string(),
   image: z.string().optional(),
   displayOrder: z.number().nonnegative().nullable().optional(),
+  status: z.enum([EAttributeStatus.ACTIVE, EAttributeStatus.INACTIVE_BY_ADMIN]),
   attributeValues: z.array(ProductAttributeValueDTO),
 });
 
@@ -75,14 +77,14 @@ const ProductToOptionToOptionItemDTO = z.object({
   displayOrder: z.number().nonnegative().nullable().optional(),
   priceModifierType: z.enum(EPriceModifierType),
   priceModifierValue: z.number(),
-})
+});
 
-const ProductToOptionDTO = z.object({
+export const ProductToOptionDTO = z.object({
   optionId: z.uuid(),
   displayOrder: z.number().nonnegative().nullable().optional(),
   isRequired: z.boolean().optional(),
-  maxSelect: z.number().nonnegative(),
-  optionItems: z.array(ProductToOptionToOptionItemDTO).optional()
+  maxSelect: z.number().nonnegative().nullable(),
+  optionItems: z.array(ProductToOptionToOptionItemDTO).optional(),
 });
 
 const ProductTagDTO = z.object({
@@ -94,7 +96,10 @@ const ProductTagDTO = z.object({
 
 export const GetQueryDTO = z.object({
   pagination: PagingQueryDTO.shape.pagination.optional(),
-    orderQuery: OrderQueryDTO(['createdAt', 'updatedAt'] as (keyof Product)[]).shape.orderQuery.optional(),
+  orderQuery: OrderQueryDTO([
+    "createdAt",
+    "updatedAt",
+  ] as (keyof Product)[]).shape.orderQuery.optional(),
   searchQuery: SearchQueryDTO([
     "name",
   ] as (keyof Product)[]).shape.searchQuery.optional(),
@@ -102,26 +107,50 @@ export const GetQueryDTO = z.object({
 });
 
 export const PostCreateBodyDTO = z.object({
-  productCategoryId: z.uuid().optional().nullable(),
-  brandId: z.uuid().optional(),
   code: z.string().min(1),
   name: z.string().min(1),
   slug: z.string().min(1),
   seoTitle: z.string().optional(),
   description: z.string().optional(),
   seoDescription: z.string().optional(),
+  productCategoryId: z.uuid().optional().nullable(),
+  brandId: z.uuid().optional().nullable(),
   detail: z.string().optional(),
-  mainImage: z.string().optional(),
-  listImages: z.array(z.string()).optional(),
-  isActive: z.boolean().optional(),
+  mainImage: z.file(),
+  listImages: z.array(z.file()).optional(),
   viewCount: z.number().nonnegative().optional(),
   soldCount: z.number().nonnegative().optional(),
-
+  isActive: z.boolean().optional(),
+  productTags: z
+    .array(ProductTagDTO)
+    .check((ctx) => {
+      const ids = ctx.value.map((i) => i.productTagId);
+      if (new Set(ids).size !== ids.length) {
+        ctx.issues.push({
+          code: "custom",
+          input: ctx.value,
+          path: ["productTags"],
+          message: "Array must contain unique productTagId",
+        });
+      }
+    })
+    .optional(),
+  productOptions: z
+    .array(ProductToOptionDTO)
+    .check((ctx) => {
+      const ids = ctx.value.map((i) => i.optionId);
+      if (new Set(ids).size !== ids.length) {
+        ctx.issues.push({
+          code: "custom",
+          input: ctx.value,
+          path: ["productOptions"],
+          message: "Array must contain unique optionId",
+        });
+      }
+    })
+    .optional(),
   attributes: z.array(ProductAttributeDTO),
   skus: z.array(ProductSkuDTO),
-  translations: z.array(TranslationDTO).optional(),
-  productTags: z.array(ProductTagDTO).optional(),
-  productOptions: z.array(ProductToOptionDTO).optional(),
 });
 
 export const DeleteBodyDTO = z.object({

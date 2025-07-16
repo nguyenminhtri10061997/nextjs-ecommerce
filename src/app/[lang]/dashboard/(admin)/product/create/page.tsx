@@ -8,15 +8,11 @@ import ProductForm from "../_components/product-form";
 import { usePage } from "./usePage";
 
 export default function Page() {
-  const {
-    mutation,
-    handleSetForm,
-    handleClickSubmitForm,
-  } = usePage();
+  const { mutation, handleSetForm, handleClickSubmitForm } = usePage();
 
   return (
     <Box>
-      <Typography variant="h4">Create Product Category</Typography>
+      <Typography variant="h4">Create Product</Typography>
 
       <Box
         component="form"
@@ -24,9 +20,7 @@ export default function Page() {
         sx={{ mt: 2 }}
         onSubmit={handleClickSubmitForm}
       >
-        <ProductForm
-          onGetForm={handleSetForm}
-        />
+        <ProductForm onGetForm={handleSetForm} />
         <Stack direction={"row-reverse"}>
           <Button
             sx={{

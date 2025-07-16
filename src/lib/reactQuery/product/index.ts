@@ -1,12 +1,12 @@
 import { APIEndpoint } from "@/app/api/apiEndpoint";
-import { IdParamsDTO, PatchBodyDTO } from "@/app/api/product/[id]/validator";
+import { IdParamsDTO, PatchUpdateBodyDTO } from "@/app/api/product/[id]/validator";
 import {
   DeleteBodyDTO,
   GetQueryDTO,
   PostCreateBodyDTO,
 } from "@/app/api/product/validator";
 import { axiosInstance } from "@/lib/axiosInstance";
-import { TAppResponseBody } from "@/types/api/common";
+import { TAppResponseBody, TPaginationResponse } from "@/types/api/common";
 import { Product } from "@prisma/client";
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";
 import stringify from "fast-json-stable-stringify";
@@ -24,7 +24,7 @@ export const productKeys = {
 
 const getList = async ({ queryKey }: QueryFunctionContext) => {
   const [, , params] = queryKey as ReturnType<typeof productKeys.list>;
-  const data = await axiosInstance.get<TAppResponseBody<Product[]>>(
+  const data = await axiosInstance.get<TAppResponseBody<{ data: Product[], pagination: TPaginationResponse }>>(
     API_ENDPOINT,
     {
       params: JSON.parse(params),
@@ -60,7 +60,7 @@ export const getProductDetail = async ({ queryKey }: QueryFunctionContext) => {
 
 export const patchProduct = async (variable: {
   id: output<typeof IdParamsDTO>["id"];
-  body: output<typeof PatchBodyDTO>;
+  body: output<typeof PatchUpdateBodyDTO>;
 }) => {
   const { id, body } = variable;
   const res = await axiosInstance.patch<TAppResponseBody<Product>>(

@@ -59,6 +59,7 @@ export default function Page() {
   });
 
   const query = useGetProductListQuery({
+    pagination,
     orderQuery: {
       orderKey: orderQuery.orderKey!,
       orderType: orderQuery.orderType!,
@@ -155,10 +156,10 @@ export default function Page() {
           columns={columns}
           pagination={{
             ...pagination,
-            count: query.data?.length || 0,
+            count: query.data?.pagination.count || 0,
           }}
           selectedHash={selectedHash}
-          data={query.data || []}
+          data={query.data?.data || []}
           orderQuery={orderQuery}
           actions={
             <Stack direction="row" alignItems="center" spacing={2}>

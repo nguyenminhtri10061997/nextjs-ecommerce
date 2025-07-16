@@ -4,30 +4,73 @@ import { textToSlug } from "@/common";
 import AppImageUpload from "@/components/AppImageUpload";
 import {
   Box,
+  Button,
   Checkbox,
   FormControl,
   FormControlLabel,
+  FormHelperText,
   FormLabel,
+  Grid,
+  IconButton,
   MenuItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  Toolbar,
 } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
-import { ETagDisplayType } from "@prisma/client";
 import { useEffect } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import useIndex, { TForm } from "./useIndex";
-import AppColorPicker from "@/components/AppColorPicker";
+
+import AppSortableItem from "@/components/AppRowSortable";
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { v4 } from "uuid";
 
 type TProps = {
-  file?: File | null;
-  logoUrl?: string | null;
   onGetForm: (form: UseFormReturn<TForm>) => void;
-  onChangeFile?: (file: File) => void;
-  onDeleteFile?: (file?: File | null, url?: TProps["logoUrl"]) => void;
 };
 export default function Index(props: TProps) {
-  const { form } = useIndex();
-  const { file, logoUrl, onGetForm, onChangeFile, onDeleteFile } = props;
+  const {
+    form,
+    queryBrand,
+    queryCategory,
+    queryOption,
+    queryProductTag,
+    listImageArrField,
+    productTagArrField,
+    productOptionArrField,
+    getProductTagIdSelected,
+    productOptionIdSelected,
+    handleDragEnd,
+  } = useIndex();
+  const { onGetForm } = props;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     onGetForm(form);
@@ -51,7 +94,7 @@ export default function Index(props: TProps) {
 
   const { control } = form;
 
-  const displayType = form.watch("displayType");
+  const productTagIdSelected = getProductTagIdSelected();
 
   return (
     <Stack direction={"column"} gap={2}>
@@ -111,11 +154,11 @@ export default function Index(props: TProps) {
       />
 
       <Controller
-        name="description"
+        name="seoTitle"
         control={control}
         render={({ field, fieldState }) => (
           <TextField
-            label="Description"
+            label="Seo Title"
             fullWidth
             error={!!fieldState.error}
             helperText={fieldState.error?.message}
@@ -126,12 +169,179 @@ export default function Index(props: TProps) {
           />
         )}
       />
+
       <Controller
-        name="expiredAfterDays"
+        name="description"
         control={control}
         render={({ field, fieldState }) => (
           <TextField
-            label="Expired After Days"
+            label="Description"
+            multiline
+            minRows={3}
+            fullWidth
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+            value={field.value ?? ""}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+          />
+        )}
+      />
+
+      <Controller
+        name="seoDescription"
+        control={control}
+        render={({ field, fieldState }) => (
+          <TextField
+            label="Seo Description"
+            multiline
+            minRows={3}
+            fullWidth
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+            value={field.value ?? ""}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+          />
+        )}
+      />
+
+      <Controller
+        name="productCategoryId"
+        control={control}
+        render={({ field, fieldState }) => (
+          <TextField
+            label="Category"
+            select
+            fullWidth
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+            value={field.value ?? ""}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+          >
+            {queryCategory.isLoading ? (
+              <MenuItem disabled value="">
+                Loading...
+              </MenuItem>
+            ) : (
+              queryCategory.data?.map((pc) => {
+                return (
+                  <MenuItem key={pc.id} value={pc.id}>
+                    {pc.name}
+                  </MenuItem>
+                );
+              })
+            )}
+          </TextField>
+        )}
+      />
+
+      <Controller
+        name="brandId"
+        control={control}
+        render={({ field, fieldState }) => (
+          <TextField
+            label="Brand"
+            select
+            fullWidth
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+            value={field.value ?? ""}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+          >
+            {queryBrand.isLoading ? (
+              <MenuItem disabled value="">
+                Loading...
+              </MenuItem>
+            ) : (
+              queryBrand.data?.map((pc) => {
+                return (
+                  <MenuItem key={pc.id} value={pc.id}>
+                    {pc.name}
+                  </MenuItem>
+                );
+              })
+            )}
+          </TextField>
+        )}
+      />
+
+      <Controller
+        name="detail"
+        control={control}
+        render={({ field, fieldState }) => (
+          <TextField
+            label="Detail"
+            multiline
+            minRows={3}
+            fullWidth
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+            value={field.value ?? ""}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+          />
+        )}
+      />
+
+      <Controller
+        name="mainImage"
+        control={control}
+        rules={{ required: "Main image is required" }}
+        render={({ field, fieldState }) => (
+          <FormControl required>
+            <FormLabel>Main Image</FormLabel>
+            <AppImageUpload
+              file={field.value?.file}
+              url={form.getValues("mainImage")?.url}
+              onChange={field.onChange}
+              showDeleteBtn={false}
+            />
+            {fieldState.error && (
+              <FormHelperText error>{fieldState.error.message}</FormHelperText>
+            )}
+          </FormControl>
+        )}
+      />
+      <FormControl>
+        <FormLabel>List Images</FormLabel>
+
+        <Stack direction={"row"} gap={2} overflow={"auto"}>
+          {listImageArrField.fields.map((item, idx) => (
+            <Controller
+              key={item.id}
+              name={`listImages.${idx}.file`}
+              control={control}
+              render={({ field }) => (
+                <AppImageUpload
+                  file={field.value}
+                  url={form.getValues("listImages")?.[idx].url}
+                  onChange={field.onChange}
+                  onDelete={() => listImageArrField.remove(idx)}
+                />
+              )}
+            />
+          ))}
+          <AppImageUpload
+            onChange={(file) => listImageArrField.append({ file })}
+            showDeleteBtn={false}
+          />
+        </Stack>
+      </FormControl>
+
+      <Controller
+        name="viewCount"
+        control={control}
+        render={({ field, fieldState }) => (
+          <TextField
+            label="View Count"
             type="number"
             fullWidth
             error={!!fieldState.error}
@@ -156,11 +366,11 @@ export default function Index(props: TProps) {
       />
 
       <Controller
-        name="displayOrder"
+        name="soldCount"
         control={control}
         render={({ field, fieldState }) => (
           <TextField
-            label="Display Order"
+            label="Sold Count"
             type="number"
             fullWidth
             error={!!fieldState.error}
@@ -183,6 +393,180 @@ export default function Index(props: TProps) {
           />
         )}
       />
+
+      <FormControl>
+        <FormLabel>Product Tag</FormLabel>
+        {productTagArrField.fields.map((item, idx) => (
+          <Grid key={item.id} container spacing={3} mt={1}>
+            <Grid size="grow">
+              <Controller
+                key={item.id}
+                name={`productTags.${idx}.productTagId`}
+                control={control}
+                rules={{ required: "Tag is required" }}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    label="Tag"
+                    select
+                    fullWidth
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    inputRef={field.ref}
+                  >
+                    {queryProductTag.isLoading ? (
+                      <MenuItem disabled value="">
+                        Loading...
+                      </MenuItem>
+                    ) : (
+                      queryProductTag.data
+                        ?.filter((i) => !productTagIdSelected?.includes(i.id))
+                        ?.map((i) => {
+                          return (
+                            <MenuItem key={i.id} value={i.id}>
+                              {i.name}
+                            </MenuItem>
+                          );
+                        })
+                    )}
+                  </TextField>
+                )}
+              />
+            </Grid>
+            <Grid>
+              <Controller
+                key={item.id}
+                name={`productTags.${idx}.expiredAt`}
+                control={control}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    label="Expired At"
+                    type="datetime-local"
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    inputRef={field.ref}
+                    slotProps={{
+                      inputLabel: {
+                        shrink: true,
+                      },
+                    }}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid mt={1}>
+              <IconButton onClick={() => productTagArrField.remove(idx)}>
+                <DeleteIcon color="error" />
+              </IconButton>
+            </Grid>
+          </Grid>
+        ))}
+        <Box mt={1}>
+          <Button
+            onClick={() =>
+              productTagArrField.append({
+                productTagId: "",
+              })
+            }
+            variant="contained"
+            startIcon={<AddIcon />}
+          >
+            Add Tag
+          </Button>
+        </Box>
+      </FormControl>
+
+      <FormControl>
+        <FormLabel>Option</FormLabel>
+        <TableContainer>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={productOptionArrField.fields.map((i) => i.idDnD)}
+            >
+              <Table sx={{ minWidth: 650 }}>
+                <TableBody>
+                  {productOptionArrField.fields.map((i, idx) => (
+                    <AppSortableItem key={i.idDnD} id={i.idDnD}>
+                      <TableCell>
+                        <Controller
+                          name={`productOptions.${idx}.optionId`}
+                          control={control}
+                          rules={{ required: "Option is required" }}
+                          render={({ field, fieldState }) => (
+                            <TextField
+                              label="Option"
+                              select
+                              fullWidth
+                              error={!!fieldState.error}
+                              helperText={fieldState.error?.message}
+                              value={field.value ?? ""}
+                              onChange={field.onChange}
+                              onBlur={field.onBlur}
+                              inputRef={field.ref}
+                            >
+                              {queryOption.isLoading ? (
+                                <MenuItem disabled value="">
+                                  Loading...
+                                </MenuItem>
+                              ) : (
+                                queryOption.data
+                                  ?.filter(
+                                    (i) =>
+                                      !productOptionIdSelected?.includes(i.id)
+                                  )
+                                  ?.map((i) => {
+                                    return (
+                                      <MenuItem key={i.id} value={i.id}>
+                                        {i.name}
+                                      </MenuItem>
+                                    );
+                                  })
+                              )}
+                            </TextField>
+                          )}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <IconButton
+                          onClick={() => productOptionArrField.remove(idx)}
+                          color="error"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </AppSortableItem>
+                  ))}
+                </TableBody>
+              </Table>
+            </SortableContext>
+          </DndContext>
+        </TableContainer>
+
+        <Toolbar disableGutters>
+          <Button
+            onClick={() =>
+              productOptionArrField.append({
+                optionId: "",
+                maxSelect: null,
+                idDnD: v4(),
+              })
+            }
+            variant="contained"
+            startIcon={<AddIcon />}
+          >
+            Add Option
+          </Button>
+        </Toolbar>
+      </FormControl>
 
       <Controller
         name="isActive"
@@ -199,63 +583,6 @@ export default function Index(props: TProps) {
           />
         )}
       />
-
-      <Controller
-        name="displayType"
-        control={control}
-        rules={{ required: "Display Type is required" }}
-        render={({ field, fieldState }) => (
-          <TextField
-            label="Display Type"
-            select
-            fullWidth
-            error={!!fieldState.error}
-            helperText={fieldState.error?.message}
-            value={field.value ?? ""}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            inputRef={field.ref}
-          >
-            {Object.values(ETagDisplayType).map((i) => {
-              return (
-                <MenuItem key={i} value={i}>
-                  {i}
-                </MenuItem>
-              );
-            })}
-          </TextField>
-        )}
-      />
-
-      {displayType === "TEXT_BACKGROUND" && (
-        <Controller
-          name="bgColor"
-          control={control}
-          render={({ field }) => {
-            return (
-              <FormControl>
-                <FormLabel>Background Color</FormLabel>
-                <Box>
-                  <AppColorPicker
-                    value={field.value || "#FFF"}
-                    onChange={(color) => form.setValue("bgColor", color)}
-                    width={50}
-                    height={50}
-                  />
-                </Box>
-              </FormControl>
-            );
-          }}
-        />
-      )}
-      {(displayType === "TEXT_IMAGE" || displayType === "IMAGE_ONLY") && (
-        <AppImageUpload
-          file={file}
-          url={logoUrl}
-          onChange={onChangeFile}
-          onDelete={onDeleteFile}
-        />
-      )}
     </Stack>
   );
 }

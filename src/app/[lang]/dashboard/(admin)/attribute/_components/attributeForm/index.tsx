@@ -154,7 +154,7 @@ export default function Index(props: TProps) {
           <SortableContext
             items={attributeValueArrField.fields.map((i) => i.idDnD)}
           >
-            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <Table sx={{ minWidth: 650 }}>
               <TableBody>
                 {attributeValueArrField.fields.map((i, idx) => (
                   <AppSortableItem key={i.idDnD} id={i.idDnD}>
