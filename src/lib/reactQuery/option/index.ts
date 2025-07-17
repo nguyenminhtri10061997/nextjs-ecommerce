@@ -24,7 +24,7 @@ export const optionKeys = {
 
 const getList = async ({ queryKey }: QueryFunctionContext) => {
   const [, , params] = queryKey as ReturnType<typeof optionKeys.list>;
-  const data = await axiosInstance.get<TAppResponseBody<Option[]>>(
+  const data = await axiosInstance.get<TAppResponseBody<Prisma.OptionGetPayload<{ include: { optionItems: true } }>[]>>(
     API_ENDPOINT,
     {
       params: JSON.parse(params),

@@ -1,26 +1,21 @@
-import {
-  PostCreateBodyDTO,
-  ProductToOptionDTO,
-} from "@/app/api/product/validator";
+import { PostCreateBodyDTO } from "@/app/api/product/validator";
+import { useGetAttributeListQuery } from "@/lib/reactQuery/attribute";
 import { useGetBrandListQuery } from "@/lib/reactQuery/brand";
 import { useGetOptionListQuery } from "@/lib/reactQuery/option";
 import { useGetProductCategoryListQuery } from "@/lib/reactQuery/product-category";
 import { useGetProductTagListQuery } from "@/lib/reactQuery/product-tag";
-import { DragEndEvent } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
 import { useMemo } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { output } from "zod/v4";
 
-export type TForm = Omit<
-  Partial<output<typeof PostCreateBodyDTO>>,
-  "productOptions" | "listImages" | "mainImage"
-> & {
-  productOptions: (output<typeof ProductToOptionDTO> & {
-    idDnD: string;
-  })[];
+export type TForm<
+  T extends output<typeof PostCreateBodyDTO> = output<typeof PostCreateBodyDTO>
+> = Omit<T, "listImages" | "mainImage" | "attributes"> & {
   listImages: { file?: File | null; url?: string | null }[];
   mainImage: { file?: File | null; url?: string | null };
+  attributes: (Omit<T['attributes'][number], "image"> & {
+    image: { file?: File | null; url?: string | null };
+  })[];
 };
 
 export default function useIndex() {
@@ -41,17 +36,17 @@ export default function useIndex() {
     control: form.control,
     name: "productOptions",
   });
+
+  const productAttArrField = useFieldArray({
+    control: form.control,
+    name: "attributes",
+  });
+
   const queryBrand = useGetBrandListQuery({});
   const queryCategory = useGetProductCategoryListQuery({});
   const queryProductTag = useGetProductTagListQuery({});
   const queryOption = useGetOptionListQuery({});
-
-  const getProductTagIdSelected = () => {
-    return form
-      .getValues("productTags")
-      ?.map((i) => i.productTagId)
-      .filter(Boolean);
-  };
+  const queryAtt = useGetAttributeListQuery({});
 
   const productOptionsWatch = useWatch({
     control: form.control,
@@ -59,22 +54,27 @@ export default function useIndex() {
   });
 
   const productOptionIdSelected = useMemo(
-    () => (productOptionsWatch || []).map((i) => i.optionId),
+    () =>
+      (productOptionsWatch || []).map((i, idx) => ({
+        idx,
+        optionId: i.optionId,
+      })),
     [productOptionsWatch]
   );
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+  const productTagsWatch = useWatch({
+    control: form.control,
+    name: "productTags",
+  });
 
-    if (active.id !== over?.id) {
-      const optionVals = form.getValues("productOptions");
-      const oldIndex = optionVals?.findIndex((i) => i.idDnD === active.id);
-      const newIndex = optionVals.findIndex((i) => i.idDnD === over?.id);
-
-      const attributeValuesMoved = arrayMove(optionVals, oldIndex, newIndex);
-      form.setValue("productOptions", attributeValuesMoved);
-    }
-  };
+  const productTagIdSelected = useMemo(
+    () =>
+      (productTagsWatch || []).map((i, idx) => ({
+        idx,
+        productTagId: i.productTagId,
+      })),
+    [productTagsWatch]
+  );
 
   return {
     form,
@@ -86,7 +86,8 @@ export default function useIndex() {
     listImageArrField,
     productOptionArrField,
     productOptionIdSelected,
-    getProductTagIdSelected,
-    handleDragEnd,
+    productTagIdSelected,
+    productAttArrField,
+    queryAtt,
   };
 }

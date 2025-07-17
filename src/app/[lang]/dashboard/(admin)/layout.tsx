@@ -10,7 +10,7 @@ import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import LogoDevIcon from "@mui/icons-material/LogoDev";
 import MenuIcon from "@mui/icons-material/Menu";
-import { ListItemIcon, Skeleton } from "@mui/material";
+import { ListItemIcon } from "@mui/material";
 import AppBar from "@mui/material/AppBar";
 import Avatar from "@mui/material/Avatar";
 import Backdrop from "@mui/material/Backdrop";
@@ -30,7 +30,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import useLayout from "./useLayout";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -51,7 +51,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     handleSetMode,
     mode,
   } = useLayout();
-  const { loading } = useLoadingCtx();
+  const { loading, setLoading } = useLoadingCtx();
 
   const breadcrumbsRender = useMemo(() => {
     return breadcrumbs?.map((segment, idx) => {
@@ -70,131 +70,128 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     });
   }, [breadcrumbs]);
 
-  if (query.isLoading) {
-    return (
-      <>
-        <Skeleton variant="rectangular" width={210} height={60} />
-        <Skeleton variant="rounded" width={210} height={60} />
-      </>
-    );
-  }
+  useEffect(() => {
+    if (loading !== query.isLoading) {
+      setLoading(query.isLoading);
+    }
+  }, [query.isLoading, loading, setLoading]);
 
   return (
-      <Box sx={{ height: "100vh" }}>
-        <Drawer variant="persistent" anchor="left" open={isOpenDrawer}>
-          <Box sx={{ width: 250 }}>
-            <Toolbar sx={{ gap: 2 }}>
-              <Link
-                href={"/dashboard"}
-                className="flex items-center grow-1 gap-4"
-              >
-                <LinkLoadingIndicator />
-                <LogoDevIcon fontSize="large" />
-                <Box>
-                  <Typography variant="h6">{dict.AppName}</Typography>
-                </Box>
-              </Link>
-              <IconButton size="large" onClick={handleClickCloseDrawer}>
-                <ChevronLeftIcon />
-              </IconButton>
-            </Toolbar>
+    <Box sx={{ height: "100vh" }}>
+      <Drawer variant="persistent" anchor="left" open={isOpenDrawer}>
+        <Box sx={{ width: 250 }}>
+          <Toolbar sx={{ gap: 2 }}>
+            <Link
+              href={"/dashboard"}
+              className="flex items-center grow-1 gap-4"
+            >
+              <LinkLoadingIndicator />
+              <LogoDevIcon fontSize="large" />
+              <Box>
+                <Typography variant="h6">{dict.AppName}</Typography>
+              </Box>
+            </Link>
+            <IconButton size="large" onClick={handleClickCloseDrawer}>
+              <ChevronLeftIcon />
+            </IconButton>
+          </Toolbar>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          ></Box>
+          <Divider />
+          <DashboardMenu arrMenuRender={arrMenuRender} />
+        </Box>
+      </Drawer>
+      <Box
+        sx={[
+          {
+            width: isOpenDrawer
+              ? `calc(100% - ${ADMIN_DRAWER_WIDTH}px)`
+              : "100%",
+            transition: theme.transitions.create("width", {
+              duration: theme.transitions.duration.standard,
+              easing: theme.transitions.easing.easeInOut,
+            }),
+            display: "flex",
+            flexDirection: "column",
+            float: "right",
+            height: "100%",
+          },
+        ]}
+      >
+        <AppBar position="sticky">
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleClickOpenDrawer}
+              edge="start"
+              sx={[isOpenDrawer && { display: "none" }]}
+            >
+              <MenuIcon />
+            </IconButton>
             <Box
               sx={{
-                display: "flex",
-                justifyContent: "space-between",
+                flexGrow: 1,
               }}
             ></Box>
-            <Divider />
-            <DashboardMenu arrMenuRender={arrMenuRender} />
-          </Box>
-        </Drawer>
+            <Box>
+              <Stack direction="row">
+                <ListItem>
+                  {mode === "light" ? (
+                    <ListItemButton onClick={handleSetMode("dark")}>
+                      <DarkModeIcon />
+                    </ListItemButton>
+                  ) : (
+                    <ListItemButton onClick={handleSetMode("light")}>
+                      <LightModeIcon />
+                    </ListItemButton>
+                  )}
+                </ListItem>
+                <ListItem>
+                  <Tooltip title="Open settings">
+                    <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+                      <Avatar
+                        alt={query.data?.account.username}
+                        src="/static/images/avatar/2.jpg"
+                      />
+                    </IconButton>
+                  </Tooltip>
+                  <Menu
+                    anchorEl={anchorElUser}
+                    open={Boolean(anchorElUser)}
+                    onClose={handleCloseUserMenu}
+                  >
+                    <MenuItem onClick={handleClickLogout}>
+                      <ListItemIcon>
+                        <Logout fontSize="small" />
+                      </ListItemIcon>
+                      Logout
+                    </MenuItem>
+                  </Menu>
+                </ListItem>
+              </Stack>
+            </Box>
+          </Toolbar>
+        </AppBar>
         <Box
-          sx={[
-            {
-              width: isOpenDrawer
-                ? `calc(100% - ${ADMIN_DRAWER_WIDTH}px)`
-                : "100%",
-              transition: theme.transitions.create("width", {
-                duration: theme.transitions.duration.standard,
-                easing: theme.transitions.easing.easeInOut,
-              }),
-              display: "flex",
-              flexDirection: "column",
-              float: "right",
-              height: "100%",
-            },
-          ]}
+          component="main"
+          sx={{ m: 2, flexGrow: 1, display: "flex", flexDirection: "column" }}
         >
-          <AppBar position="sticky">
-            <Toolbar>
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                onClick={handleClickOpenDrawer}
-                edge="start"
-                sx={[isOpenDrawer && { display: "none" }]}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Box
-                sx={{
-                  flexGrow: 1,
-                }}
-              ></Box>
-              <Box>
-                <Stack direction="row">
-                  <ListItem>
-                    {mode === "light" ? (
-                      <ListItemButton onClick={handleSetMode("dark")}>
-                        <DarkModeIcon />
-                      </ListItemButton>
-                    ) : (
-                      <ListItemButton onClick={handleSetMode("light")}>
-                        <LightModeIcon />
-                      </ListItemButton>
-                    )}
-                  </ListItem>
-                  <ListItem>
-                    <Tooltip title="Open settings">
-                      <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                        <Avatar
-                          alt={query.data?.account.username}
-                          src="/static/images/avatar/2.jpg"
-                        />
-                      </IconButton>
-                    </Tooltip>
-                    <Menu
-                      anchorEl={anchorElUser}
-                      open={Boolean(anchorElUser)}
-                      onClose={handleCloseUserMenu}
-                    >
-                      <MenuItem onClick={handleClickLogout}>
-                        <ListItemIcon>
-                          <Logout fontSize="small" />
-                        </ListItemIcon>
-                        Logout
-                      </MenuItem>
-                    </Menu>
-                  </ListItem>
-                </Stack>
-              </Box>
-            </Toolbar>
-          </AppBar>
-          <Box
-            component="main"
-            sx={{ m: 2, flexGrow: 1, display: "flex", flexDirection: "column" }}
-          >
-            <Breadcrumbs separator="›" aria-label="breadcrumb">
-              {breadcrumbsRender}
-            </Breadcrumbs>
-            <Box sx={{ flexGrow: 1 }}>{children}</Box>
-          </Box>
+          <Breadcrumbs separator="›" aria-label="breadcrumb">
+            {breadcrumbsRender}
+          </Breadcrumbs>
+          <Box sx={{ flexGrow: 1 }}>{children}</Box>
         </Box>
-        {query.isPending && !loading && (
-          <Backdrop open sx={{ zIndex: 1600 }}>
-            <CircularProgress color="inherit" />
-          </Backdrop>
-        )}
       </Box>
+      {query.isPending && !loading && (
+        <Backdrop open sx={{ zIndex: 1600 }}>
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      )}
+    </Box>
   );
 }

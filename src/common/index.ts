@@ -1,4 +1,8 @@
 import { TOrderQuery, TPaginationParams } from "@/types/api/common";
+import { ChangeEvent } from "react";
+import {
+  ControllerRenderProps
+} from "react-hook-form";
 
 export const getSegments = (pathname: string) => {
   return pathname.substring(6).split("/").filter(Boolean);
@@ -43,8 +47,20 @@ export const getBaseFileName = (fileName: string) => {
 
 export function alphaToHex(a?: number) {
   if (a == null) {
-    return ""
+    return "";
   }
-  const hex = Math.round(a * 255).toString(16).padStart(2, '0');
+  const hex = Math.round(a * 255)
+    .toString(16)
+    .padStart(2, "0");
   return hex;
 }
+
+export const handleNumberChange = (
+  e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  onChange: ControllerRenderProps["onChange"]
+) => {
+  const val = e.target.value;
+  if (/^\d*$/.test(val)) {
+    onChange(val === "" ? "" : Number(val));
+  }
+};

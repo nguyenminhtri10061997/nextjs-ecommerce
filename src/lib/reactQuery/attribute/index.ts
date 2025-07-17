@@ -20,7 +20,7 @@ export const attributeKeys = {
 
 const getList = async ({ queryKey }: QueryFunctionContext) => {
     const [, , params] = queryKey as ReturnType<typeof attributeKeys.list>
-    const data = await axiosInstance.get<TAppResponseBody<Attribute[]>>(API_ENDPOINT, {
+    const data = await axiosInstance.get<TAppResponseBody<Prisma.AttributeGetPayload<{ include: { attributeValues: true } }>[]>>(API_ENDPOINT, {
         params: JSON.parse(params),
     });
     return data.data.data;

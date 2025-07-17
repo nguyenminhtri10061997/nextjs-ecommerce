@@ -52,7 +52,9 @@ export const usePage = () => {
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
     mutation.mutate({
       id,
-      body: data,
+      body: {
+        
+      },
     });
   };
 
@@ -61,18 +63,24 @@ export const usePage = () => {
   });
 
   useEffect(() => {
-    if (query.data?.id) {
+    const { data } = query;
+    if (data?.id) {
       if (breadcrumbs.length === 3) {
         setBreadCrumbs(
-          breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.code)
+          breadcrumbs.slice(0, breadcrumbs.length - 1).concat(data.code)
         );
       }
-      formRef.current?.reset(query.data);
+      formRef.current?.reset({
+        ...data,
+        listImages: data.listImages.map((url) => ({ url })),
+        mainImage: {
+          url: data.mainImage,
+        },
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);
 
-  console.log(query.isLoading)
   useEffect(() => {
     setLoading(query.isLoading);
   }, [query.isLoading, setLoading]);

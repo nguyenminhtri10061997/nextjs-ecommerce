@@ -31,7 +31,11 @@ export const usePage = () => {
   });
 
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
-    mutation.mutate(data);
+    mutation.mutate({
+      ...data,
+      listImages: data.listImages.map((i) => i.file).filter(Boolean) as File[],
+      mainImage: data.mainImage.file!,
+    });
   };
 
   const { formRef, handleSetForm, handleClickSubmitForm } = useFormRef<TForm>({

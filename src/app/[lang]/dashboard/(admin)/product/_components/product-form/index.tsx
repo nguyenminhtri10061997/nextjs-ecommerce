@@ -1,31 +1,8 @@
 "use client";
 
-import { textToSlug } from "@/common";
+import { handleNumberChange, textToSlug } from "@/common";
+import { handleDragEnd } from "@/common/indexClient";
 import AppImageUpload from "@/components/AppImageUpload";
-import {
-  Box,
-  Button,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  FormLabel,
-  Grid,
-  IconButton,
-  MenuItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  Toolbar,
-} from "@mui/material";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import { useEffect } from "react";
-import { Controller, UseFormReturn } from "react-hook-form";
-import useIndex, { TForm } from "./useIndex";
-
-import AppSortableItem from "@/components/AppRowSortable";
 import {
   closestCenter,
   DndContext,
@@ -40,7 +17,26 @@ import {
 } from "@dnd-kit/sortable";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { v4 } from "uuid";
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  FormLabel,
+  Grid,
+  IconButton,
+  MenuItem,
+  Toolbar,
+} from "@mui/material";
+import Stack from "@mui/material/Stack";
+import TextField from "@mui/material/TextField";
+import { useEffect } from "react";
+import { Controller, UseFormReturn } from "react-hook-form";
+import AttributeItem from "../attribute";
+import ProductOption from "../product-option";
+import useIndex, { TForm } from "./useIndex";
 
 type TProps = {
   onGetForm: (form: UseFormReturn<TForm>) => void;
@@ -55,9 +51,10 @@ export default function Index(props: TProps) {
     listImageArrField,
     productTagArrField,
     productOptionArrField,
-    getProductTagIdSelected,
+    productTagIdSelected,
     productOptionIdSelected,
-    handleDragEnd,
+    productAttArrField,
+    queryAtt,
   } = useIndex();
   const { onGetForm } = props;
 
@@ -94,8 +91,6 @@ export default function Index(props: TProps) {
 
   const { control } = form;
 
-  const productTagIdSelected = getProductTagIdSelected();
-
   return (
     <Stack direction={"column"} gap={2}>
       <Controller
@@ -108,7 +103,7 @@ export default function Index(props: TProps) {
             fullWidth
             required
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -126,7 +121,7 @@ export default function Index(props: TProps) {
             fullWidth
             required
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -144,7 +139,7 @@ export default function Index(props: TProps) {
             fullWidth
             required
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -161,7 +156,7 @@ export default function Index(props: TProps) {
             label="Seo Title"
             fullWidth
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -180,7 +175,7 @@ export default function Index(props: TProps) {
             minRows={3}
             fullWidth
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -199,7 +194,7 @@ export default function Index(props: TProps) {
             minRows={3}
             fullWidth
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -217,7 +212,7 @@ export default function Index(props: TProps) {
             select
             fullWidth
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -249,7 +244,7 @@ export default function Index(props: TProps) {
             select
             fullWidth
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -282,7 +277,7 @@ export default function Index(props: TProps) {
             minRows={3}
             fullWidth
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -345,13 +340,10 @@ export default function Index(props: TProps) {
             type="number"
             fullWidth
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
             onChange={(e) => {
-              const val = e.target.value;
-              if (/^\d*$/.test(val)) {
-                field.onChange(val === "" ? "" : Number(val));
-              }
+              handleNumberChange(e, field.onChange);
             }}
             onBlur={field.onBlur}
             inputRef={field.ref}
@@ -374,13 +366,10 @@ export default function Index(props: TProps) {
             type="number"
             fullWidth
             error={!!fieldState.error}
-            helperText={fieldState.error?.message}
+            helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
             onChange={(e) => {
-              const val = e.target.value;
-              if (/^\d*$/.test(val)) {
-                field.onChange(val === "" ? "" : Number(val));
-              }
+              handleNumberChange(e, field.onChange);
             }}
             onBlur={field.onBlur}
             inputRef={field.ref}
@@ -400,7 +389,6 @@ export default function Index(props: TProps) {
           <Grid key={item.id} container spacing={3} mt={1}>
             <Grid size="grow">
               <Controller
-                key={item.id}
                 name={`productTags.${idx}.productTagId`}
                 control={control}
                 rules={{ required: "Tag is required" }}
@@ -410,7 +398,7 @@ export default function Index(props: TProps) {
                     select
                     fullWidth
                     error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
+                    helperText={fieldState.error?.message || " "}
                     value={field.value ?? ""}
                     onChange={field.onChange}
                     onBlur={field.onBlur}
@@ -422,7 +410,15 @@ export default function Index(props: TProps) {
                       </MenuItem>
                     ) : (
                       queryProductTag.data
-                        ?.filter((i) => !productTagIdSelected?.includes(i.id))
+                        ?.filter((op) => {
+                          const found = productTagIdSelected.find(
+                            (i) => i.productTagId === op.id
+                          );
+                          if (!found) {
+                            return true;
+                          }
+                          return idx === found.idx;
+                        })
                         ?.map((i) => {
                           return (
                             <MenuItem key={i.id} value={i.id}>
@@ -437,7 +433,6 @@ export default function Index(props: TProps) {
             </Grid>
             <Grid>
               <Controller
-                key={item.id}
                 name={`productTags.${idx}.expiredAt`}
                 control={control}
                 render={({ field, fieldState }) => (
@@ -445,7 +440,7 @@ export default function Index(props: TProps) {
                     label="Expired At"
                     type="datetime-local"
                     error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
+                    helperText={fieldState.error?.message || " "}
                     value={field.value ?? ""}
                     onChange={field.onChange}
                     onBlur={field.onBlur}
@@ -483,73 +478,31 @@ export default function Index(props: TProps) {
 
       <FormControl>
         <FormLabel>Option</FormLabel>
-        <TableContainer>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd(
+            form,
+            "productOptions",
+            productOptionArrField
+          )}
+        >
+          <SortableContext
+            items={productOptionArrField.fields.map((i) => i.id)}
           >
-            <SortableContext
-              items={productOptionArrField.fields.map((i) => i.idDnD)}
-            >
-              <Table sx={{ minWidth: 650 }}>
-                <TableBody>
-                  {productOptionArrField.fields.map((i, idx) => (
-                    <AppSortableItem key={i.idDnD} id={i.idDnD}>
-                      <TableCell>
-                        <Controller
-                          name={`productOptions.${idx}.optionId`}
-                          control={control}
-                          rules={{ required: "Option is required" }}
-                          render={({ field, fieldState }) => (
-                            <TextField
-                              label="Option"
-                              select
-                              fullWidth
-                              error={!!fieldState.error}
-                              helperText={fieldState.error?.message}
-                              value={field.value ?? ""}
-                              onChange={field.onChange}
-                              onBlur={field.onBlur}
-                              inputRef={field.ref}
-                            >
-                              {queryOption.isLoading ? (
-                                <MenuItem disabled value="">
-                                  Loading...
-                                </MenuItem>
-                              ) : (
-                                queryOption.data
-                                  ?.filter(
-                                    (i) =>
-                                      !productOptionIdSelected?.includes(i.id)
-                                  )
-                                  ?.map((i) => {
-                                    return (
-                                      <MenuItem key={i.id} value={i.id}>
-                                        {i.name}
-                                      </MenuItem>
-                                    );
-                                  })
-                              )}
-                            </TextField>
-                          )}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <IconButton
-                          onClick={() => productOptionArrField.remove(idx)}
-                          color="error"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </AppSortableItem>
-                  ))}
-                </TableBody>
-              </Table>
-            </SortableContext>
-          </DndContext>
-        </TableContainer>
+            {productOptionArrField.fields.map((field, idx) => (
+              <ProductOption
+                productOptionIdSelected={productOptionIdSelected}
+                key={field.id}
+                idx={idx}
+                field={field}
+                queryOption={queryOption}
+                form={form}
+                productOptionArrField={productOptionArrField}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
 
         <Toolbar disableGutters>
           <Button
@@ -557,13 +510,51 @@ export default function Index(props: TProps) {
               productOptionArrField.append({
                 optionId: "",
                 maxSelect: null,
-                idDnD: v4(),
               })
             }
             variant="contained"
             startIcon={<AddIcon />}
           >
             Add Option
+          </Button>
+        </Toolbar>
+      </FormControl>
+
+      <FormControl>
+        <FormLabel>Attribute</FormLabel>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd(form, "attributes", productAttArrField)}
+        >
+          <SortableContext items={productAttArrField.fields.map((i) => i.id)}>
+            {productAttArrField.fields.map((field, idx) => (
+              <AttributeItem
+                key={field.id}
+                field={field}
+                form={form}
+                idx={idx}
+                productAttArrField={productAttArrField}
+                queryAtt={queryAtt}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+
+        <Toolbar disableGutters>
+          <Button
+            onClick={() =>
+              productAttArrField.append({
+                name: "",
+                slug: "",
+                status: "ACTIVE",
+                attributeValues: [],
+              })
+            }
+            variant="contained"
+            startIcon={<AddIcon />}
+          >
+            Add Attribute
           </Button>
         </Toolbar>
       </FormControl>

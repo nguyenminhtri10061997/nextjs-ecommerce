@@ -28,7 +28,7 @@ const ProductAttributeValueDTO = z.object({
 const ProductAttributeDTO = z.object({
   name: z.string(),
   slug: z.string(),
-  image: z.string().optional(),
+  image: z.file().optional(),
   displayOrder: z.number().nonnegative().nullable().optional(),
   status: z.enum([EAttributeStatus.ACTIVE, EAttributeStatus.INACTIVE_BY_ADMIN]),
   attributeValues: z.array(ProductAttributeValueDTO),
@@ -79,7 +79,7 @@ const ProductToOptionToOptionItemDTO = z.object({
   priceModifierValue: z.number(),
 });
 
-export const ProductToOptionDTO = z.object({
+const ProductToOptionDTO = z.object({
   optionId: z.uuid(),
   displayOrder: z.number().nonnegative().nullable().optional(),
   isRequired: z.boolean().optional(),
@@ -110,14 +110,14 @@ export const PostCreateBodyDTO = z.object({
   code: z.string().min(1),
   name: z.string().min(1),
   slug: z.string().min(1),
-  seoTitle: z.string().optional(),
-  description: z.string().optional(),
-  seoDescription: z.string().optional(),
+  seoTitle: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  seoDescription: z.string().nullable().optional(),
   productCategoryId: z.uuid().optional().nullable(),
   brandId: z.uuid().optional().nullable(),
-  detail: z.string().optional(),
+  detail: z.string().nullable().optional(),
   mainImage: z.file(),
-  listImages: z.array(z.file()).optional(),
+  listImages: z.array(z.file()),
   viewCount: z.number().nonnegative().optional(),
   soldCount: z.number().nonnegative().optional(),
   isActive: z.boolean().optional(),
