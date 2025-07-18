@@ -54,6 +54,7 @@ export default function Index(props: TProps) {
     productTagIdSelected,
     productOptionIdSelected,
     productAttArrField,
+    skusArrField,
     queryAtt,
   } = useIndex();
   const { onGetForm } = props;
@@ -549,6 +550,39 @@ export default function Index(props: TProps) {
                 slug: "",
                 status: "ACTIVE",
                 attributeValues: [],
+              })
+            }
+            variant="contained"
+            startIcon={<AddIcon />}
+          >
+            Add Attribute
+          </Button>
+        </Toolbar>
+      </FormControl>
+
+      <FormControl>
+        <FormLabel>Sku</FormLabel>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd(form, "skus", skusArrField)}
+        >
+          <SortableContext items={skusArrField.fields.map((i) => i.id)}>
+            {skusArrField.fields.map((field, idx) => (
+              <Box key={field.id}>sku {idx}</Box>
+            ))}
+          </SortableContext>
+        </DndContext>
+
+        <Toolbar disableGutters>
+          <Button
+            onClick={() =>
+              skusArrField.append({
+                sellerSku: "",
+                stockType: "SKU",
+                price: 0,
+                status: "ACTIVE",
+                skuAttributeValues: []
               })
             }
             variant="contained"

@@ -139,9 +139,9 @@ enum EStockStatus {
 
 enum EStockType {
     SKU
-    EXTERNAL
+    // EXTERNAL
     ATTRIBUTE
-    DIGITAL // link down
+    // DIGITAL // link down
 }
 
 enum EPriceModifierType {
@@ -166,27 +166,35 @@ enum EOptionContext {
     //   SHIPPING
 }
 
+enum EProductType {
+    SIMPLE
+    VARIABLE
+    DIGITAL
+    SERVICE
+}
+
 // Tables
 
 model Product {
-    id                String   @id @default(uuid())
+    id                String       @id @default(uuid())
     productCategoryId String?
     brandId           String?
-    code              String   @unique
-    name              String   @unique
-    slug              String   @unique
+    code              String       @unique
+    name              String       @unique
+    slug              String       @unique
     seoTitle          String?
     description       String?
     seoDescription    String?
     detail            String?
     mainImage         String?
-    listImages        String[] @default([])
-    viewCount         Int      @default(0)
-    soldCount         Int      @default(0)
+    listImages        String[]     @default([])
+    viewCount         Int          @default(0)
+    soldCount         Int          @default(0)
+    type              EProductType
     avgRate           Float?
-    isActive          Boolean  @default(true)
-    createdAt         DateTime @default(now())
-    updatedAt         DateTime @default(now()) @updatedAt
+    isActive          Boolean      @default(true)
+    createdAt         DateTime     @default(now())
+    updatedAt         DateTime     @default(now()) @updatedAt
 
     attributes       ProductAttribute[]
     skus             ProductSku[]
@@ -314,15 +322,15 @@ model ProductAttribute {
 }
 
 model ProductAttributeValue {
-    id                 String           @id @default(uuid())
+    id                 String                @id @default(uuid())
     productAttributeId String
     name               String
     slug               String
     image              String?
     displayOrder       Int?
     status             EAttributeValueStatus
-    createdAt          DateTime         @default(now())
-    updatedAt          DateTime         @default(now()) @updatedAt
+    createdAt          DateTime              @default(now())
+    updatedAt          DateTime              @default(now()) @updatedAt
 
     attribute          ProductAttribute           @relation(fields: [productAttributeId], references: [id])
     skuAttributeValues ProductSkuAttributeValue[]

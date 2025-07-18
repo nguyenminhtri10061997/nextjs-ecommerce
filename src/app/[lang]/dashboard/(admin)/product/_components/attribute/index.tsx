@@ -1,3 +1,5 @@
+import { textToSlug } from "@/common";
+import { handleDragEnd } from "@/common/indexClient";
 import AppSortableItem from "@/components/AppSortableItem";
 import {
   closestCenter,
@@ -15,25 +17,23 @@ import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import {
   Autocomplete,
   Box,
-  FormControl,
+  Button,
   IconButton,
   MenuItem,
   TextField,
 } from "@mui/material";
 import { EAttributeStatus, Prisma } from "@prisma/client";
 import { UseQueryResult } from "@tanstack/react-query";
+import { useEffect } from "react";
 import {
   Controller,
   FieldArrayWithId,
   UseFieldArrayReturn,
   UseFormReturn,
 } from "react-hook-form";
+import AttributeAttValItem from "../attribute-val";
 import { TForm } from "../product-form/useIndex";
 import useIndex from "./useIndex";
-import { handleDragEnd } from "@/common/indexClient";
-import { useEffect } from "react";
-import { textToSlug } from "@/common";
-import AppImageUpload from "@/components/AppImageUpload";
 
 type TProps = {
   idx: number;
@@ -57,7 +57,6 @@ export default function Index(props: TProps) {
   const { productAttValArrField } = useIndex({
     form,
     idx: idxProps,
-    queryAtt,
   });
 
   useEffect(() => {
@@ -91,22 +90,6 @@ export default function Index(props: TProps) {
   return (
     <Box>
       <AppSortableItem id={fieldProps.id}>
-        <Controller
-          name={`attributes.${idxProps}.image`}
-          control={control}
-          render={({ field }) => (
-            <FormControl>
-              <AppImageUpload
-                file={field.value.file}
-                url={field.value.url}
-                onChange={(file: File) => {
-                  field.onChange({ file });
-                }}
-                showDeleteBtn={false}
-              />
-            </FormControl>
-          )}
-        />
         <Controller
           name={`attributes.${idxProps}.name`}
           control={control}
@@ -167,19 +150,20 @@ export default function Index(props: TProps) {
               inputRef={field.ref}
               sx={{ width: "20%" }}
             >
-              {Object.values(EAttributeStatus)?.map((i) => {
-                return (
-                  <MenuItem key={i} value={i}>
-                    {i}
-                  </MenuItem>
-                );
-              })}
+              <MenuItem value={EAttributeStatus.ACTIVE}>
+                {EAttributeStatus.ACTIVE}
+              </MenuItem>
+              <MenuItem value={EAttributeStatus.INACTIVE_BY_ADMIN}>
+                {EAttributeStatus.INACTIVE_BY_ADMIN}
+              </MenuItem>
             </TextField>
           )}
         />
-        <IconButton
+        <Button
+          startIcon={<AddIcon />}
           onClick={() =>
             productAttValArrField.append({
+              image: { file: null, url: null },
               name: "",
               slug: "",
               status: "ACTIVE",
@@ -188,8 +172,8 @@ export default function Index(props: TProps) {
           color="info"
           sx={{ mt: 1 }}
         >
-          <AddIcon />
-        </IconButton>
+          Add Value
+        </Button>
         <IconButton
           onClick={() => {
             productAttArrField.remove(idxProps);
@@ -214,17 +198,14 @@ export default function Index(props: TProps) {
             items={productAttValArrField.fields.map((i) => i.id)}
           >
             {productAttValArrField.fields.map((field, idx) => (
-              <AppSortableItem key={field.id} id={field.id}>
-                <IconButton
-                  onClick={() => {
-                    productAttValArrField.remove(idx);
-                  }}
-                  color="error"
-                  sx={{ mt: 1 }}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              </AppSortableItem>
+              <AttributeAttValItem
+                key={field.id}
+                form={form}
+                idxAtt={idxProps}
+                idxAttVal={idx}
+                productAttValArrField={productAttValArrField}
+                queryAtt={queryAtt}
+              />
             ))}
           </SortableContext>
         </DndContext>

@@ -17,7 +17,7 @@ import {
 const ProductAttributeValueDTO = z.object({
   name: z.string(),
   slug: z.string(),
-  image: z.string().optional(),
+  image: z.file().nullable().optional(),
   displayOrder: z.number().nonnegative().nullable().optional(),
   status: z.enum([
     EAttributeValueStatus.ACTIVE,
@@ -28,7 +28,6 @@ const ProductAttributeValueDTO = z.object({
 const ProductAttributeDTO = z.object({
   name: z.string(),
   slug: z.string(),
-  image: z.file().optional(),
   displayOrder: z.number().nonnegative().nullable().optional(),
   status: z.enum([EAttributeStatus.ACTIVE, EAttributeStatus.INACTIVE_BY_ADMIN]),
   attributeValues: z.array(ProductAttributeValueDTO),
@@ -59,7 +58,7 @@ const ProductSkuDTO = z
     status: z.enum(ESkuStatus),
     isDefault: z.boolean().optional(),
     displayOrder: z.number().nonnegative().nullable().optional(),
-    skuAttributeValues: ProductSkuAttributeValue,
+    skuAttributeValues: z.array(ProductSkuAttributeValue),
   })
   .check((ctx) => {
     if (ctx.value.stockType === "EXTERNAL") {

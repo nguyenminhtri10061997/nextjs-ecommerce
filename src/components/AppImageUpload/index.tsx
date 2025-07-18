@@ -23,20 +23,32 @@ type TProps = {
    * @default true
    */
   showDeleteBtn?: boolean;
+  width?: number;
+  height?: number;
+  iconFontSize?: number;
 };
 
 export default function AppImageUpload(props: TProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [hover, setHover] = useState(false);
   const theme = useTheme();
-  const { url, file, onChange, onDelete, showDeleteBtn = true } = props;
-  const inputRef = useRef<HTMLInputElement>(null)
+  const {
+    url,
+    file,
+    onChange,
+    onDelete,
+    showDeleteBtn = true,
+    width = 150,
+    height = 150,
+    iconFontSize = 20,
+  } = props;
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       onChange?.(file);
-      e.target.value = ""
+      e.target.value = "";
     }
   };
 
@@ -45,10 +57,10 @@ export default function AppImageUpload(props: TProps) {
   };
 
   const handleOpenModal = () => {
-    setModalOpen(true)
+    setModalOpen(true);
     setTimeout(() => {
-      setHover(false)
-    }, 200)
+      setHover(false);
+    }, 200);
   };
   const handleCloseModal = () => setModalOpen(false);
 
@@ -61,15 +73,15 @@ export default function AppImageUpload(props: TProps) {
   }, [file, url]);
 
   const handleClickEdit = () => {
-    inputRef.current?.click()
-  }
+    inputRef.current?.click();
+  };
 
   return (
     <Box
       sx={{
         position: "relative",
-        width: 150,
-        height: 150,
+        width,
+        height,
         borderRadius: 2,
         overflow: "hidden",
         cursor: "pointer",
@@ -104,7 +116,7 @@ export default function AppImageUpload(props: TProps) {
             alt="empty-image"
             style={{
               backgroundColor: "white",
-              objectFit: 'contain',
+              objectFit: "contain",
             }}
           />
           {hover && (
@@ -121,16 +133,17 @@ export default function AppImageUpload(props: TProps) {
                 transform: "translate(-50%, -50%)",
               }}
             >
-              <IconButton onClick={handleClickEdit}>
-                <EditIcon />
+              <IconButton onClick={handleClickEdit} size="small">
+                <EditIcon sx={{ fontSize: iconFontSize }} />
               </IconButton>
-              <IconButton onClick={handleOpenModal}>
-                <VisibilityIcon />
+              <Divider orientation="vertical" variant="middle" flexItem />
+              <IconButton onClick={handleOpenModal} size="small">
+                <VisibilityIcon sx={{ fontSize: iconFontSize }} />
               </IconButton>
               <Divider orientation="vertical" variant="middle" flexItem />
               {showDeleteBtn && (
-                <IconButton onClick={handleClickDelete}>
-                  <DeleteIcon />
+                <IconButton onClick={handleClickDelete} size="small">
+                  <DeleteIcon sx={{ fontSize: iconFontSize }} />
                 </IconButton>
               )}
             </Stack>

@@ -13,8 +13,13 @@ export type TForm<
 > = Omit<T, "listImages" | "mainImage" | "attributes"> & {
   listImages: { file?: File | null; url?: string | null }[];
   mainImage: { file?: File | null; url?: string | null };
-  attributes: (Omit<T['attributes'][number], "image"> & {
-    image: { file?: File | null; url?: string | null };
+  attributes: (Omit<T["attributes"][number], "attributeValues"> & {
+    attributeValues: (Omit<
+      T["attributes"][number]["attributeValues"][number],
+      "image"
+    > & {
+      image: { file?: File | null; url?: string | null };
+    })[];
   })[];
 };
 
@@ -40,6 +45,12 @@ export default function useIndex() {
   const productAttArrField = useFieldArray({
     control: form.control,
     name: "attributes",
+  });
+
+
+  const skusArrField = useFieldArray({
+    control: form.control,
+    name: "skus",
   });
 
   const queryBrand = useGetBrandListQuery({});
@@ -84,10 +95,11 @@ export default function useIndex() {
     queryOption,
     productTagArrField,
     listImageArrField,
+    productAttArrField,
+    skusArrField,
     productOptionArrField,
     productOptionIdSelected,
     productTagIdSelected,
-    productAttArrField,
     queryAtt,
   };
 }

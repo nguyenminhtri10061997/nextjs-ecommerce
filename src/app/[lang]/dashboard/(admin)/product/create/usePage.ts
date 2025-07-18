@@ -35,6 +35,19 @@ export const usePage = () => {
       ...data,
       listImages: data.listImages.map((i) => i.file).filter(Boolean) as File[],
       mainImage: data.mainImage.file!,
+      attributes: data.attributes.map((i, idx) => ({
+        name: i.name,
+        slug: i.slug,
+        status: i.status,
+        displayOrder: idx,
+        attributeValues: i.attributeValues.map((v, idxV) => ({
+          name: v.name,
+          slug: v.slug,
+          image: v.image.file,
+          displayOrder: idxV,
+          status: v.status,
+        }))
+      }))
     });
   };
 
