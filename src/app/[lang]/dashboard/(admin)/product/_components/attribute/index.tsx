@@ -24,7 +24,7 @@ import {
 } from "@mui/material";
 import { EAttributeStatus, Prisma } from "@prisma/client";
 import { UseQueryResult } from "@tanstack/react-query";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   Controller,
   FieldArrayWithId,
@@ -46,7 +46,7 @@ type TProps = {
   productAttArrField: UseFieldArrayReturn<TForm, "attributes">;
 };
 
-export default function Index(props: TProps) {
+export default React.memo(function Index(props: TProps) {
   const {
     idx: idxProps,
     field: fieldProps,
@@ -214,4 +214,4 @@ export default function Index(props: TProps) {
       </Box>
     </Box>
   );
-}
+});

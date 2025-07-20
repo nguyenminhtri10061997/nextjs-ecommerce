@@ -39,8 +39,8 @@ export default function Index(props: TProps) {
     productAttArrField,
     skuArrField,
     attAndAttValHash,
-    handleClickAddSku,
     handleClickGenSku,
+    handleClickDeleteSku,
   } = useIndex({
     form,
   });
@@ -125,7 +125,12 @@ export default function Index(props: TProps) {
                   <CardContent
                     sx={{ padding: "var(--mui-spacing) !important" }}
                   >
-                    <SkuItem form={form} idx={idx} attInfo={attInfo} />
+                    <SkuItem
+                      form={form}
+                      idx={idx}
+                      attInfo={attInfo}
+                      handleClickDeleteSku={handleClickDeleteSku}
+                    />
                   </CardContent>
                 </Card>
               );
@@ -144,15 +149,6 @@ export default function Index(props: TProps) {
           >
             Generate sku combination
           </AppButtonConfirm>
-
-          <Button
-            sx={{ ml: 1 }}
-            onClick={handleClickAddSku}
-            variant="contained"
-            startIcon={<AddIcon />}
-          >
-            Add One Sku
-          </Button>
         </Toolbar>
       </FormControl>
     </>

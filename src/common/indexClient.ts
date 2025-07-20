@@ -33,10 +33,6 @@ export function handleDragEnd<
         newIndex
       );
 
-      console.log({
-        attributeValuesMoved, key
-      })
-
       form.setValue(
         key as Path<TForm>,
         attributeValuesMoved as PathValue<TForm, Path<TForm>>

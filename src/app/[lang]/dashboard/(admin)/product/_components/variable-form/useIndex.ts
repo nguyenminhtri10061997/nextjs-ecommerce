@@ -1,17 +1,14 @@
+import { generateCombinations } from "@/common";
 import { useGetAttributeListQuery } from "@/lib/reactQuery/attribute";
+import { startTransition, useMemo } from "react";
 import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form";
 import { TForm } from "../product-form/useIndex";
-import { useAlertContext } from "@/hooks/useAlertContext";
-import { generateCombinations } from "@/common";
-import { startTransition, useMemo } from "react";
 
 type TProps = {
   form: UseFormReturn<TForm>;
 };
 export default function useIndex(props: TProps) {
   const { form } = props;
-
-  const { showAlert } = useAlertContext();
 
   const queryAtt = useGetAttributeListQuery({});
 
@@ -47,31 +44,7 @@ export default function useIndex(props: TProps) {
       });
     });
     return res;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productAttribute.map((a) => `${a.id}-${a.name}-${a.attributeValues?.length}`)]);
-
-  const handleClickAddSku = () => {
-    const att = form.getValues("attributes");
-    if (
-      !att.length ||
-      !att.some((f) => f.name) ||
-      !att.some((f) => f.attributeValues.some((v) => v.name))
-    ) {
-      showAlert(
-        "Please Add At Least One Attribute And Attribute Value First",
-        "error"
-      );
-      return;
-    }
-    skuArrField.append({
-      sellerSku: "",
-      stockType: "MANUAL",
-      stockStatus: "STOCKING",
-      price: 0,
-      status: "ACTIVE",
-      skuAttributeValues: [],
-    });
-  };
+  }, [productAttribute]);
 
   const handleClickGenSku = () => {
     startTransition(() => {
@@ -107,12 +80,16 @@ export default function useIndex(props: TProps) {
     });
   };
 
+  const handleClickDeleteSku = (idx: number) => {
+    skuArrField.remove(idx);
+  };
+
   return {
     queryAtt,
     productAttArrField,
     skuArrField,
     attAndAttValHash,
-    handleClickAddSku,
     handleClickGenSku,
+    handleClickDeleteSku,
   };
 }
