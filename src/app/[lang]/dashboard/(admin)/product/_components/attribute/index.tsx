@@ -34,6 +34,7 @@ import {
 import AttributeAttValItem from "../attribute-val";
 import { TForm } from "../product-form/useIndex";
 import useIndex from "./useIndex";
+import { v4 } from "uuid";
 
 type TProps = {
   idx: number;
@@ -163,6 +164,7 @@ export default function Index(props: TProps) {
           startIcon={<AddIcon />}
           onClick={() =>
             productAttValArrField.append({
+              id: v4(),
               image: { file: null, url: null },
               name: "",
               slug: "",

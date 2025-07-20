@@ -1,8 +1,6 @@
 import { TOrderQuery, TPaginationParams } from "@/types/api/common";
 import { ChangeEvent } from "react";
-import {
-  ControllerRenderProps
-} from "react-hook-form";
+import { ControllerRenderProps } from "react-hook-form";
 
 export const getSegments = (pathname: string) => {
   return pathname.substring(6).split("/").filter(Boolean);
@@ -64,3 +62,18 @@ export const handleNumberChange = (
     onChange(val === "" ? "" : Number(val));
   }
 };
+
+export function generateCombinations<T>(arrays: Array<T[]>) {
+  return arrays.reduce<T[][]>(
+    (acc, curr) => {
+      const result: T[][] = [];
+      for (const item of acc) {
+        for (const val of curr) {
+          result.push([...item, val]);
+        }
+      }
+      return result;
+    },
+    [[]]
+  );
+}

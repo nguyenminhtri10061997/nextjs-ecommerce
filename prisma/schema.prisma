@@ -42,27 +42,6 @@ enum EPermissionResource {
     PRODUCT_TAG
 }
 
-enum ESkuStatus {
-    ACTIVE
-    // INACTIVE_BY_SYSTEM
-    INACTIVE_BY_ADMIN
-    DELETED
-}
-
-enum EAttributeStatus {
-    ACTIVE
-    // INACTIVE_BY_SYSTEM
-    INACTIVE_BY_ADMIN
-    DELETED
-}
-
-enum EAttributeValueStatus {
-    ACTIVE
-    // INACTIVE_BY_SYSTEM
-    INACTIVE_BY_ADMIN
-    DELETED
-}
-
 // Tables
 
 model User {
@@ -138,10 +117,11 @@ enum EStockStatus {
 }
 
 enum EStockType {
-    SKU
+    INVENTORY
     // EXTERNAL
     ATTRIBUTE
-    // DIGITAL // link down
+    DIGITAL
+    MANUAL
 }
 
 enum EPriceModifierType {
@@ -171,6 +151,27 @@ enum EProductType {
     VARIABLE
     DIGITAL
     SERVICE
+}
+
+enum ESkuStatus {
+    ACTIVE
+    // INACTIVE_BY_SYSTEM
+    INACTIVE_BY_ADMIN
+    DELETED
+}
+
+enum EAttributeStatus {
+    ACTIVE
+    // INACTIVE_BY_SYSTEM
+    INACTIVE_BY_ADMIN
+    DELETED
+}
+
+enum EAttributeValueStatus {
+    ACTIVE
+    // INACTIVE_BY_SYSTEM
+    INACTIVE_BY_ADMIN
+    DELETED
 }
 
 // Tables
@@ -353,10 +354,11 @@ model ProductSku {
     width        Float?
     height       Float?
     length       Float?
-    note         String
+    note         String?
     displayOrder Int?
     status       ESkuStatus
-    isDefault    Boolean
+    downloadUrl  String?
+    isDefault    Boolean?
     createdAt    DateTime      @default(now())
     updatedAt    DateTime      @default(now()) @updatedAt
 

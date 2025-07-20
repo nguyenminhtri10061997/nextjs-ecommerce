@@ -12,7 +12,7 @@ export default function Page() {
 
   return (
     <Box>
-      <Typography variant="h4">Create Product</Typography>
+      <Typography variant="h6">Create Product</Typography>
 
       <Box
         component="form"

@@ -32,16 +32,21 @@ import {
 } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import { EProductType } from "@prisma/client";
 import { useEffect } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
-import AttributeItem from "../attribute";
 import ProductOption from "../product-option";
+import DigitalFrom from "../digital-form";
+import Service from "../service-form";
+import SimpleForm from "../simple-form";
+import VariableForm from "../variable-form";
 import useIndex, { TForm } from "./useIndex";
 
 type TProps = {
   onGetForm: (form: UseFormReturn<TForm>) => void;
 };
 export default function Index(props: TProps) {
+  const { onGetForm } = props;
   const {
     form,
     queryBrand,
@@ -53,11 +58,8 @@ export default function Index(props: TProps) {
     productOptionArrField,
     productTagIdSelected,
     productOptionIdSelected,
-    productAttArrField,
-    skusArrField,
-    queryAtt,
+    productTypeWatch,
   } = useIndex();
-  const { onGetForm } = props;
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -75,20 +77,75 @@ export default function Index(props: TProps) {
   }, [form, onGetForm]);
 
   useEffect(() => {
-    const callback = form.subscribe({
-      name: "name",
-      formState: {
-        values: true,
-      },
-      callback: ({ values }) => {
-        if (values.name) {
-          form.setValue("slug", textToSlug(values.name));
-        }
-      },
-    });
+    const callbacks = [
+      form.subscribe({
+        name: "name",
+        formState: {
+          values: true,
+        },
+        callback: ({ values }) => {
+          if (values.name) {
+            form.setValue("slug", textToSlug(values.name));
+          }
+        },
+      }),
+      form.subscribe({
+        name: "type",
+        formState: {
+          values: true,
+        },
+        callback: ({ values }) => {
+          form.setValue("attributes", []);
+          form.setValue("skus", []);
+          const commonValSku = {
+            price: 0,
+            sellerSku: "",
+            skuAttributeValues: [],
+            status: "ACTIVE",
+          };
+          let setSku: Partial<TForm["skus"][number]> = {};
+          switch (values.type) {
+            case "SIMPLE":
+              setSku = {
+                stockType: "MANUAL",
+                stockStatus: "STOCKING",
+              };
+              break;
+            case "DIGITAL":
+              setSku = {
+                stockType: "DIGITAL",
+              };
+              break;
+            case "VARIABLE":
+              return;
 
-    return () => callback();
+            case "SERVICE":
+              setSku = {
+                stockType: "MANUAL",
+              };
+              break;
+          }
+          form.setValue("skus", [
+            {
+              ...commonValSku,
+              ...setSku,
+            },
+          ] as TForm["skus"]);
+        },
+      }),
+    ];
+
+    return () => {
+      callbacks.forEach((sub) => sub());
+    };
   }, [form]);
+
+  const renderProductTypeMap = {
+    [EProductType.SIMPLE]: <SimpleForm form={form} />,
+    [EProductType.VARIABLE]: <VariableForm form={form} />,
+    [EProductType.DIGITAL]: <DigitalFrom form={form} />,
+    [EProductType.SERVICE]: <Service form={form} />,
+  };
 
   const { control } = form;
 
@@ -299,6 +356,8 @@ export default function Index(props: TProps) {
               url={form.getValues("mainImage")?.url}
               onChange={field.onChange}
               showDeleteBtn={false}
+              width={100}
+              height={100}
             />
             {fieldState.error && (
               <FormHelperText error>{fieldState.error.message}</FormHelperText>
@@ -321,6 +380,8 @@ export default function Index(props: TProps) {
                   url={form.getValues("listImages")?.[idx].url}
                   onChange={field.onChange}
                   onDelete={() => listImageArrField.remove(idx)}
+                  width={100}
+                  height={100}
                 />
               )}
             />
@@ -328,6 +389,8 @@ export default function Index(props: TProps) {
           <AppImageUpload
             onChange={(file) => listImageArrField.append({ file })}
             showDeleteBtn={false}
+            width={100}
+            height={100}
           />
         </Stack>
       </FormControl>
@@ -521,77 +584,32 @@ export default function Index(props: TProps) {
         </Toolbar>
       </FormControl>
 
-      <FormControl>
-        <FormLabel>Attribute</FormLabel>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd(form, "attributes", productAttArrField)}
-        >
-          <SortableContext items={productAttArrField.fields.map((i) => i.id)}>
-            {productAttArrField.fields.map((field, idx) => (
-              <AttributeItem
-                key={field.id}
-                field={field}
-                form={form}
-                idx={idx}
-                productAttArrField={productAttArrField}
-                queryAtt={queryAtt}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
-
-        <Toolbar disableGutters>
-          <Button
-            onClick={() =>
-              productAttArrField.append({
-                name: "",
-                slug: "",
-                status: "ACTIVE",
-                attributeValues: [],
-              })
-            }
-            variant="contained"
-            startIcon={<AddIcon />}
+      <Controller
+        name="type"
+        control={control}
+        rules={{ required: "Type is required" }}
+        render={({ field, fieldState }) => (
+          <TextField
+            required
+            label="Type"
+            select
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message || " "}
+            value={field.value ?? ""}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
           >
-            Add Attribute
-          </Button>
-        </Toolbar>
-      </FormControl>
-
-      <FormControl>
-        <FormLabel>Sku</FormLabel>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd(form, "skus", skusArrField)}
-        >
-          <SortableContext items={skusArrField.fields.map((i) => i.id)}>
-            {skusArrField.fields.map((field, idx) => (
-              <Box key={field.id}>sku {idx}</Box>
+            {Object.values(EProductType).map((e) => (
+              <MenuItem key={e} value={e}>
+                {e}
+              </MenuItem>
             ))}
-          </SortableContext>
-        </DndContext>
+          </TextField>
+        )}
+      />
 
-        <Toolbar disableGutters>
-          <Button
-            onClick={() =>
-              skusArrField.append({
-                sellerSku: "",
-                stockType: "SKU",
-                price: 0,
-                status: "ACTIVE",
-                skuAttributeValues: []
-              })
-            }
-            variant="contained"
-            startIcon={<AddIcon />}
-          >
-            Add Attribute
-          </Button>
-        </Toolbar>
-      </FormControl>
+      {renderProductTypeMap[productTypeWatch]}
 
       <Controller
         name="isActive"

@@ -9,12 +9,15 @@ import {
   EAttributeStatus,
   EAttributeValueStatus,
   EPriceModifierType,
+  EProductType,
   ESkuStatus,
+  EStockStatus,
   EStockType,
   Product,
 } from "@prisma/client";
 
 const ProductAttributeValueDTO = z.object({
+  id: z.uuid().optional(),
   name: z.string(),
   slug: z.string(),
   image: z.file().nullable().optional(),
@@ -26,6 +29,7 @@ const ProductAttributeValueDTO = z.object({
 });
 
 const ProductAttributeDTO = z.object({
+  id: z.uuid().optional(),
   name: z.string(),
   slug: z.string(),
   displayOrder: z.number().nonnegative().nullable().optional(),
@@ -42,32 +46,69 @@ const ProductSkuAttributeValue = z.object({
 
 const ProductSkuDTO = z
   .object({
-    sellerSku: z.string(),
-    stockStatus: z.enum(EStockType).optional(),
-    stockType: z.enum(EStockType),
-    salePrice: z.number().min(0).optional(),
+    sellerSku: z.string().nullable().optional(),
     price: z.number().min(0),
-    costPrice: z.number().min(0).optional(),
-    stock: z.number().optional(),
-    barcode: z.string().optional(),
-    weight: z.number().optional(),
-    width: z.number().optional(),
-    height: z.number().optional(),
-    length: z.number().optional(),
-    note: z.string().optional(),
+    salePrice: z.number().min(0).nullable().optional(),
+    costPrice: z.number().min(0).nullable().optional(),
+    barcode: z.string().nullable().optional(),
+    stockType: z.enum(EStockType),
+    stock: z.number().nullable().optional(),
+    downloadUrl: z.string().nullable().optional(),
+    stockStatus: z.enum(EStockStatus).nullable().optional(),
+    note: z.string().nullable().optional(),
+    weight: z.number().nullable().optional(),
+    width: z.number().nullable().optional(),
+    length: z.number().nullable().optional(),
+    height: z.number().nullable().optional(),
+    displayOrder: z.number().nonnegative().nullable().optional(),
     status: z.enum(ESkuStatus),
     isDefault: z.boolean().optional(),
-    displayOrder: z.number().nonnegative().nullable().optional(),
     skuAttributeValues: z.array(ProductSkuAttributeValue),
   })
   .check((ctx) => {
-    if (ctx.value.stockType === "EXTERNAL") {
-      ctx.issues.push({
-        code: "custom",
-        input: ctx.value.stockStatus,
-        path: ["stockStatus"],
-        message: "stockStatus is required if stockType is EXTERNAL",
-      });
+    switch (ctx.value.stockType) {
+      case "MANUAL":
+        if (!ctx.value.stockStatus) {
+          ctx.issues.push({
+            code: "custom",
+            input: ctx.value.stockStatus,
+            path: ["stockStatus"],
+            message: "stockStatus is required if stockType is EXTERNAL",
+          });
+        }
+        break;
+      case "INVENTORY":
+        if (!ctx.value.stock) {
+          ctx.issues.push({
+            code: "custom",
+            input: ctx.value.stock,
+            path: ["stock"],
+            message: "stock is required if stockType is EXTERNAL",
+          });
+        }
+        break;
+      case "DIGITAL":
+        if (!ctx.value.downloadUrl) {
+          ctx.issues.push({
+            code: "custom",
+            input: ctx.value.downloadUrl,
+            path: ["downloadUrl"],
+            message: "downloadUrl is required if stockType is DIGITAL",
+          });
+        }
+        break;
+      case "ATTRIBUTE":
+        if (!ctx.value.skuAttributeValues.length) {
+          ctx.issues.push({
+            code: "custom",
+            input: ctx.value.skuAttributeValues,
+            path: ["skuAttributeValues"],
+            message: "skuAttributeValues is required if stockType is ATTRIBUTE",
+          });
+        }
+        break;
+      default:
+        break;
     }
   });
 
@@ -148,6 +189,7 @@ export const PostCreateBodyDTO = z.object({
       }
     })
     .optional(),
+  type: z.enum(EProductType),
   attributes: z.array(ProductAttributeDTO),
   skus: z.array(ProductSkuDTO),
 });

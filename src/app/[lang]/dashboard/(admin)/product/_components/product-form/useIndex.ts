@@ -1,5 +1,4 @@
 import { PostCreateBodyDTO } from "@/app/api/product/validator";
-import { useGetAttributeListQuery } from "@/lib/reactQuery/attribute";
 import { useGetBrandListQuery } from "@/lib/reactQuery/brand";
 import { useGetOptionListQuery } from "@/lib/reactQuery/option";
 import { useGetProductCategoryListQuery } from "@/lib/reactQuery/product-category";
@@ -14,6 +13,7 @@ export type TForm<
   listImages: { file?: File | null; url?: string | null }[];
   mainImage: { file?: File | null; url?: string | null };
   attributes: (Omit<T["attributes"][number], "attributeValues"> & {
+    isNew: boolean
     attributeValues: (Omit<
       T["attributes"][number]["attributeValues"][number],
       "image"
@@ -42,27 +42,20 @@ export default function useIndex() {
     name: "productOptions",
   });
 
-  const productAttArrField = useFieldArray({
-    control: form.control,
-    name: "attributes",
-  });
-
-
-  const skusArrField = useFieldArray({
-    control: form.control,
-    name: "skus",
-  });
-
   const queryBrand = useGetBrandListQuery({});
   const queryCategory = useGetProductCategoryListQuery({});
   const queryProductTag = useGetProductTagListQuery({});
   const queryOption = useGetOptionListQuery({});
-  const queryAtt = useGetAttributeListQuery({});
 
   const productOptionsWatch = useWatch({
     control: form.control,
     name: "productOptions",
   });
+
+  const productTypeWatch = useWatch({
+    control: form.control,
+    name: 'type',
+  })
 
   const productOptionIdSelected = useMemo(
     () =>
@@ -95,11 +88,9 @@ export default function useIndex() {
     queryOption,
     productTagArrField,
     listImageArrField,
-    productAttArrField,
-    skusArrField,
     productOptionArrField,
     productOptionIdSelected,
     productTagIdSelected,
-    queryAtt,
+    productTypeWatch,
   };
 }
