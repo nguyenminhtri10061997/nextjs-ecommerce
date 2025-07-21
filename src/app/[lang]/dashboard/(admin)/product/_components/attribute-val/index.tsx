@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { EAttributeValueStatus, Prisma } from "@prisma/client";
 import { UseQueryResult } from "@tanstack/react-query";
-import { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   Controller,
   UseFieldArrayReturn,
@@ -34,7 +34,7 @@ type TProps = {
   isRenderDeleteBtn?: boolean;
 };
 
-export default function Index(props: TProps) {
+export default React.memo(function Index(props: TProps) {
   const {
     idxAtt,
     idxAttVal,
@@ -170,4 +170,4 @@ export default function Index(props: TProps) {
       )}
     </AppSortableItem>
   );
-}
+});
