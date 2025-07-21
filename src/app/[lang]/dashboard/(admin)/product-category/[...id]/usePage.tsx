@@ -4,11 +4,16 @@ import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
 import { useLoadingCtx } from "@/hooks/useLoadingCtx";
-import { getProductCategoryDetail, patchProductCategory, productCategoryKeys } from "@/lib/reactQuery/product-category";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
+import {
+  getProductCategoryDetail,
+  patchProductCategory,
+  productCategoryKeys,
+} from "@/lib/reactQuery/product-category";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { useEffect } from "react";
 import { SubmitHandler } from "react-hook-form";
 import { TForm } from "../_components/product-category-form/useIndex";
@@ -17,10 +22,10 @@ export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { showAlert } = useAlertContext();
   const { setLoading } = useLoadingCtx();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
+  const { push } = useLoadingWhenRoutePush();
 
   const query = useQuery({
     queryKey: productCategoryKeys.detail(id),
@@ -32,11 +37,15 @@ export const usePage = () => {
     mutationFn: patchProductCategory,
     onSuccess: async () => {
       showAlert("Update ProductCategory success");
-      router.push("/dashboard/product-category");
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: productCategoryKeys.detail(id) }),
-        queryClient.invalidateQueries({ queryKey: productCategoryKeys.lists() }),
+        queryClient.invalidateQueries({
+          queryKey: productCategoryKeys.detail(id),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: productCategoryKeys.lists(),
+        }),
       ]);
+      push("/dashboard/product-category");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -60,7 +69,8 @@ export const usePage = () => {
       const {
         name,
         slug,
-        seoTitle,description,
+        seoTitle,
+        description,
         seoDescription,
         displayOrder,
         isActive,
@@ -74,7 +84,8 @@ export const usePage = () => {
       formRef.current?.reset({
         name,
         slug,
-        seoTitle,description,
+        seoTitle,
+        description,
         seoDescription,
         displayOrder,
         isActive,
@@ -88,13 +99,13 @@ export const usePage = () => {
     setLoading(query.isLoading);
   }, [query.isLoading, setLoading]);
 
-    useEffect(() => {
-      if (query.isError) {
-        showAlert("Error Get Product Category", "error");
-        setLoading(false);
-        redirect("/dashboard/product-category");
-      }
-    }, [query.isError, showAlert, setLoading]);
+  useEffect(() => {
+    if (query.isError) {
+      showAlert("Error Get Product Category", "error");
+      setLoading(false);
+      redirect("/dashboard/product-category");
+    }
+  }, [query.isError, showAlert, setLoading]);
 
   return {
     query,

@@ -4,6 +4,7 @@ import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
 import { useLoadingCtx } from "@/hooks/useLoadingCtx";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import {
   getProductTagDetail,
   patchProductTag,
@@ -12,8 +13,8 @@ import {
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { redirect, useParams, useRouter } from "next/navigation";
-import { useEffect, useTransition } from "react";
+import { redirect, useParams } from "next/navigation";
+import { useEffect } from "react";
 import { SubmitHandler } from "react-hook-form";
 import { TForm } from "../_components/product-tag-form/useIndex";
 
@@ -21,11 +22,10 @@ export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { showAlert } = useAlertContext();
   const { setLoading } = useLoadingCtx();
-  const [isPending, startTransition] = useTransition();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
+  const { push } = useLoadingWhenRoutePush();
 
   const query = useQuery({
     queryKey: productTagKeys.detail(id),
@@ -37,11 +37,11 @@ export const usePage = () => {
     mutationFn: patchProductTag,
     onSuccess: async () => {
       showAlert("Update Product Tag success");
-      startTransition(() => {
-        router.push("/dashboard/product-tag");
-        queryClient.invalidateQueries({ queryKey: productTagKeys.detail(id) });
-        queryClient.invalidateQueries({ queryKey: productTagKeys.lists() });
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: productTagKeys.detail(id) }),
+        queryClient.invalidateQueries({ queryKey: productTagKeys.lists() }),
+      ]);
+      push("/dashboard/product-tag");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -72,17 +72,10 @@ export const usePage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);
 
-  console.log(query.isLoading)
+  console.log(query.isLoading);
   useEffect(() => {
     setLoading(query.isLoading);
   }, [query.isLoading, setLoading]);
-
-  useEffect(() => {
-    setLoading(isPending);
-    return () => {
-      setLoading(false);
-    };
-  }, [isPending, setLoading]);
 
   useEffect(() => {
     if (query.isError) {

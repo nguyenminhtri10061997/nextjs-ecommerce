@@ -4,21 +4,23 @@ import { Inputs as UserInputForm } from "@/app/[lang]/dashboard/(admin)/user/_co
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import { useLoadingCtx } from "@/hooks/useLoadingCtx";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import { queryClient } from "@/lib/queryClient";
 import { getUserDetail, putUser, userKeys } from "@/lib/reactQuery/user";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { FormEvent, useEffect, useRef } from "react";
 import { SubmitHandler, UseFormReturn } from "react-hook-form";
 
 export default function usePage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
   const { showAlert } = useAlertContext();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
   const { setLoading } = useLoadingCtx();
+  const { push } = useLoadingWhenRoutePush();
+
   const formRef = useRef<UseFormReturn<UserInputForm>>(null);
   const query = useQuery<
     Awaited<ReturnType<typeof getUserDetail>>,
@@ -37,7 +39,7 @@ export default function usePage() {
         queryClient.invalidateQueries({ queryKey: userKeys.detail(id) }),
         queryClient.invalidateQueries({ queryKey: userKeys.lists() }),
       ]);
-      router.push("/dashboard/user");
+      push("/dashboard/user");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -78,7 +80,7 @@ export default function usePage() {
   };
 
   useEffect(() => {
-    setLoading(query.isLoading)
+    setLoading(query.isLoading);
   }, [query.isLoading, setLoading]);
 
   useEffect(() => {

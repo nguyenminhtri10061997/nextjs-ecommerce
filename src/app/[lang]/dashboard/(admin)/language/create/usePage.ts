@@ -2,27 +2,27 @@
 
 import { useAlertContext } from "@/hooks/useAlertContext";
 import useFormRef from "@/hooks/useFormRef";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import { queryClient } from "@/lib/queryClient";
-import { postCreateLanguage, languageKeys } from "@/lib/reactQuery/language";
+import { languageKeys, postCreateLanguage } from "@/lib/reactQuery/language";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
 import { SubmitHandler } from "react-hook-form";
 import { TForm } from "../_components/language-form/useIndex";
 
 export const usePage = () => {
-  const router = useRouter();
   const { showAlert } = useAlertContext();
+  const { push } = useLoadingWhenRoutePush();
 
   const mutation = useMutation({
     mutationFn: postCreateLanguage,
     onSuccess: async () => {
       showAlert("create Language Success");
-      router.push("/dashboard/language");
       await queryClient.invalidateQueries({
         queryKey: languageKeys.lists(),
       });
+      push("/dashboard/language");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;

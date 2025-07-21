@@ -3,29 +3,30 @@
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
+import { useLoadingCtx } from "@/hooks/useLoadingCtx";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import {
-  optionKeys,
   getOptionDetail,
+  optionKeys,
   patchOption,
 } from "@/lib/reactQuery/option";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/optionForm/useIndex";
-import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 import { v4 } from "uuid";
+import { TForm } from "../_components/optionForm/useIndex";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { showAlert } = useAlertContext();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
   const { setLoading } = useLoadingCtx();
+  const { push } = useLoadingWhenRoutePush();
 
   const query = useQuery({
     queryKey: optionKeys.detail(id),
@@ -37,11 +38,11 @@ export const usePage = () => {
     mutationFn: patchOption,
     onSuccess: async () => {
       showAlert("Update Option success");
-      router.push("/dashboard/option");
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: optionKeys.detail(id) }),
         queryClient.invalidateQueries({ queryKey: optionKeys.lists() }),
       ]);
+      push("/dashboard/option");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;

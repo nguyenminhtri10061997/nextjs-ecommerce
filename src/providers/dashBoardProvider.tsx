@@ -1,4 +1,4 @@
-import { getSegments } from '@/common';
+import { getSegments } from "@/common";
 import { DashboardCtx } from "@/contexts/dashboardCtx";
 import { DictTypeGenerated } from "@/types/dictTypeGenerated";
 import { usePathname } from "next/navigation";
@@ -9,19 +9,22 @@ export default function DashboardProvider({
   dict,
 }: {
   children: React.ReactNode;
-  dict: DictTypeGenerated
+  dict: DictTypeGenerated;
 }) {
-  const pathname = usePathname()
-  const [breadcrumbs, setBreadCrumbs] = useState<string[]>(getSegments(pathname));
+  const pathname = usePathname();
+  const [breadcrumbs, setBreadCrumbs] = useState<string[]>(
+    getSegments(pathname)
+  );
 
   useEffect(() => {
-    const pathnameWithoutLang = pathname.substring(6)
-    if (`/${breadcrumbs.join('/')}` === pathnameWithoutLang) {
-      return
+    const pathnameWithoutLang = pathname.substring(6);
+    if (`/${breadcrumbs.join("/")}` === pathnameWithoutLang) {
+      return;
     }
     const segments = getSegments(pathname);
-    setBreadCrumbs(segments)
-  }, [pathname])
+    setBreadCrumbs(segments);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   return (
     <DashboardCtx

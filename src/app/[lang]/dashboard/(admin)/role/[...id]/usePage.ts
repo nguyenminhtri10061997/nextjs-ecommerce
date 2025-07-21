@@ -1,27 +1,29 @@
 "use client";
 
 import { useAlertContext } from "@/hooks/useAlertContext";
+import { useDashboardCtx } from "@/hooks/useDashboardCtx";
+import { useLoadingCtx } from "@/hooks/useLoadingCtx";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import { getRoleDetail, patchRole, roleKeys } from "@/lib/reactQuery/role";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { SubmitHandler, UseFormReturn } from "react-hook-form";
-import { Inputs as RoleInputs } from '../_components/RoleForm/useIndex';
-import { useLoadingCtx } from "@/hooks/useLoadingCtx";
-import { useDashboardCtx } from "@/hooks/useDashboardCtx";
+import { Inputs as RoleInputs } from "../_components/RoleForm/useIndex";
 
-export type TPermissionState = Partial<Record<string, boolean>>
+export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
   const { id } = useParams<{ id: string }>();
-  const [permissionSelected, setPermissionSelected] = useState<TPermissionState>({})
+  const [permissionSelected, setPermissionSelected] =
+    useState<TPermissionState>({});
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { showAlert } = useAlertContext();
   const { setLoading } = useLoadingCtx();
   const formRef = useRef<UseFormReturn<RoleInputs>>(null);
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
+  const { push } = useLoadingWhenRoutePush();
 
   const query = useQuery({
     queryKey: roleKeys.detail(id),
@@ -37,7 +39,7 @@ export const usePage = () => {
         queryClient.invalidateQueries({ queryKey: roleKeys.detail(id) }),
         queryClient.invalidateQueries({ queryKey: roleKeys.lists() }),
       ]);
-      router.push("/dashboard/role");
+      push("/dashboard/role");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -55,7 +57,7 @@ export const usePage = () => {
         name,
         permissionIds: Object.keys(permissionSelected),
         description: description || "",
-      }
+      },
     });
   };
 
@@ -68,38 +70,40 @@ export const usePage = () => {
     formRef.current = form;
   };
 
-  const handleChangeCheckbox = (id: string) => (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
-    const clone = { ...permissionSelected }
-    if (!checked) {
-      delete clone[id]
-    } else {
-      clone[id] = true
-    }
-    setPermissionSelected({
-      ...clone
-    })
-  }
+  const handleChangeCheckbox =
+    (id: string) =>
+    (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+      const clone = { ...permissionSelected };
+      if (!checked) {
+        delete clone[id];
+      } else {
+        clone[id] = true;
+      }
+      setPermissionSelected({
+        ...clone,
+      });
+    };
 
   useEffect(() => {
-    setLoading(query.isLoading)
+    setLoading(query.isLoading);
   }, [query.isLoading, setLoading]);
 
   useEffect(() => {
     if (query.data?.id) {
-      const { name, description, permissions } = query.data
+      const { name, description, permissions } = query.data;
       if (breadcrumbs.length === 3) {
         setBreadCrumbs(
-          breadcrumbs
-            .slice(0, breadcrumbs.length - 1)
-            .concat(query.data.name)
+          breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.name)
         );
       }
       formRef.current?.reset({
         name,
         description,
       });
-      const permissionSelectedDb = Object.fromEntries(permissions.map(i => [i.id, true]))
-      setPermissionSelected(permissionSelectedDb)
+      const permissionSelectedDb = Object.fromEntries(
+        permissions.map((i) => [i.id, true])
+      );
+      setPermissionSelected(permissionSelectedDb);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);

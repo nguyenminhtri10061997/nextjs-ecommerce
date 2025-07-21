@@ -4,15 +4,16 @@ import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
 import { useLoadingCtx } from "@/hooks/useLoadingCtx";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import {
   getLanguageDetail,
-  patchLanguage,
   languageKeys,
+  patchLanguage,
 } from "@/lib/reactQuery/language";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { useEffect } from "react";
 import { SubmitHandler } from "react-hook-form";
 import { TForm } from "../_components/language-form/useIndex";
@@ -21,10 +22,10 @@ export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { showAlert } = useAlertContext();
   const { setLoading } = useLoadingCtx();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
+  const { push } = useLoadingWhenRoutePush();
 
   const query = useQuery({
     queryKey: languageKeys.detail(id),
@@ -36,11 +37,11 @@ export const usePage = () => {
     mutationFn: patchLanguage,
     onSuccess: async () => {
       showAlert("Update Language success");
-      router.push("/dashboard/language");
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: languageKeys.detail(id) }),
         queryClient.invalidateQueries({ queryKey: languageKeys.lists() }),
       ]);
+      push("/dashboard/language");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;

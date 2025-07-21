@@ -1,28 +1,28 @@
 "use client";
 
-import useFormRef from "@/hooks/useFormRef";
-import { TForm } from "../_components/brandForm/useIndex";
-import { SubmitHandler } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
-import { brandKeys, postCreateBrand } from "@/lib/reactQuery/brand";
 import { useAlertContext } from "@/hooks/useAlertContext";
+import useFormRef from "@/hooks/useFormRef";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import { queryClient } from "@/lib/queryClient";
+import { brandKeys, postCreateBrand } from "@/lib/reactQuery/brand";
 import { TAppResponseBody } from "@/types/api/common";
+import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { SubmitHandler } from "react-hook-form";
+import { TForm } from "../_components/brandForm/useIndex";
 
 export const usePage = () => {
-  const router = useRouter();
   const { showAlert } = useAlertContext();
   const [file, setFile] = useState<File | null>();
+  const { push } = useLoadingWhenRoutePush();
 
   const mutation = useMutation({
     mutationFn: postCreateBrand,
     onSuccess: async () => {
       showAlert("create Brand success");
-      router.push("/dashboard/brand");
       await queryClient.invalidateQueries({ queryKey: brandKeys.lists() });
+      push("/dashboard/brand");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;

@@ -2,6 +2,7 @@
 
 import { useAlertContext } from "@/hooks/useAlertContext";
 import useFormRef from "@/hooks/useFormRef";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import { queryClient } from "@/lib/queryClient";
 import {
   postCreateProductCategory,
@@ -10,22 +11,21 @@ import {
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
 import { SubmitHandler } from "react-hook-form";
 import { TForm } from "../_components/product-category-form/useIndex";
 
 export const usePage = () => {
-  const router = useRouter();
   const { showAlert } = useAlertContext();
+  const { push } = useLoadingWhenRoutePush();
 
   const mutation = useMutation({
     mutationFn: postCreateProductCategory,
     onSuccess: async () => {
       showAlert("create Brand success");
-      router.push("/dashboard/product-category");
       await queryClient.invalidateQueries({
         queryKey: productCategoryKeys.lists(),
       });
+      push("/dashboard/product-category");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;

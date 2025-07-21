@@ -1,20 +1,23 @@
 "use client";
 
-import { Inputs as InputUserForm, Inputs as UserInputForm } from "@/app/[lang]/dashboard/(admin)/user/_components/UserForm/useIndex";
+import {
+  Inputs as InputUserForm,
+  Inputs as UserInputForm,
+} from "@/app/[lang]/dashboard/(admin)/user/_components/UserForm/useIndex";
 import { useAlertContext } from "@/hooks/useAlertContext";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import { roleKeys } from "@/lib/reactQuery/role";
 import { postCreateUser } from "@/lib/reactQuery/user";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef } from "react";
 import { SubmitHandler, UseFormReturn } from "react-hook-form";
 
 export const usePage = () => {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { showAlert } = useAlertContext();
+  const { push } = useLoadingWhenRoutePush();
   const formRef = useRef<UseFormReturn<UserInputForm>>(null);
 
   const mutation = useMutation({
@@ -22,7 +25,7 @@ export const usePage = () => {
     onSuccess: async () => {
       showAlert("create User success");
       await queryClient.invalidateQueries({ queryKey: roleKeys.lists() });
-      router.push("/dashboard/user");
+      push("/dashboard/user");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;

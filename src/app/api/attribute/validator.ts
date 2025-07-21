@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 
 export const GetQueryDTO = z.object({
   orderQuery: OrderQueryDTO([
-    'displayOrder',
+    "displayOrder",
     "createdAt",
     "updatedAt",
   ] as (keyof Attribute)[]).shape.orderQuery.optional(),
@@ -17,7 +17,7 @@ export const GetQueryDTO = z.object({
 const AttributeValueDTO = z.object({
   name: z.string().min(1),
   slug: z.string().min(1),
-  displayOrder: z.number().nonnegative().nullable().optional().optional(),
+  displayOrder: z.number().nonnegative().nullable().optional(),
 });
 
 export const PostCreateBodyDTO = z.object({

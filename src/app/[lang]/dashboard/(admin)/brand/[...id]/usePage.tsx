@@ -3,26 +3,27 @@
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
+import { useLoadingCtx } from "@/hooks/useLoadingCtx";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import { brandKeys, getBrandDetail, patchBrand } from "@/lib/reactQuery/brand";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SubmitHandler } from "react-hook-form";
 import { TForm } from "../_components/brandForm/useIndex";
-import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { showAlert } = useAlertContext();
   const { setLoading } = useLoadingCtx();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
   const [file, setFile] = useState<File | null>();
   const [urlImg, setUrlImg] = useState<string | null>();
+  const { push } = useLoadingWhenRoutePush();
 
   const query = useQuery({
     queryKey: brandKeys.detail(id),
@@ -34,11 +35,11 @@ export const usePage = () => {
     mutationFn: patchBrand,
     onSuccess: async () => {
       showAlert("Update Brand success");
-      router.push("/dashboard/brand");
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: brandKeys.detail(id) }),
         queryClient.invalidateQueries({ queryKey: brandKeys.lists() }),
       ]);
+      push("/dashboard/brand");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;

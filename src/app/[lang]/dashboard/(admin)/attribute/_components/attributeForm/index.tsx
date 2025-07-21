@@ -1,6 +1,6 @@
 "use client";
 
-import { textToSlug } from "@/common";
+import { handleNumberChange, textToSlug } from "@/common";
 import AppSortableItem from "@/components/AppRowSortable";
 import {
   closestCenter,
@@ -139,7 +139,7 @@ export default function Index(props: TProps) {
       />
 
       <Controller
-        name={'type'}
+        name={"type"}
         control={control}
         rules={{ required: "Type is required" }}
         render={({ field, fieldState }) => (
@@ -161,6 +161,30 @@ export default function Index(props: TProps) {
               {EAttributeType.COLOR}
             </MenuItem>
           </TextField>
+        )}
+      />
+
+      <Controller
+        name="displayOrder"
+        control={control}
+        render={({ field, fieldState }) => (
+          <TextField
+            label="Display Order"
+            type="number"
+            fullWidth
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+            value={field.value ?? ""}
+            onChange={(e) => handleNumberChange(e, field.onChange)}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+            slotProps={{
+              input: {
+                inputMode: "numeric",
+              },
+            }}
+            onWheel={(e) => e.target instanceof HTMLElement && e.target.blur()}
+          />
         )}
       />
 

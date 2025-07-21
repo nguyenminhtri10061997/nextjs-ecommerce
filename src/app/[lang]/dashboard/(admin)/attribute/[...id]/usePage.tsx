@@ -4,6 +4,7 @@ import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
 import { useLoadingCtx } from "@/hooks/useLoadingCtx";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import {
   attributeKeys,
   getAttributeDetail,
@@ -12,22 +13,20 @@ import {
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import { SubmitHandler } from "react-hook-form";
 import { v4 } from "uuid";
 import { TForm } from "../_components/attributeForm/useIndex";
-import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { showAlert } = useAlertContext();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
-  const { setLoading } = useLoadingCtx();
-  const { startTransition } = useLoadingWhenRoutePush();
+  const { loading, setLoading } = useLoadingCtx();
+  const { push } = useLoadingWhenRoutePush();
 
   const query = useQuery({
     queryKey: attributeKeys.detail(id),
@@ -43,9 +42,7 @@ export const usePage = () => {
         queryClient.invalidateQueries({ queryKey: attributeKeys.detail(id) }),
         queryClient.invalidateQueries({ queryKey: attributeKeys.lists() }),
       ]);
-      startTransition(() => {
-        router.push("/dashboard/attribute");
-      });
+      push("/dashboard/attribute");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -92,17 +89,16 @@ export const usePage = () => {
           idDnD: v4(),
         })),
       });
+      setLoading(false);
     }
-    setLoading(query.isLoading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);
 
   useEffect(() => {
-    if (query.isLoading) {
-      console.log("vao day");
+    if (query.isLoading && !loading) {
       setLoading(true);
     }
-  }, [query.isLoading, setLoading]);
+  }, [query.isLoading, setLoading, loading]);
 
   return {
     formRef,

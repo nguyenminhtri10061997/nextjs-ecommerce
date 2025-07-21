@@ -12,7 +12,7 @@ export default function AttributePage() {
 
   return (
     <Box>
-      <Typography variant="h4">Update Attribute</Typography>
+      <Typography variant="h6">Update Attribute</Typography>
 
       <Box
         component="form"

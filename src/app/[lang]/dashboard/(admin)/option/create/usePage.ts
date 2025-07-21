@@ -2,25 +2,25 @@
 
 import { useAlertContext } from "@/hooks/useAlertContext";
 import useFormRef from "@/hooks/useFormRef";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import { queryClient } from "@/lib/queryClient";
 import { optionKeys, postCreateOption } from "@/lib/reactQuery/option";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
-import { useRouter } from "next/navigation";
 import { SubmitHandler } from "react-hook-form";
 import { TForm } from "../_components/optionForm/useIndex";
 
 export const usePage = () => {
-  const router = useRouter();
   const { showAlert } = useAlertContext();
+  const { push } = useLoadingWhenRoutePush();
 
   const mutation = useMutation({
     mutationFn: postCreateOption,
     onSuccess: async () => {
       showAlert("create Option success");
-      router.push("/dashboard/option");
       await queryClient.invalidateQueries({ queryKey: optionKeys.lists() });
+      push("/dashboard/option");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;

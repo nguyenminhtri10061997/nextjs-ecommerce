@@ -117,6 +117,7 @@ export default React.memo(function Index(props: TProps) {
             />
           )}
         />
+        <Button onClick={() => form.getValues("attributes")}>a</Button>
         <Controller
           name={`attributes.${idxProps}.slug`}
           control={control}
