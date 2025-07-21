@@ -17,7 +17,10 @@ export const GET = withValidateFieldHandler(
   null,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.ATTRIBUTE, action: EPermissionAction.READ },
+      {
+        resource: EPermissionResource.ATTRIBUTE,
+        action: EPermissionAction.READ,
+      },
       async (_, ctx: THofContext<never, typeof GetQueryDTO>) => {
         const { orderQuery, searchQuery } = ctx.queryParse || {};
         const where: Prisma.AttributeWhereInput = {};
@@ -25,14 +28,26 @@ export const GET = withValidateFieldHandler(
         if (searchQuery?.searchKey && searchQuery?.searchStr) {
           const key = searchQuery.searchKey as keyof Prisma.AttributeWhereInput;
           where[key] = {
-            [searchQuery.searchType || ESearchType.contains]: searchQuery.searchStr,
+            [searchQuery.searchType || ESearchType.contains]:
+              searchQuery.searchStr,
           } as never;
         }
 
+        const orderBy = getOrderBy(orderQuery);
+
         const data = await prisma.attribute.findMany({
           where,
-          orderBy: getOrderBy(orderQuery),
-          include: { attributeValues: true },
+          orderBy,
+          include: {
+            attributeValues: {
+              orderBy:
+                orderQuery?.orderKey === "displayOrder"
+                  ? {
+                      displayOrder: orderQuery?.orderType,
+                    }
+                  : {},
+            },
+          },
         });
 
         return AppResponse.json({ status: 200, data });
@@ -47,9 +62,12 @@ export const POST = withValidateFieldHandler(
   PostCreateBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.ATTRIBUTE, action: EPermissionAction.CREATE },
+      {
+        resource: EPermissionResource.ATTRIBUTE,
+        action: EPermissionAction.CREATE,
+      },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
-        const { name, slug, attributeValues } = ctx.bodyParse!;
+        const { name, slug, type, attributeValues } = ctx.bodyParse!;
 
         const exists = await prisma.attribute.findFirst({
           where: {
@@ -60,33 +78,40 @@ export const POST = withValidateFieldHandler(
               {
                 slug,
               },
-            ]
-          }
-        })
+            ],
+          },
+        });
         if (exists) {
           if (exists.name === name) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
+            return AppError.json({
+              status: AppStatusCode.EXISTING,
+              message: "Name already exist",
+            });
           }
           if (exists.slug === slug) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+            return AppError.json({
+              status: AppStatusCode.EXISTING,
+              message: "Slug already exist",
+            });
           }
         }
 
         const objCreate: Prisma.AttributeCreateInput = {
           name,
           slug,
-        }
+          type,
+        };
 
         if (attributeValues?.length) {
           objCreate.attributeValues = {
             createMany: {
-              data: attributeValues.map(atv => ({
+              data: attributeValues.map((atv) => ({
                 name: atv.name,
                 slug: atv.slug,
-                displayOrder: atv.displayOrder
-            }))
-            }
-          }
+                displayOrder: atv.displayOrder,
+              })),
+            },
+          };
         }
 
         const created = await prisma.attribute.create({
@@ -105,7 +130,10 @@ export const DELETE = withValidateFieldHandler(
   DeleteBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.ATTRIBUTE, action: EPermissionAction.DELETE },
+      {
+        resource: EPermissionResource.ATTRIBUTE,
+        action: EPermissionAction.DELETE,
+      },
       async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
         const res = await prisma.attribute.deleteMany({
           where: { id: { in: ctx.bodyParse!.ids } },

@@ -3,6 +3,7 @@
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import useFormRef from "@/hooks/useFormRef";
+import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 import {
   attributeKeys,
   getAttributeDetail,
@@ -14,9 +15,9 @@ import { AxiosError } from "axios";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/attributeForm/useIndex";
-import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 import { v4 } from "uuid";
+import { TForm } from "../_components/attributeForm/useIndex";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 
 export type TPermissionState = Partial<Record<string, boolean>>;
 export const usePage = () => {
@@ -26,6 +27,7 @@ export const usePage = () => {
   const { showAlert } = useAlertContext();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
   const { setLoading } = useLoadingCtx();
+  const { startTransition } = useLoadingWhenRoutePush();
 
   const query = useQuery({
     queryKey: attributeKeys.detail(id),
@@ -41,7 +43,9 @@ export const usePage = () => {
         queryClient.invalidateQueries({ queryKey: attributeKeys.detail(id) }),
         queryClient.invalidateQueries({ queryKey: attributeKeys.lists() }),
       ]);
-      router.push("/dashboard/attribute");
+      startTransition(() => {
+        router.push("/dashboard/attribute");
+      });
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;
@@ -52,6 +56,7 @@ export const usePage = () => {
   const handleFormSubmit: SubmitHandler<TForm> = async ({
     name,
     slug,
+    type,
     attributeValues,
   }) => {
     mutation.mutate({
@@ -59,6 +64,7 @@ export const usePage = () => {
       body: {
         name,
         slug,
+        type,
         attributeValues: attributeValues.map((i, idx) => ({
           ...i,
           displayOrder: idx,
@@ -73,26 +79,29 @@ export const usePage = () => {
 
   useEffect(() => {
     if (query.data?.id) {
-      const { name, slug, attributeValues } = query.data;
+      const { attributeValues, ...item } = query.data;
       if (breadcrumbs.length === 3) {
         setBreadCrumbs(
           breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.name)
         );
       }
       formRef.current?.reset({
-        name,
-        slug,
+        ...item,
         attributeValues: attributeValues.map((i) => ({
           ...i,
           idDnD: v4(),
         })),
       });
     }
+    setLoading(query.isLoading);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);
 
   useEffect(() => {
-    setLoading(query.isLoading);
+    if (query.isLoading) {
+      console.log("vao day");
+      setLoading(true);
+    }
   }, [query.isLoading, setLoading]);
 
   return {

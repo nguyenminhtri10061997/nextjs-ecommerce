@@ -1,4 +1,5 @@
 import { handleDragEnd } from "@/common/indexClient";
+import AppButtonConfirm from "@/components/AppButtonConfirm";
 import {
   closestCenter,
   DndContext,
@@ -14,19 +15,17 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import {
   Button,
-  Card,
-  CardContent,
   FormControl,
   FormLabel,
-  Toolbar,
+  Toolbar
 } from "@mui/material";
+import { startTransition, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
+import { v4 } from "uuid";
 import AttributeItem from "../attribute";
 import { TForm } from "../product-form/useIndex";
-import SkuItem from "../sku";
-import useIndex from "./useIndex";
-import AppButtonConfirm from "@/components/AppButtonConfirm";
-import { v4 } from "uuid";
+import SkuVariableForm from "../sku-variable-form";
+import useIndex, { TAttValHash } from "./useIndex";
 
 type TProps = {
   form: UseFormReturn<TForm>;
@@ -38,7 +37,9 @@ export default function Index(props: TProps) {
     queryAtt,
     productAttArrField,
     skuArrField,
-    attAndAttValHash,
+    // attAndAttValHash,
+    attAndAttValHashDeferred,
+    setAttAndAttValHash,
     handleClickGenSku,
     handleClickDeleteSku,
   } = useIndex({
@@ -55,6 +56,32 @@ export default function Index(props: TProps) {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  useEffect(() => {
+    const callback = form.subscribe({
+      name: "attributes",
+      formState: {
+        values: true,
+      },
+      callback: ({ values }) => {
+        startTransition(() => {
+          const res: TAttValHash = {
+            attHash: {},
+            attValHash: {},
+          };
+          values.attributes.forEach((att) => {
+            res.attHash[att.id!] = att;
+            att.attributeValues.forEach((attV) => {
+              res.attValHash[attV.id!] = attV;
+            });
+          });
+          setAttAndAttValHash(res);
+        });
+      },
+    });
+
+    return () => callback();
+  }, [form, setAttAndAttValHash]);
 
   return (
     <>
@@ -88,7 +115,18 @@ export default function Index(props: TProps) {
                 name: "",
                 slug: "",
                 status: "ACTIVE",
-                attributeValues: [],
+                attributeValues: [
+                  {
+                    id: v4(),
+                    image: {
+                      file: null,
+                      url: null,
+                    },
+                    name: "",
+                    slug: "",
+                    status: "ACTIVE",
+                  },
+                ],
               })
             }
             variant="contained"
@@ -108,31 +146,14 @@ export default function Index(props: TProps) {
         >
           <SortableContext items={skuArrField.fields.map((i) => i.id)}>
             {skuArrField.fields.map((field, idx) => {
-              const curSku = field;
-              const attInfo = curSku.skuAttributeValues
-                .map(
-                  (av) =>
-                    `${
-                      attAndAttValHash.attHash[av.productAttributeId]?.name
-                    }: ${
-                      attAndAttValHash.attValHash[av.productAttributeValueId]
-                        ?.name
-                    }`
-                )
-                .join(" - ");
               return (
-                <Card variant="outlined" key={field.id} sx={{ marginTop: 1 }}>
-                  <CardContent
-                    sx={{ padding: "var(--mui-spacing) !important" }}
-                  >
-                    <SkuItem
-                      form={form}
-                      idx={idx}
-                      attInfo={attInfo}
-                      handleClickDeleteSku={handleClickDeleteSku}
-                    />
-                  </CardContent>
-                </Card>
+                <SkuVariableForm
+                  key={field.id}
+                  attAndAttValHashDeferred={attAndAttValHashDeferred}
+                  form={form}
+                  idx={idx}
+                  handleClickDeleteSku={handleClickDeleteSku}
+                />
               );
             })}
           </SortableContext>

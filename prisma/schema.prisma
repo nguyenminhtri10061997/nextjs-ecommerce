@@ -175,7 +175,7 @@ enum EAttributeValueStatus {
 }
 
 enum EAttributeType {
-    SELECT
+    RADIO
     COLOR
 }
 
@@ -352,7 +352,7 @@ model ProductSku {
     sellerSku    String?
     stockStatus  EStockStatus?
     stockType    EStockType
-    images       String?
+    image        String?
     salePrice    Float?
     price        Float
     costPrice    Float?

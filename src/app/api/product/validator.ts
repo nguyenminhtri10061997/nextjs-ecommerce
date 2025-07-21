@@ -7,6 +7,7 @@ import {
 } from "@/lib/zod/paginationDTO";
 import {
   EAttributeStatus,
+  EAttributeType,
   EAttributeValueStatus,
   EPriceModifierType,
   EProductType,
@@ -31,6 +32,7 @@ const ProductAttributeValueDTO = z.object({
 const ProductAttributeDTO = z.object({
   id: z.uuid().optional(),
   name: z.string(),
+  type: z.enum(EAttributeType),
   slug: z.string(),
   displayOrder: z.number().nonnegative().nullable().optional(),
   status: z.enum([EAttributeStatus.ACTIVE, EAttributeStatus.INACTIVE_BY_ADMIN]),
@@ -53,6 +55,7 @@ const ProductSkuDTO = z
     barcode: z.string().nullable().optional(),
     stockType: z.enum(EStockType),
     stock: z.number().nullable().optional(),
+    image: z.file().nullable().optional(),
     downloadUrl: z.string().nullable().optional(),
     stockStatus: z.enum(EStockStatus).nullable().optional(),
     note: z.string().nullable().optional(),

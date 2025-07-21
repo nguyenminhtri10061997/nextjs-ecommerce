@@ -56,7 +56,7 @@ export const PATCH = withValidateFieldHandler(
         ctx: THofContext<typeof IdParamsDTO, never, typeof PatchBodyDTO>
       ) => {
         const { id } = ctx.paramParse!;
-        const { name, slug, attributeValues } = ctx.bodyParse!;
+        const { name, slug, type, attributeValues } = ctx.bodyParse!;
 
         const existing = await prisma.attribute.findUnique({
           where: { id },
@@ -104,6 +104,7 @@ export const PATCH = withValidateFieldHandler(
         const objUpdate: Prisma.AttributeUpdateInput = {
           name,
           slug,
+          type,
         };
 
         if (attributeValues) {

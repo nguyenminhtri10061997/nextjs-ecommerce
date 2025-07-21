@@ -37,11 +37,11 @@ export const usePage = () => {
     mutationFn: patchOption,
     onSuccess: async () => {
       showAlert("Update Option success");
+      router.push("/dashboard/option");
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: optionKeys.detail(id) }),
         queryClient.invalidateQueries({ queryKey: optionKeys.lists() }),
       ]);
-      router.push("/dashboard/option");
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;

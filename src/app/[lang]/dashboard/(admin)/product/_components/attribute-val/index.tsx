@@ -31,10 +31,18 @@ type TProps = {
     `attributes.${number}.attributeValues`,
     "id"
   >;
+  isRenderDeleteBtn?: boolean;
 };
 
 export default function Index(props: TProps) {
-  const { idxAtt, idxAttVal, queryAtt, form, productAttValArrField } = props;
+  const {
+    idxAtt,
+    idxAttVal,
+    queryAtt,
+    form,
+    productAttValArrField,
+    isRenderDeleteBtn = true,
+  } = props;
   const { control } = form;
 
   useEffect(() => {
@@ -93,6 +101,7 @@ export default function Index(props: TProps) {
               <TextField
                 {...params}
                 label="Name"
+                required
                 error={!!fieldState.error}
                 helperText={fieldState.error?.message || " "}
                 inputRef={field.ref}
@@ -149,15 +158,16 @@ export default function Index(props: TProps) {
           </TextField>
         )}
       />
-      <IconButton
-        onClick={() => {
-          productAttValArrField.remove(idxAttVal);
-        }}
-        color="error"
-        sx={{ mt: 1 }}
-      >
-        <DeleteIcon />
-      </IconButton>
+      {isRenderDeleteBtn && (
+        <IconButton
+          onClick={() => {
+            productAttValArrField.remove(idxAttVal);
+          }}
+          color="error"
+        >
+          <DeleteIcon />
+        </IconButton>
+      )}
     </AppSortableItem>
   );
 }

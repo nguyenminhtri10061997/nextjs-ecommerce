@@ -1,10 +1,12 @@
+import { PostCreateBodyDTO } from "@/app/api/attribute/validator";
 import { textToSlug } from "@/common";
-import { Attribute, AttributeValue } from "@prisma/client";
+import { AttributeValue } from "@prisma/client";
 import { ChangeEvent } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { v4 } from "uuid";
+import { output } from "zod/v4";
 
-export type TForm = Pick<Attribute, "name" | "slug"> & {
+export type TForm = (Omit<output<typeof PostCreateBodyDTO>, "attributeValues">) & {
   attributeValues: (
     Pick<AttributeValue, "name" | "slug">
     & { idDnD: string }

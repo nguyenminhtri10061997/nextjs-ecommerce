@@ -162,7 +162,6 @@ export default function Index(props: TProps) {
                   onChange={field.onChange}
                 />
               }
-              sx={{ mt: 1 }}
             />
           )}
         />
@@ -175,7 +174,6 @@ export default function Index(props: TProps) {
             })
           }
           color="info"
-          sx={{ mt: 1 }}
         >
           <AddIcon />
         </IconButton>
@@ -185,7 +183,6 @@ export default function Index(props: TProps) {
             productOptionArrField.remove(idxProps);
           }}
           color="error"
-          sx={{ mt: 1 }}
         >
           <DeleteIcon />
         </IconButton>
@@ -208,6 +205,7 @@ export default function Index(props: TProps) {
                   render={({ field, fieldState }) => (
                     <TextField
                       label="Option Item"
+                      required
                       select
                       error={!!fieldState.error}
                       helperText={fieldState.error?.message || " "}
@@ -301,18 +299,19 @@ export default function Index(props: TProps) {
                   )}
                 />
 
-                <IconButton
-                  onClick={() => {
-                    productOptionItemArrField.remove(idx);
-                    form.resetField(
-                      `productOptions.${idxProps}.optionItems.${idx}.optionItemId`
-                    );
-                  }}
-                  color="error"
-                  sx={{ mt: 1 }}
-                >
-                  <DeleteIcon />
-                </IconButton>
+                {productOptionItemArrField.fields.length > 1 && (
+                  <IconButton
+                    onClick={() => {
+                      productOptionItemArrField.remove(idx);
+                      form.resetField(
+                        `productOptions.${idxProps}.optionItems.${idx}.optionItemId`
+                      );
+                    }}
+                    color="error"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                )}
               </AppSortableItem>
             ))}
           </SortableContext>

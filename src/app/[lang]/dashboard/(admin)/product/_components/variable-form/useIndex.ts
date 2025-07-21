@@ -1,8 +1,16 @@
 import { generateCombinations } from "@/common";
+import { useAlertContext } from "@/hooks/useAlertContext";
 import { useGetAttributeListQuery } from "@/lib/reactQuery/attribute";
-import { startTransition, useMemo } from "react";
-import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form";
+import { startTransition, useDeferredValue, useState } from "react";
+import { useFieldArray, UseFormReturn } from "react-hook-form";
 import { TForm } from "../product-form/useIndex";
+
+export type TAttValHash = {
+  attHash: { [key: string]: TForm["attributes"][number] };
+  attValHash: {
+    [key: string]: TForm["attributes"][number]["attributeValues"][number];
+  };
+};
 
 type TProps = {
   form: UseFormReturn<TForm>;
@@ -10,7 +18,19 @@ type TProps = {
 export default function useIndex(props: TProps) {
   const { form } = props;
 
-  const queryAtt = useGetAttributeListQuery({});
+  const queryAtt = useGetAttributeListQuery({
+    orderQuery: {
+      orderKey: "displayOrder",
+      orderType: "asc",
+    },
+  });
+  const { showAlert } = useAlertContext();
+  const [attAndAttValHash, setAttAndAttValHash] = useState<TAttValHash>({
+    attHash: {},
+    attValHash: {},
+  });
+
+  const attAndAttValHashDeferred = useDeferredValue(attAndAttValHash);
 
   const productAttArrField = useFieldArray({
     control: form.control,
@@ -22,33 +42,29 @@ export default function useIndex(props: TProps) {
     name: "skus",
   });
 
-  const productAttribute = useWatch({
-    control: form.control,
-    name: "attributes",
-  });
-
-  const attAndAttValHash = useMemo(() => {
-    const res: {
-      attHash: { [key: string]: TForm["attributes"][number] };
-      attValHash: {
-        [key: string]: TForm["attributes"][number]["attributeValues"][number];
-      };
-    } = {
-      attHash: {},
-      attValHash: {},
-    };
-    productAttribute.forEach((att) => {
-      res.attHash[att.id!] = att;
-      att.attributeValues.forEach((attV) => {
-        res.attValHash[attV.id!] = attV;
-      });
-    });
-    return res;
-  }, [productAttribute]);
-
-  const handleClickGenSku = () => {
+  const handleClickGenSku = async () => {
+    const att = form.getValues("attributes");
+    if (!att.length) {
+      showAlert("Please add at least one Attribute", "error");
+      return;
+    }
+    const isValid = await form.trigger(
+      form
+        .getValues("attributes")
+        .flatMap((at, idx) => [
+          `attributes.${idx}.name`,
+          `attributes.${idx}.slug`,
+          `attributes.${idx}.status`,
+          ...at.attributeValues.flatMap((_, idxV) => [
+            `attributes.${idx}.attributeValues.${idxV}.name`,
+            `attributes.${idx}.attributeValues.${idxV}.slug`,
+          ]),
+        ]) as Parameters<typeof form.trigger>[0]
+    );
+    if (!isValid) {
+      return;
+    }
     startTransition(() => {
-      const att = form.getValues("attributes");
       const resCombination = generateCombinations(
         att
           .filter((i) => i.name)
@@ -88,7 +104,8 @@ export default function useIndex(props: TProps) {
     queryAtt,
     productAttArrField,
     skuArrField,
-    attAndAttValHash,
+    attAndAttValHashDeferred,
+    setAttAndAttValHash,
     handleClickGenSku,
     handleClickDeleteSku,
   };

@@ -19,8 +19,8 @@ export const usePage = () => {
     mutationFn: postCreateOption,
     onSuccess: async () => {
       showAlert("create Option success");
-      await queryClient.invalidateQueries({ queryKey: optionKeys.lists() });
       router.push("/dashboard/option");
+      await queryClient.invalidateQueries({ queryKey: optionKeys.lists() });
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
       const message = err.response?.data.message || err.message;

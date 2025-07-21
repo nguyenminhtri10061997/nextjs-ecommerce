@@ -21,6 +21,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Button,
   IconButton,
+  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -32,6 +33,7 @@ import TextField from "@mui/material/TextField";
 import { useEffect } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import useIndex, { TForm } from "./useIndex";
+import { EAttributeType } from "@prisma/client";
 
 type TProps = {
   onGetForm: (form: UseFormReturn<TForm>) => void;
@@ -136,6 +138,32 @@ export default function Index(props: TProps) {
         )}
       />
 
+      <Controller
+        name={'type'}
+        control={control}
+        rules={{ required: "Type is required" }}
+        render={({ field, fieldState }) => (
+          <TextField
+            label="Type"
+            select
+            required
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message || " "}
+            value={field.value ?? ""}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+          >
+            <MenuItem value={EAttributeType.RADIO}>
+              {EAttributeType.RADIO}
+            </MenuItem>
+            <MenuItem value={EAttributeType.COLOR}>
+              {EAttributeType.COLOR}
+            </MenuItem>
+          </TextField>
+        )}
+      />
+
       <Toolbar disableGutters>
         <Button
           onClick={handleAddAttValue}
@@ -169,7 +197,7 @@ export default function Index(props: TProps) {
                             fullWidth
                             required
                             error={!!fieldState.error}
-                            helperText={fieldState.error?.message}
+                            helperText={fieldState.error?.message || " "}
                             value={field.value ?? ""}
                             onChange={handleChangeAttValue(idx, field.onChange)}
                             onBlur={field.onBlur}
@@ -189,7 +217,7 @@ export default function Index(props: TProps) {
                             fullWidth
                             required
                             error={!!fieldState.error}
-                            helperText={fieldState.error?.message}
+                            helperText={fieldState.error?.message || " "}
                             value={field.value ?? ""}
                             onChange={field.onChange}
                             onBlur={field.onBlur}

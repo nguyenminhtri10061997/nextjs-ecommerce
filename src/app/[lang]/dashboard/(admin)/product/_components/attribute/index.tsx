@@ -22,7 +22,7 @@ import {
   MenuItem,
   TextField,
 } from "@mui/material";
-import { EAttributeStatus, Prisma } from "@prisma/client";
+import { EAttributeStatus, EAttributeType, Prisma } from "@prisma/client";
 import { UseQueryResult } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 import {
@@ -105,6 +105,7 @@ export default React.memo(function Index(props: TProps) {
                 <TextField
                   {...params}
                   label="Name"
+                  required
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message || " "}
                   inputRef={field.ref}
@@ -132,6 +133,33 @@ export default React.memo(function Index(props: TProps) {
               onBlur={field.onBlur}
               inputRef={field.ref}
             />
+          )}
+        />
+
+        <Controller
+          name={`attributes.${idxProps}.type`}
+          control={control}
+          rules={{ required: "Type is required" }}
+          render={({ field, fieldState }) => (
+            <TextField
+              label="Type"
+              select
+              required
+              error={!!fieldState.error}
+              helperText={fieldState.error?.message || " "}
+              value={field.value ?? ""}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              inputRef={field.ref}
+              sx={{ width: "10%" }}
+            >
+              <MenuItem value={EAttributeType.RADIO}>
+                {EAttributeType.RADIO}
+              </MenuItem>
+              <MenuItem value={EAttributeType.COLOR}>
+                {EAttributeType.COLOR}
+              </MenuItem>
+            </TextField>
           )}
         />
 
@@ -172,7 +200,6 @@ export default React.memo(function Index(props: TProps) {
             })
           }
           color="info"
-          sx={{ mt: 1 }}
         >
           Add Value
         </Button>
@@ -181,7 +208,6 @@ export default React.memo(function Index(props: TProps) {
             productAttArrField.remove(idxProps);
           }}
           color="error"
-          sx={{ mt: 1 }}
         >
           <DeleteIcon />
         </IconButton>
@@ -207,6 +233,7 @@ export default React.memo(function Index(props: TProps) {
                 idxAttVal={idx}
                 productAttValArrField={productAttValArrField}
                 queryAtt={queryAtt}
+                isRenderDeleteBtn={productAttValArrField.fields.length > 1}
               />
             ))}
           </SortableContext>

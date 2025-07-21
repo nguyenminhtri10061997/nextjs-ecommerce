@@ -3,7 +3,6 @@ import DashboardMenu from "@/components/DashboardMenu";
 import LinkLoadingIndicator from "@/components/LinkLoadingIndicator";
 import { ADMIN_DRAWER_WIDTH } from "@/constants/dashBoardMenu";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
-import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 import { Logout } from "@mui/icons-material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -30,7 +29,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import useLayout from "./useLayout";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -51,7 +50,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     handleSetMode,
     mode,
   } = useLayout();
-  const { loading, setLoading } = useLoadingCtx();
 
   const breadcrumbsRender = useMemo(() => {
     return breadcrumbs?.map((segment, idx) => {
@@ -70,11 +68,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     });
   }, [breadcrumbs]);
 
-  useEffect(() => {
-    if (loading !== query.isLoading) {
-      setLoading(query.isLoading);
-    }
-  }, [query.isLoading, loading, setLoading]);
+  if (query.isLoading) {
+    return (
+      <Backdrop open={true} sx={{ zIndex: 1600 }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+    );
+  }
 
   return (
     <Box sx={{ height: "100vh" }}>
@@ -187,11 +187,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Box sx={{ flexGrow: 1 }}>{children}</Box>
         </Box>
       </Box>
-      {query.isPending && !loading && (
-        <Backdrop open sx={{ zIndex: 1600 }}>
-          <CircularProgress color="inherit" />
-        </Backdrop>
-      )}
     </Box>
   );
 }

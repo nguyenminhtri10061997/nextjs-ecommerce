@@ -1,32 +1,33 @@
 import { handleNumberChange } from "@/common";
+import AppImageUpload from "@/components/AppImageUpload";
+import { Delete as DeleteIcon } from "@mui/icons-material";
 import {
   Box,
   Checkbox,
   FormControl,
   FormControlLabel,
   FormHelperText,
-  FormLabel,
   Grid,
   IconButton,
   MenuItem,
   Stack,
   TextField,
+  Typography,
 } from "@mui/material";
 import { ESkuStatus, EStockStatus, EStockType } from "@prisma/client";
+import React from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { TForm } from "../product-form/useIndex";
 import useIndex from "./useIndex";
-import React from "react";
-import { Delete as DeleteIcon } from "@mui/icons-material";
-import AppImageUpload from "@/components/AppImageUpload";
 
 type TProps = {
   idx: number;
   form: UseFormReturn<TForm>;
   isRenderStockType?: boolean;
   isRenderShippingInfo?: boolean;
+  isRenderDeleteBtn?: boolean;
   attInfo?: string;
-  handleClickDeleteSku: (idx: number) => void;
+  handleClickDeleteSku?: (idx: number) => void;
 };
 export default React.memo(function Index(props: TProps) {
   const {
@@ -34,6 +35,7 @@ export default React.memo(function Index(props: TProps) {
     idx,
     isRenderStockType = true,
     isRenderShippingInfo = true,
+    isRenderDeleteBtn = true,
     attInfo,
     handleClickDeleteSku,
   } = props;
@@ -53,32 +55,36 @@ export default React.memo(function Index(props: TProps) {
           alignItems: "center",
         }}
       >
-        {attInfo}
-        <Box>
-          <IconButton
-            onClick={() => handleClickDeleteSku(idx)}
-            color="error"
-            sx={{ mt: 1 }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Box>
+        <Typography>Attribute Info: {attInfo}</Typography>
+        {isRenderDeleteBtn && (
+          <Box>
+            <IconButton
+              onClick={() => handleClickDeleteSku?.(idx)}
+              color="error"
+              sx={{ mt: 1 }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        )}
       </Box>
-      <Stack direction={"row"}>
+      <Stack direction={"row"} alignItems={"center"} gap={2}>
         <Controller
-                name={`skus.${idx}.sellerSku`}
+          name={`skus.${idx}.image`}
           control={control}
           rules={{ required: "Main image is required" }}
           render={({ field, fieldState }) => (
-            <FormControl required>
-              <FormLabel>Main Image</FormLabel>
+            <FormControl required sx={{ flexShrink: 0 }}>
               <AppImageUpload
                 file={field.value?.file}
-                url={form.getValues("mainImage")?.url}
-                onChange={field.onChange}
-                showDeleteBtn={false}
-                width={100}
-                height={100}
+                url={form.getValues(`skus.${idx}.image`)?.url}
+                onChange={(file: File) => {
+                  field.onChange({ file });
+                }}
+                width={75}
+                height={75}
+                iconFontSize={12}
+                onDelete={() => field.onChange(null)}
               />
               {fieldState.error && (
                 <FormHelperText error>

@@ -8,5 +8,5 @@ type TProps = {
 export default function Index(props: TProps) {
   const { form } = props;
 
-  return <Sku form={form} idx={0} />;
+  return <Sku form={form} idx={0} isRenderDeleteBtn={false} />;
 }

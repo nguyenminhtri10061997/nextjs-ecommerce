@@ -29,6 +29,10 @@ export const usePage = () => {
   });
 
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
+    if (!data.attributeValues.length) {
+      showAlert("Please add at least one Attribute Value", "error")
+      return
+    }
     mutation.mutate({
       ...data,
       attributeValues: data.attributeValues.map((i, idx) => ({
