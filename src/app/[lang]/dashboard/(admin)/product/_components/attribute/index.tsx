@@ -31,10 +31,10 @@ import {
   UseFieldArrayReturn,
   UseFormReturn,
 } from "react-hook-form";
+import { v4 } from "uuid";
 import AttributeAttValItem from "../attribute-val";
 import { TForm } from "../product-form/useIndex";
 import useIndex from "./useIndex";
-import { v4 } from "uuid";
 
 type TProps = {
   idx: number;
@@ -55,10 +55,12 @@ export default React.memo(function Index(props: TProps) {
     productAttArrField,
   } = props;
   const { control } = form;
-  const { productAttValArrField } = useIndex({
-    form,
-    idx: idxProps,
-  });
+  const { productAttValArrField, optMemo, handleFillAttValsByExistAtt } =
+    useIndex({
+      form,
+      idx: idxProps,
+      queryAtt,
+    });
 
   useEffect(() => {
     const callback = form.subscribe({
@@ -67,10 +69,8 @@ export default React.memo(function Index(props: TProps) {
         values: true,
       },
       callback: ({ values }) => {
-        const name = values.attributes?.[idxProps]?.name;
-        if (name) {
-          form.setValue(`attributes.${idxProps}.slug`, textToSlug(name));
-        }
+        const name = values.attributes?.[idxProps]?.name || "";
+        form.setValue(`attributes.${idxProps}.slug`, textToSlug(name));
       },
     });
 
@@ -98,26 +98,30 @@ export default React.memo(function Index(props: TProps) {
           render={({ field, fieldState }) => (
             <Autocomplete
               freeSolo
-              options={queryAtt.data?.map((option) => option.name) || []}
+              options={optMemo}
               value={field.value ?? ""}
+              onChange={(_, option) => {
+                field.onChange(option);
+                if (option) {
+                  handleFillAttValsByExistAtt(option);
+                }
+              }}
+              onBlur={field.onBlur}
               sx={{ width: "20%" }}
+              ref={field.ref}
               renderInput={(params) => (
                 <TextField
                   {...params}
                   label="Name"
                   required
+                  onChange={field.onChange}
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message || " "}
-                  inputRef={field.ref}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  value={field.value ?? ""}
                 />
               )}
             />
           )}
         />
-        <Button onClick={() => form.getValues("attributes")}>a</Button>
         <Controller
           name={`attributes.${idxProps}.slug`}
           control={control}
@@ -233,7 +237,6 @@ export default React.memo(function Index(props: TProps) {
                 idxAtt={idxProps}
                 idxAttVal={idx}
                 productAttValArrField={productAttValArrField}
-                queryAtt={queryAtt}
                 isRenderDeleteBtn={productAttValArrField.fields.length > 1}
               />
             ))}

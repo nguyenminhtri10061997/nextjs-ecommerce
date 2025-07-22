@@ -1,24 +1,26 @@
 "use client";
 
+import { textToSlug } from "@/common";
+import AppImageUpload from "@/components/AppImageUpload";
+import {
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+} from "@mui/material";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { useEffect } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import useIndex, { TForm } from "./useIndex";
-import { textToSlug } from "@/common";
-import AppImageUpload from "@/components/AppImageUpload";
-import { Checkbox, FormControlLabel } from "@mui/material";
 
 type TProps = {
   file?: File | null;
   logoUrl?: string | null;
   onGetForm: (form: UseFormReturn<TForm>) => void;
-  onChangeFile?: (file: File) => void;
-  onDeleteFile?: (file?: File | null, url?: TProps["logoUrl"]) => void;
 };
 export default function Index(props: TProps) {
   const { form } = useIndex();
-  const { onChangeFile, onDeleteFile } = props;
 
   useEffect(() => {
     props.onGetForm(form);
@@ -98,11 +100,24 @@ export default function Index(props: TProps) {
         )}
       />
 
-      <AppImageUpload
-        file={props.file}
-        url={props.logoUrl}
-        onChange={onChangeFile}
-        onDelete={onDeleteFile}
+      <Controller
+        name="logoImage"
+        control={control}
+        render={({ field }) => (
+          <FormControl>
+            <FormLabel>Logo</FormLabel>
+            <AppImageUpload
+              url={field.value}
+              onChange={(file: File, url?: string | null) => {
+                field.onChange(url);
+              }}
+              width={75}
+              height={75}
+              iconFontSize={15}
+              isCallUploadWhenOnChange
+            />
+          </FormControl>
+        )}
       />
     </Stack>
   );

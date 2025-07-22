@@ -84,9 +84,7 @@ export default function Index(props: TProps) {
           values: true,
         },
         callback: ({ values }) => {
-          if (values.name) {
-            form.setValue("slug", textToSlug(values.name));
-          }
+          form.setValue("slug", textToSlug(values.name));
         },
       }),
       form.subscribe({

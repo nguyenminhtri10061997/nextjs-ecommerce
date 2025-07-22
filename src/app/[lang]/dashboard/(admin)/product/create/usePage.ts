@@ -31,6 +31,7 @@ export const usePage = () => {
   });
 
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
+    console.log(data)
     mutation.mutate({
       ...data,
       skus: data.skus.map((sku) => ({ ...sku, image: sku.image.file })),

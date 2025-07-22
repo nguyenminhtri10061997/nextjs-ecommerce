@@ -55,7 +55,7 @@ export default React.memo(function Index(props: TProps) {
           alignItems: "center",
         }}
       >
-        <Typography>Attribute Info: {attInfo}</Typography>
+        <Typography>{attInfo ? `Attribute Info: ${attInfo}` : ""}</Typography>
         {isRenderDeleteBtn && (
           <Box>
             <IconButton
@@ -94,7 +94,7 @@ export default React.memo(function Index(props: TProps) {
             </FormControl>
           )}
         />
-        <Box>
+        <Box flexGrow={1}>
           <Grid container gap={2} mt={1} wrap="wrap">
             <Grid size={1}>
               <Controller
@@ -151,7 +151,7 @@ export default React.memo(function Index(props: TProps) {
               </Grid>
             )}
             {stockTypeWatch === "DIGITAL" && (
-              <Grid size={2}>
+              <Grid size={10}>
                 <Controller
                   name={`skus.${idx}.downloadUrl`}
                   control={control}

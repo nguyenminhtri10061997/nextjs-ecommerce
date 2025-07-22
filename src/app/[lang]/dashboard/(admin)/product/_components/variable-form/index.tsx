@@ -13,12 +13,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import AddIcon from "@mui/icons-material/Add";
-import {
-  Button,
-  FormControl,
-  FormLabel,
-  Toolbar
-} from "@mui/material";
+import { Button, FormControl, FormLabel, Toolbar } from "@mui/material";
 import { startTransition, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { v4 } from "uuid";
@@ -71,7 +66,7 @@ export default function Index(props: TProps) {
           };
           values.attributes.forEach((att) => {
             res.attHash[att.id!] = att;
-            att.attributeValues.forEach((attV) => {
+            att.attributeValues?.forEach((attV) => {
               res.attValHash[attV.id!] = attV;
             });
           });
@@ -115,6 +110,7 @@ export default function Index(props: TProps) {
                 name: "",
                 slug: "",
                 status: "ACTIVE",
+                type: "RADIO",
                 attributeValues: [
                   {
                     id: v4(),

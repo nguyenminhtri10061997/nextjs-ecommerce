@@ -1,4 +1,8 @@
-import { getOrderBy, getSkipAndTake } from "@/common";
+import {
+  getOrderBy,
+  getSkipAndTake,
+  getUrlFromPromiseSettledResult,
+} from "@/common";
 import { AppError } from "@/common/appError";
 import { AppResponse } from "@/common/appResponse";
 import { THofContext } from "@/lib/HOF/type";
@@ -117,28 +121,43 @@ export const POST = withValidateFieldHandler(
           });
         }
 
-        const mainImageUrl = await AppS3Client.s3CreateFile(mainImage);
+        const s3CreateFilesRes = await AppS3Client.s3CreateFiles(
+          ([] as (File | null | undefined)[])
+            .concat(mainImage)
+            .concat(listImages)
+            .concat(
+              attributes.flatMap((i) => i.attributeValues.map((av) => av.image))
+            )
+            .concat(skus.map((sku) => sku.image))
+        );
+        let imageCursor = 0;
 
         const objCreate: Prisma.ProductCreateInput = {
           code,
           name,
           slug,
-          mainImage: mainImageUrl,
+          mainImage: getUrlFromPromiseSettledResult(
+            s3CreateFilesRes[imageCursor++]
+          ),
           listImages: [],
           ...omit,
         };
 
         if (listImages?.length) {
-          const res = await AppS3Client.s3CreateFiles(listImages);
-          objCreate.listImages = res.successKeys;
+          objCreate.listImages = listImages
+            .map(() =>
+              getUrlFromPromiseSettledResult(s3CreateFilesRes[imageCursor++])
+            )
+            .filter((i) => i !== null);
         }
 
         if (attributes?.length) {
           objCreate.attributes = {
             create: attributes.map((at) => ({
+              id: at.id,
               name: at.name,
               slug: at.slug,
-              image: at.image,
+              type: at.type,
               displayOrder: at.displayOrder,
               status: at.status,
 
@@ -146,7 +165,10 @@ export const POST = withValidateFieldHandler(
                 create: at.attributeValues.map(
                   (atv) =>
                     ({
-                      image: atv.image,
+                      id: atv.id,
+                      image: getUrlFromPromiseSettledResult(
+                        s3CreateFilesRes[imageCursor++]
+                      ),
                       slug: atv.slug,
                       name: atv.name,
                       displayOrder: atv.displayOrder,
@@ -176,9 +198,13 @@ export const POST = withValidateFieldHandler(
                   height: sku.height,
                   length: sku.length,
                   note: sku.note,
+                  image: getUrlFromPromiseSettledResult(
+                    s3CreateFilesRes[imageCursor++]
+                  ),
                   status: sku.status,
                   isDefault: sku.isDefault,
                   displayOrder: sku.displayOrder,
+                  downloadUrl: sku.downloadUrl,
                   skuAttributeValues: {
                     create: sku.skuAttributeValues,
                   },

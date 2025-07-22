@@ -52,7 +52,7 @@ export const POST = withValidateFieldHandler(
     withVerifyCanDoAction(
       { resource: EPermissionResource.BRAND, action: EPermissionAction.CREATE },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
-        const { name, slug, logoImgFile, isActive } = ctx.bodyParse!;
+        const { name, slug, logoImage, isActive } = ctx.bodyParse!;
 
         const exists = await prisma.brand.findFirst({
           where: {
@@ -79,12 +79,6 @@ export const POST = withValidateFieldHandler(
               message: "Slug already exist",
             });
           }
-        }
-
-        let logoImage;
-        if (logoImgFile) {
-          const fileKey = await AppS3Client.s3CreateFile(logoImgFile);
-          logoImage = fileKey;
         }
 
         const res = await prisma.brand.create({

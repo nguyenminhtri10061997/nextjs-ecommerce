@@ -51,7 +51,7 @@ export const PATCH = withValidateFieldHandler(
         ctx: THofContext<typeof IdParamsDTO, never, typeof PatchBodyDTO>
       ) => {
         const { id } = ctx.paramParse!;
-        const { name, slug, logoImgFile, isActive } = ctx.bodyParse!;
+        const { name, slug, logoImage, isActive } = ctx.bodyParse!;
 
         const brand = await prisma.brand.findUnique({ where: { id } });
         if (!brand) {
@@ -90,18 +90,6 @@ export const PATCH = withValidateFieldHandler(
                 message: "Slug already exist",
               });
             }
-          }
-        }
-
-        let logoImage;
-        if (logoImgFile !== undefined) {
-          if (logoImgFile !== null) {
-            logoImage = await AppS3Client.s3CreateFile(logoImgFile);
-          } else {
-            logoImage = null
-          }
-          if (brand.logoImage) {
-            await AppS3Client.s3DeleteFile(brand.logoImage);
           }
         }
 

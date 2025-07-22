@@ -2,16 +2,9 @@ import { textToSlug } from "@/common";
 import AppImageUpload from "@/components/AppImageUpload";
 import AppSortableItem from "@/components/AppSortableItem";
 import { Delete as DeleteIcon } from "@mui/icons-material";
-import {
-  Autocomplete,
-  FormControl,
-  IconButton,
-  MenuItem,
-  TextField,
-} from "@mui/material";
-import { EAttributeValueStatus, Prisma } from "@prisma/client";
-import { UseQueryResult } from "@tanstack/react-query";
-import React, { useEffect, useMemo } from "react";
+import { FormControl, IconButton, MenuItem, TextField } from "@mui/material";
+import { EAttributeValueStatus } from "@prisma/client";
+import React, { useEffect } from "react";
 import {
   Controller,
   UseFieldArrayReturn,
@@ -22,9 +15,6 @@ import { TForm } from "../product-form/useIndex";
 type TProps = {
   idxAtt: number;
   idxAttVal: number;
-  queryAtt: UseQueryResult<
-    Prisma.AttributeGetPayload<{ include: { attributeValues: true } }>[]
-  >;
   form: UseFormReturn<TForm>;
   productAttValArrField: UseFieldArrayReturn<
     TForm,
@@ -38,7 +28,6 @@ export default React.memo(function Index(props: TProps) {
   const {
     idxAtt,
     idxAttVal,
-    queryAtt,
     form,
     productAttValArrField,
     isRenderDeleteBtn = true,
@@ -53,13 +42,11 @@ export default React.memo(function Index(props: TProps) {
       },
       callback: ({ values }) => {
         const name =
-          values.attributes?.[idxAtt]?.attributeValues?.[idxAttVal].name;
-        if (name) {
-          form.setValue(
-            `attributes.${idxAtt}.attributeValues.${idxAttVal}.slug`,
-            textToSlug(name)
-          );
-        }
+          values.attributes?.[idxAtt]?.attributeValues?.[idxAttVal].name || "";
+        form.setValue(
+          `attributes.${idxAtt}.attributeValues.${idxAttVal}.slug`,
+          textToSlug(name)
+        );
       },
     });
 
@@ -92,24 +79,16 @@ export default React.memo(function Index(props: TProps) {
         control={control}
         rules={{ required: "Name is required" }}
         render={({ field, fieldState }) => (
-          <Autocomplete
-            freeSolo
-            options={queryAtt.data?.map((option) => option.name) || []}
-            value={field.value ?? ""}
+          <TextField
             sx={{ width: "20%" }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Name"
-                required
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                inputRef={field.ref}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                value={field.value ?? ""}
-              />
-            )}
+            label="Name"
+            required
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message || " "}
+            inputRef={field.ref}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            value={field.value ?? ""}
           />
         )}
       />

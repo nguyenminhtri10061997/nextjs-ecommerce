@@ -77,3 +77,10 @@ export function generateCombinations<T>(arrays: Array<T[]>) {
     [[]]
   );
 }
+
+export function getUrlFromPromiseSettledResult<T>(pr: PromiseSettledResult<T>) {
+  if (pr.status === "fulfilled") {
+    return pr.value;
+  }
+  return null;
+}

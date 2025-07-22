@@ -54,26 +54,7 @@ export function withValidateFieldHandler<
 
     let resultBody;
     if (req.method !== "GET" && bodySchema) {
-      const isFormData = req.headers.get("content-type")?.includes("form-data");
-      let body: unknown;
-      if (isFormData) {
-        const formData = await req.formData();
-        const obj: Record<string, unknown> = {};
-
-        for (const [key, value] of formData.entries()) {
-          if (value instanceof File) {
-            obj[key] = value;
-          } else if (value === "") {
-            obj[key] = null;
-          } else {
-            obj[key] = value;
-          }
-        }
-
-        body = obj;
-      } else {
-        body = await req.json();
-      }
+      const body = await req.json();
       resultBody = bodySchema.safeParse(body);
       if (!resultBody.success) {
         return AppError.json({

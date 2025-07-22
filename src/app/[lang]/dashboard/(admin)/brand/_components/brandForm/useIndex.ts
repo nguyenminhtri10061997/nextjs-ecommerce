@@ -1,7 +1,8 @@
-import { Brand } from "@prisma/client";
+import { PostCreateBodyDTO } from "@/app/api/brand/validator";
 import { useForm } from "react-hook-form";
+import { output } from "zod/v4";
 
-export type TForm = Pick<Brand, "name" | "slug" | "isActive">;
+export type TForm = output<typeof PostCreateBodyDTO>;
 
 export default function useIndex() {
   const form = useForm<TForm>({

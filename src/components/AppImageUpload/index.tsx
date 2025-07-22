@@ -1,6 +1,7 @@
+import AppS3Client from "@/lib/s3";
 import DeleteIcon from "@mui/icons-material/Delete";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
   Box,
   Divider,
@@ -12,9 +13,10 @@ import {
 import Image from "next/image";
 import React, { useMemo, useRef, useState } from "react";
 import EmptyImage from "../../../public/empty-img.svg";
+import { useAlertContext } from "@/hooks/useAlertContext";
 
 type TProps = {
-  onChange?: (file: File) => void;
+  onChange?: (file: File, url?: string | null) => void;
   onDelete?: (file?: File | null, url?: TProps["url"]) => void;
   file?: File | null;
   url?: string | null;
@@ -26,10 +28,12 @@ type TProps = {
   width?: number;
   height?: number;
   iconFontSize?: number;
+  isCallUploadWhenOnChange?: boolean;
 };
 
 export default function AppImageUpload(props: TProps) {
   const [modalOpen, setModalOpen] = useState(false);
+  const { showAlert } = useAlertContext()
   const [hover, setHover] = useState(false);
   const theme = useTheme();
   const {
@@ -41,13 +45,30 @@ export default function AppImageUpload(props: TProps) {
     width = 150,
     height = 150,
     iconFontSize = 20,
+    isCallUploadWhenOnChange,
   } = props;
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      onChange?.(file);
+      let fileKey
+      if (isCallUploadWhenOnChange) {
+        try {
+          fileKey = await AppS3Client.s3CreateFile(file)
+        } catch(err) {
+          console.error(err)
+          let mes = 'An error occurred'
+          if (err instanceof Error) {
+            mes = err.message
+          }
+          if (typeof err === 'string') {
+            mes = err
+          }
+          showAlert(mes, "error")
+        }
+      }
+      onChange?.(file, AppS3Client.getS3ImgFullUrl(fileKey));
       e.target.value = "";
     }
   };

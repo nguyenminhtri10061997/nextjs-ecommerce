@@ -1,4 +1,4 @@
-import { getBaseFileName } from "@/common";
+import { getBaseFileName, textToSlug } from "@/common";
 import { AppEnvironment } from "@/environment/appEnvironment";
 import {
   DeleteObjectCommand,
@@ -11,20 +11,25 @@ import {
 import { extension as mimeExtension } from "mime-types";
 import { v4 } from "uuid";
 
+
 export default class AppS3Client {
-  private static s3Client = new S3Client({});
+  private static s3Client = new S3Client();
   private static bucketName = AppEnvironment.S3_BUCKET_NAME;
   private static region = AppEnvironment.S3_REGION;
 
-  static async s3CreateFile(file: File) {
-    const baseName = getBaseFileName(file.name);
-
+  private static getFileKey(file: File, isTemp = true) {
+    const baseName = getBaseFileName(textToSlug(file.name));
     const contentType = file.type || "application/octet-stream";
     const extension = mimeExtension(contentType);
-
     const uuid = v4().slice(0, 8);
-    const fileKey = `${baseName}-${uuid}-${+new Date()}.${extension}`;
 
+    const prefix = isTemp ? "temp" : "final";
+    const fileKey = `${prefix}/${baseName}-${uuid}-${+new Date()}.${extension}`;
+    return { fileKey, contentType };
+  }
+
+  static async s3CreateFile(file: File, isTemp = true) {
+    const { fileKey, contentType } = this.getFileKey(file, isTemp);
     const buffer = Buffer.from(await file.arrayBuffer());
     await this.s3Client.send(
       new PutObjectCommand({
@@ -32,25 +37,26 @@ export default class AppS3Client {
         Key: fileKey,
         Body: buffer,
         ContentType: contentType,
+        Expires: new Date(),
       })
     );
     return fileKey;
   }
 
-  static async s3CreateFiles(files: File[]) {
+  static async s3CreateFiles(
+    files: (File | undefined | null)[],
+    isTemp = true
+  ) {
     if (!files.length) {
-      return { successKeys: [], failed: [] };
+      return [];
     }
     const putObjectCommands: PutObjectCommandInput[] = [];
 
     for (const file of files) {
-      const baseName = getBaseFileName(file.name);
-
-      const contentType = file.type || "application/octet-stream";
-      const extension = mimeExtension(contentType);
-
-      const uuid = v4().slice(0, 8);
-      const fileKey = `${baseName}-${uuid}-${+new Date()}.${extension}`;
+      if (!file) {
+        continue;
+      }
+      const { fileKey, contentType } = this.getFileKey(file, isTemp);
 
       const buffer = Buffer.from(await file.arrayBuffer());
 
@@ -62,36 +68,24 @@ export default class AppS3Client {
       });
     }
 
-    const resUpload = await Promise.allSettled(
-      putObjectCommands.map((i) => {
-        return new Promise(async (rs, rj) => {
-          try {
-            await this.s3Client.send(new PutObjectCommand(i));
-            rs(i.Key);
-          } catch (err) {
-            console.log("s3CreateFiles", err);
-            rj(err);
-          }
-        });
+    const resUpload = await Promise.allSettled<string | null>(
+      files.map((_, idx) => {
+        const poCommand = putObjectCommands[idx];
+        if (poCommand) {
+          return new Promise(async (rs, rj) => {
+            try {
+              await this.s3Client.send(new PutObjectCommand(poCommand));
+              rs(poCommand.Key!);
+            } catch (err) {
+              console.log("s3CreateFiles", err);
+              rj(err);
+            }
+          });
+        }
+        return null;
       })
     );
-
-    const successKeys: string[] = [];
-    const failed: { key: string, reason: unknown }[] = [];
-    resUpload.forEach((res, idx) => {
-      if (res.status === "fulfilled") {
-        successKeys.push(res.value as string);
-      } else {
-        failed.push({
-          key: putObjectCommands[idx].Key!,
-          reason: res.reason,
-        })
-      }
-    });
-    return {
-      successKeys,
-      failed,
-    };
+    return resUpload;
   }
 
   static getS3ImgFullUrl(key?: string | null) {
