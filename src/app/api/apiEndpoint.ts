@@ -24,4 +24,6 @@ export class APIEndpoint {
   static API_PRODUCT_TAG = "/api/product-tag";
 
   static API_PRODUCT = "/api/product";
+
+  static API_FILE_PRESIGNED_URL = '/api/file/presigned-url'
 }

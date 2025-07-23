@@ -21,9 +21,8 @@ export const usePage = () => {
   const { showAlert } = useAlertContext();
   const { setLoading } = useLoadingCtx();
   const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
-  const [file, setFile] = useState<File | null>();
-  const [urlImg, setUrlImg] = useState<string | null>();
   const { push } = useLoadingWhenRoutePush();
+  const [isUploading, setIsUploading] = useState(false);
 
   const query = useQuery({
     queryKey: brandKeys.detail(id),
@@ -48,18 +47,9 @@ export const usePage = () => {
   });
 
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
-    let logoImgFile;
-    if (file) {
-      logoImgFile = file;
-    } else if (urlImg === null) {
-      logoImgFile = null;
-    }
     mutation.mutate({
       id,
-      body: {
-        ...data,
-        logoImgFile,
-      },
+      body: data,
     });
   };
 
@@ -67,29 +57,15 @@ export const usePage = () => {
     handleFormSubmit,
   });
 
-  const handleChangeFile = (file: File) => {
-    setFile(file);
-  };
-
-  const handleDeleteFile = () => {
-    setFile(null);
-    setUrlImg(null);
-  };
-
   useEffect(() => {
     if (query.data?.id) {
-      const { name, slug, logoImage, isActive } = query.data;
       if (breadcrumbs.length === 3) {
         setBreadCrumbs(
           breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.name)
         );
       }
-      formRef.current?.reset({
-        name,
-        slug,
-        isActive,
-      });
-      setUrlImg(logoImage);
+      formRef.current?.reset(query.data);
+      console.log(formRef.current?.getValues());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);
@@ -107,13 +83,10 @@ export const usePage = () => {
   }, [query.isError, showAlert, setLoading]);
 
   return {
-    formRef,
+    isUploading,
     mutation,
-    file,
-    urlImg,
     handleSetForm,
     handleClickSubmitForm,
-    handleChangeFile,
-    handleDeleteFile,
+    setIsUploading,
   };
 };

@@ -14,8 +14,8 @@ import { TForm } from "../_components/brandForm/useIndex";
 
 export const usePage = () => {
   const { showAlert } = useAlertContext();
-  const [file, setFile] = useState<File | null>();
   const { push } = useLoadingWhenRoutePush();
+  const [isUploading, setIsUploading] = useState(false);
 
   const mutation = useMutation({
     mutationFn: postCreateBrand,
@@ -34,25 +34,15 @@ export const usePage = () => {
     mutation.mutate(data);
   };
 
-  const { formRef, handleSetForm, handleClickSubmitForm } = useFormRef<TForm>({
+  const { handleSetForm, handleClickSubmitForm } = useFormRef<TForm>({
     handleFormSubmit,
   });
 
-  const handleChangeFile = (file: File) => {
-    setFile(file);
-  };
-
-  const handleDeleteFile = () => {
-    setFile(null);
-  };
-
   return {
-    formRef,
     mutation,
-    file,
+    isUploading,
     handleSetForm,
     handleClickSubmitForm,
-    handleChangeFile,
-    handleDeleteFile,
+    setIsUploading,
   };
 };

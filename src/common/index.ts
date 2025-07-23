@@ -1,3 +1,4 @@
+import { AppEnvironment } from "@/environment/appEnvironment";
 import { TOrderQuery, TPaginationParams } from "@/types/api/common";
 import { ChangeEvent } from "react";
 import { ControllerRenderProps } from "react-hook-form";
@@ -83,4 +84,32 @@ export function getUrlFromPromiseSettledResult<T>(pr: PromiseSettledResult<T>) {
     return pr.value;
   }
   return null;
+}
+
+export function slugifyFilename(filename: string) {
+  const parts = filename.trim().split(".");
+  if (parts.length < 2) return filename;
+
+  const ext = parts.pop(); // lấy đuôi file
+  const name = parts.join("."); // phần tên gốc nếu có nhiều dấu chấm
+
+  const slug = name
+    .normalize("NFD") // chuẩn hóa unicode
+    .replace(/[\u0300-\u036f]/g, "") // xóa dấu tiếng Việt
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-") // khoảng trắng → dấu gạch
+    .replace(/[^\w\-]+/g, "") // xóa ký tự không hợp lệ
+    .replace(/\-\-+/g, "-") // gộp nhiều dấu gạch thành 1
+    .replace(/^-+/, "") // xóa dấu gạch ở đầu
+    .replace(/-+$/, ""); // xóa dấu gạch ở cuối
+
+  return `${slug}.${ext}`;
+}
+
+export function getS3ImgFullUrl(key?: string | null) {
+  if (!key) {
+    return key;
+  }
+  return `https://${AppEnvironment.S3_BUCKET_NAME}.s3.${AppEnvironment.S3_REGION}.amazonaws.com/${key}`;
 }

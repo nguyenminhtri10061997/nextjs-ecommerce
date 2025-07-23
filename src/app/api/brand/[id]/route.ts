@@ -6,9 +6,9 @@ import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
 import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
 import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
 import prisma from "@/lib/prisma";
-import { Brand, EPermissionAction, EPermissionResource } from "@prisma/client";
-import { IdParamsDTO, PatchBodyDTO } from "./validator";
 import AppS3Client from "@/lib/s3";
+import { EPermissionAction, EPermissionResource } from "@prisma/client";
+import { IdParamsDTO, PatchBodyDTO } from "./validator";
 
 export const GET = withValidateFieldHandler(
   IdParamsDTO,
@@ -28,12 +28,8 @@ export const GET = withValidateFieldHandler(
             message: "Brand not found",
           });
         }
-        console.log(brand.logoImage)
 
-        return AppResponse.json({ status: 200, data: {
-          ...brand,
-          logoImage: brand.logoImage ? AppS3Client.getS3ImgFullUrl(brand.logoImage) : brand.logoImage,
-        } as Brand });
+        return AppResponse.json({ status: 200, data: brand });
       }
     )
   )
@@ -93,12 +89,21 @@ export const PATCH = withValidateFieldHandler(
           }
         }
 
+        if (brand.logoImage && (!logoImage || brand.logoImage !== logoImage)) {
+          await AppS3Client.s3DeleteFile(brand.logoImage);
+        }
+
+        let finalLogoImg = brand.logoImage;
+        if (logoImage && logoImage !== brand.logoImage) {
+          finalLogoImg = await AppS3Client.moveFromTempToFinalS3File(logoImage);
+        }
+
         const updated = await prisma.brand.update({
           where: { id },
           data: {
             name,
             slug,
-            logoImage,
+            logoImage: finalLogoImg,
             isActive,
           },
         });

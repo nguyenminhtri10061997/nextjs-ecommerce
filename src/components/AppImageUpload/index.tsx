@@ -1,22 +1,26 @@
-import AppS3Client from "@/lib/s3";
+import { getPresignedUrl, uploadFileToS3 } from "@/call-api/file";
+import { slugifyFilename } from "@/common";
+import { AppEnvironment } from "@/environment/appEnvironment";
+import { useAlertContext } from "@/hooks/useAlertContext";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
   Box,
+  CircularProgress,
   Divider,
   IconButton,
   Modal,
   Stack,
   useTheme,
 } from "@mui/material";
+import { AxiosError } from "axios";
 import Image from "next/image";
 import React, { useMemo, useRef, useState } from "react";
 import EmptyImage from "../../../public/empty-img.svg";
-import { useAlertContext } from "@/hooks/useAlertContext";
 
 type TProps = {
-  onChange?: (file: File, url?: string | null) => void;
+  onChange?: (file: File, key?: string | null) => void;
   onDelete?: (file?: File | null, url?: TProps["url"]) => void;
   file?: File | null;
   url?: string | null;
@@ -29,12 +33,14 @@ type TProps = {
   height?: number;
   iconFontSize?: number;
   isCallUploadWhenOnChange?: boolean;
+  onUploading?: (isUploading: boolean) => void;
 };
 
 export default function AppImageUpload(props: TProps) {
   const [modalOpen, setModalOpen] = useState(false);
-  const { showAlert } = useAlertContext()
+  const { showAlert } = useAlertContext();
   const [hover, setHover] = useState(false);
+  const [loading, setLoading] = useState(false);
   const theme = useTheme();
   const {
     url,
@@ -46,31 +52,58 @@ export default function AppImageUpload(props: TProps) {
     height = 150,
     iconFontSize = 20,
     isCallUploadWhenOnChange,
+    onUploading,
   } = props;
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    let key;
     if (file) {
-      let fileKey
+      if (file.size > AppEnvironment.MAX_FILE_SIZE_UPLOAD * 1024 * 1024) {
+        showAlert(
+          `Max file size is ${AppEnvironment.MAX_FILE_SIZE_UPLOAD}MB`,
+          "error"
+        );
+        return;
+      }
       if (isCallUploadWhenOnChange) {
+        setLoading(true);
+        onUploading?.(true);
         try {
-          fileKey = await AppS3Client.s3CreateFile(file)
-        } catch(err) {
-          console.error(err)
-          let mes = 'An error occurred'
+          const { url, fields } = await getPresignedUrl({
+            fileName: slugifyFilename(file.name),
+            contentType: file.type,
+          });
+          key = fields.key;
+          // upload to s3
+          const formData = new FormData();
+          Object.entries(fields).forEach(([key, value]) => {
+            formData.append(key, value as string);
+          });
+          formData.append("file", file);
+
+          await uploadFileToS3(url, formData);
+        } catch (err) {
+          console.error(err);
+          let mes = "An error occurred";
           if (err instanceof Error) {
-            mes = err.message
+            mes = err.message;
           }
-          if (typeof err === 'string') {
-            mes = err
+          if (typeof err === "string") {
+            mes = err;
           }
-          showAlert(mes, "error")
+          if (err instanceof AxiosError) {
+            mes = err.response?.data?.message;
+          }
+          showAlert(mes, "error");
         }
       }
-      onChange?.(file, AppS3Client.getS3ImgFullUrl(fileKey));
-      e.target.value = "";
+      setLoading(false);
+      onUploading?.(false);
+      onChange?.(file, key);
     }
+    e.target.value = "";
   };
 
   const handleClickDelete = () => {
@@ -112,6 +145,19 @@ export default function AppImageUpload(props: TProps) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
+      {loading && (
+        <Box
+          sx={{
+            zIndex: 1,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      )}
       <IconButton
         component="label"
         sx={{

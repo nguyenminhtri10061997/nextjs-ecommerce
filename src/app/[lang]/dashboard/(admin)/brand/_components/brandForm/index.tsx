@@ -1,6 +1,6 @@
 "use client";
 
-import { textToSlug } from "@/common";
+import { getS3ImgFullUrl, textToSlug } from "@/common";
 import AppImageUpload from "@/components/AppImageUpload";
 import {
   Checkbox,
@@ -18,9 +18,11 @@ type TProps = {
   file?: File | null;
   logoUrl?: string | null;
   onGetForm: (form: UseFormReturn<TForm>) => void;
+  onUploading: (isUploading: boolean) => void;
 };
 export default function Index(props: TProps) {
   const { form } = useIndex();
+  const { onUploading } = props;
 
   useEffect(() => {
     props.onGetForm(form);
@@ -107,14 +109,16 @@ export default function Index(props: TProps) {
           <FormControl>
             <FormLabel>Logo</FormLabel>
             <AppImageUpload
-              url={field.value}
-              onChange={(file: File, url?: string | null) => {
-                field.onChange(url);
+              url={getS3ImgFullUrl(field.value)}
+              onChange={(file: File, key?: string | null) => {
+                field.onChange(key);
               }}
+              onUploading={onUploading}
               width={75}
               height={75}
               iconFontSize={15}
               isCallUploadWhenOnChange
+              onDelete={() =>field.onChange(null)}
             />
           </FormControl>
         )}

@@ -8,15 +8,7 @@ import BrandForm from "../_components/brandForm";
 import { usePage } from "./usePage";
 
 export default function Page() {
-  const {
-    mutation,
-    file,
-    urlImg,
-    handleSetForm,
-    handleClickSubmitForm,
-    handleChangeFile,
-    handleDeleteFile,
-  } = usePage();
+  const { mutation, handleSetForm, handleClickSubmitForm, isUploading, setIsUploading } = usePage();
 
   return (
     <Box>
@@ -28,13 +20,7 @@ export default function Page() {
         sx={{ mt: 2 }}
         onSubmit={handleClickSubmitForm}
       >
-        <BrandForm
-          onGetForm={handleSetForm}
-          file={file}
-          onChangeFile={handleChangeFile}
-          onDeleteFile={handleDeleteFile}
-          logoUrl={urlImg}
-        />
+        <BrandForm onGetForm={handleSetForm} onUploading={setIsUploading} />
         <Stack direction={"row-reverse"}>
           <Button
             sx={{
@@ -42,7 +28,7 @@ export default function Page() {
             }}
             type="submit"
             variant="contained"
-            loading={mutation.isPending}
+            loading={mutation.isPending || isUploading}
           >
             Update
           </Button>

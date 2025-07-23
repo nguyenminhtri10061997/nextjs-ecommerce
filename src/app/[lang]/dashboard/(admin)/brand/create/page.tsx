@@ -10,11 +10,10 @@ import { usePage } from "./usePage";
 export default function Page() {
   const {
     mutation,
-    file,
+    isUploading,
     handleSetForm,
     handleClickSubmitForm,
-    handleChangeFile,
-    handleDeleteFile,
+    setIsUploading,
   } = usePage();
 
   return (
@@ -27,12 +26,7 @@ export default function Page() {
         sx={{ mt: 2 }}
         onSubmit={handleClickSubmitForm}
       >
-        <BrandForm
-          onGetForm={handleSetForm}
-          file={file}
-          onChangeFile={handleChangeFile}
-          onDeleteFile={handleDeleteFile}
-        />
+        <BrandForm onGetForm={handleSetForm} onUploading={setIsUploading} />
         <Stack direction={"row-reverse"}>
           <Button
             sx={{
@@ -40,7 +34,7 @@ export default function Page() {
             }}
             type="submit"
             variant="contained"
-            loading={mutation.isPending}
+            loading={mutation.isPending || isUploading}
           >
             Create
           </Button>

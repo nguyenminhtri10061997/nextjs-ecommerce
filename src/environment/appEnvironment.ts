@@ -7,4 +7,5 @@ export class AppEnvironment {
     static REFRESH_TOKEN_COOKIE_KEY = 'refreshToken'
     static S3_BUCKET_NAME = process.env.NEXT_PUBLIC_S3_BUCKET_NAME
     static S3_REGION = process.env.NEXT_PUBLIC_S3_REGION
+    static MAX_FILE_SIZE_UPLOAD = Number(process.env.NEXT_PUBLIC_MAX_FILE_SIZE_UPLOAD || 20)
 }
