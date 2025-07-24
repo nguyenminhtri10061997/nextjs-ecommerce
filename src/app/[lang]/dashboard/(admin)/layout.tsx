@@ -42,6 +42,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     isOpenDrawer,
     arrMenuRender,
     query,
+    isPending,
     handleClickLogout,
     handleOpenUserMenu,
     handleCloseUserMenu,
@@ -170,6 +171,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         <Logout fontSize="small" />
                       </ListItemIcon>
                       Logout
+                      {isPending && <CircularProgress size={20} />}
                     </MenuItem>
                   </Menu>
                 </ListItem>

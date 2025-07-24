@@ -7,6 +7,9 @@ export type TForm = output<typeof PostCreateBodyDTO>;
 export default function useIndex() {
   const form = useForm<TForm>({
     mode: "onBlur",
+    defaultValues: {
+      isActive: true,
+    },
   });
 
   return {

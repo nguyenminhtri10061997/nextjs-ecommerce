@@ -1,8 +1,8 @@
 "use client";
+import { postLogin } from "@/call-api/auth";
 import { useAlertContext } from "@/hooks/useAlertContext";
-import { withRequestHandler } from "@/lib/HOF/withRequestHandler";
-import axios from "axios";
-import { redirect } from "next/navigation";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
@@ -19,35 +19,35 @@ export const usePage = () => {
   } = useForm<Inputs>({
     mode: "onBlur",
   });
-  const { showAlert } = useAlertContext()
+  const { showAlert } = useAlertContext();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { replace } = useLoadingWhenRoutePush();
+
+  const mutation = useMutation({
+    mutationFn: postLogin,
+    onSuccess: () => {
+      replace("/dashboard");
+    },
+    onError: () => {
+      showAlert("Tài khoản hoặc mật khẩu bị sai", "error");
+    },
+  });
 
   const handleTogglePassword = () => {
     setShowPassword((prev) => !prev);
   };
 
-  const handleClickSubmit: SubmitHandler<Inputs> = async (data) => {
-    setIsLoading(true)
-    const res = await withRequestHandler(
-      axios.post("/api/auth/login", {
-        username: data.username,
-        password: data.password,
-      })
-    );
-    setIsLoading(false)
-
-    if (!res.isSuccess) {
-      showAlert("Tài khoản hoặc mật khẩu bị sai", 'error')
-    }
-
-    redirect('/dashboard')
+  const handleClickSubmit: SubmitHandler<Inputs> = (data) => {
+    mutation.mutate({
+      password: data.password,
+      username: data.username,
+    });
   };
 
   return {
+    mutation,
     errors,
     showPassword,
-    isLoading,
     handleTogglePassword,
     handleClickSubmit,
     register,

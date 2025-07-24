@@ -1,6 +1,6 @@
 "use client";
 
-import { handleNumberChange, textToSlug } from "@/common";
+import { getS3ImgFullUrl, handleNumberChange, textToSlug } from "@/common";
 import { handleDragEnd } from "@/common/indexClient";
 import AppImageUpload from "@/components/AppImageUpload";
 import {
@@ -370,14 +370,14 @@ export default function Index(props: TProps) {
               <FormControl required>
                 <FormLabel>Main Image</FormLabel>
                 <AppImageUpload
-                  file={field.value?.file}
-                  url={form.getValues("mainImage")?.url}
-                  onChange={(file: File) => {
-                    field.onChange({ file });
+                  url={getS3ImgFullUrl(field.value)}
+                  onChange={(file: File, key?: string | null) => {
+                    field.onChange(key);
                   }}
                   showDeleteBtn={false}
                   width={100}
                   height={100}
+                  isCallUploadWhenOnChange
                 />
                 {fieldState.error && (
                   <FormHelperText error>
@@ -396,27 +396,32 @@ export default function Index(props: TProps) {
               {listImageArrField.fields.map((item, idx) => (
                 <Controller
                   key={item.id}
-                  name={`listImages.${idx}.file`}
+                  name={`listImages.${idx}.name`}
                   control={control}
                   render={({ field }) => (
                     <AppImageUpload
-                      file={field.value}
-                      url={form.getValues("listImages")?.[idx].url}
-                      onChange={(file: File) => {
-                        field.onChange({ file });
+                      url={getS3ImgFullUrl(field.value)}
+                      onChange={(file: File, key?: string | null) => {
+                        field.onChange(key);
                       }}
                       onDelete={() => listImageArrField.remove(idx)}
                       width={100}
                       height={100}
+                      isCallUploadWhenOnChange
                     />
                   )}
                 />
               ))}
               <AppImageUpload
-                onChange={(file) => listImageArrField.append({ file })}
+                onChange={(file: File, key?: string | null) => {
+                  listImageArrField.append({
+                    name: key,
+                  });
+                }}
                 showDeleteBtn={false}
                 width={100}
                 height={100}
+                isCallUploadWhenOnChange
               />
             </Stack>
           </FormControl>

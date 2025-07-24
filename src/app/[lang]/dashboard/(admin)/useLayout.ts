@@ -1,11 +1,10 @@
-import { APIEndpoint } from "@/app/api/apiEndpoint";
+import { postLogout } from "@/call-api/auth";
 import { DASHBOARD_MENU_ITEMS } from "@/constants/dashBoardMenu";
 import { useAlertContext } from "@/hooks/useAlertContext";
-import { withRequestHandler } from "@/lib/HOF/withRequestHandler";
+import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import { useMeQuery } from "@/lib/reactQuery/me";
 import { PaletteMode, useColorScheme } from "@mui/material/styles";
-import axios from "axios";
-import { redirect } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
 import React, { useMemo, useState } from "react";
 
 export default function useLayout() {
@@ -13,14 +12,21 @@ export default function useLayout() {
   const { mode, setMode } = useColorScheme();
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const [isOpenDrawer, setIsOpenDrawer] = useState(false);
-  const query = useMeQuery()
+  const query = useMeQuery();
+  const { replace } = useLoadingWhenRoutePush();
 
-  const handleClickLogout = async () => {
-    const res = await withRequestHandler(axios.post(APIEndpoint.POST_LOG_OUT));
-    if (res.error) {
+  const mutation = useMutation({
+    mutationFn: postLogout,
+    onSuccess: () => {
+      replace("/dashboard/login");
+    },
+    onError: () => {
       showAlert("Đăng xuất thất bại", "error");
-    }
-    redirect("/dashboard/login");
+    },
+  });
+
+  const handleClickLogout = () => {
+    mutation.mutate();
   };
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -62,10 +68,11 @@ export default function useLayout() {
   }, [query.data?.role?.id, query.data?.role?.permissions]);
 
   const handleSetMode = (IMode: PaletteMode) => () => {
-    setMode(IMode)
-  }
+    setMode(IMode);
+  };
 
   return {
+    isPending: mutation.isPending,
     anchorElUser,
     isOpenDrawer,
     arrMenuRender,

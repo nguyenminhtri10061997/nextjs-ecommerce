@@ -65,7 +65,6 @@ export const usePage = () => {
         );
       }
       formRef.current?.reset(query.data);
-      console.log(formRef.current?.getValues());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query.data?.id, breadcrumbs.length === 3]);

@@ -1,4 +1,4 @@
-import { textToSlug } from "@/common";
+import { getS3ImgFullUrl, textToSlug } from "@/common";
 import AppImageUpload from "@/components/AppImageUpload";
 import AppSortableItem from "@/components/AppSortableItem";
 import { Delete as DeleteIcon } from "@mui/icons-material";
@@ -61,11 +61,11 @@ export default React.memo(function Index(props: TProps) {
         render={({ field }) => (
           <FormControl>
             <AppImageUpload
-              file={field.value?.file}
-              url={field.value?.url}
-              onChange={(file: File) => {
-                field.onChange({ file });
+              url={getS3ImgFullUrl(field.value)}
+              onChange={(file: File, key?: string | null) => {
+                field.onChange(key);
               }}
+              isCallUploadWhenOnChange
               width={75}
               height={75}
               iconFontSize={15}

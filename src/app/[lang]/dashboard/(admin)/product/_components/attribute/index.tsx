@@ -198,7 +198,6 @@ export default React.memo(function Index(props: TProps) {
           onClick={() =>
             productAttValArrField.append({
               id: v4(),
-              image: { file: null, url: null },
               name: "",
               slug: "",
               status: "ACTIVE",

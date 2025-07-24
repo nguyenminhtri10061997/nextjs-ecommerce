@@ -1,9 +1,9 @@
-import { useFieldArray, UseFormReturn } from "react-hook-form";
-import { TForm } from "../product-form/useIndex";
-import { useMemo } from "react";
-import { UseQueryResult } from "@tanstack/react-query";
 import { EAttributeStatus, Prisma } from "@prisma/client";
+import { UseQueryResult } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { useFieldArray, UseFormReturn } from "react-hook-form";
 import { v4 } from "uuid";
+import { TForm } from "../product-form/useIndex";
 
 type TProps = {
   form: UseFormReturn<TForm>;
@@ -31,7 +31,6 @@ export default function useIndex(props: TProps) {
       `attributes.${idx}.attributeValues`,
       found!.attributeValues.map((atv) => ({
         id: v4(),
-        image: {},
         name: atv.name,
         slug: atv.slug,
         status: EAttributeStatus.ACTIVE,

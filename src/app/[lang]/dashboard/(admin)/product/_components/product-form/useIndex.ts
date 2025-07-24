@@ -7,30 +7,15 @@ import { useMemo } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { output } from "zod/v4";
 
-export type TForm<
-  T extends output<typeof PostCreateBodyDTO> = output<typeof PostCreateBodyDTO>
-> = Omit<T, "listImages" | "mainImage" | "attributes" | "skus"> & {
-  skus: (Omit<T["skus"][number], "image"> & {
-    image: { file?: File | null; url?: string | null };
-  })[];
-  listImages: { file?: File | null; url?: string | null }[];
-  mainImage: { file?: File | null; url?: string | null };
-  attributes: (Omit<T["attributes"][number], "attributeValues"> & {
-    isNew: boolean;
-    attributeValues: (Omit<
-      T["attributes"][number]["attributeValues"][number],
-      "image"
-    > & {
-      image: { file?: File | null; url?: string | null };
-    })[];
-  })[];
+export type TForm = output<typeof PostCreateBodyDTO> & {
+  listImages: { name?: string | null }[];
 };
 
 export default function useIndex() {
   const form = useForm<TForm>({
     mode: "onBlur",
   });
-  const listImageArrField = useFieldArray({
+  const listImageArrField = useFieldArray<TForm, "listImages">({
     control: form.control,
     name: "listImages",
   });

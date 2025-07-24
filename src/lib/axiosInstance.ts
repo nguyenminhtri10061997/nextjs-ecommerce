@@ -3,10 +3,14 @@ import axios from "axios";
 
 export const axiosInstance = axios.create();
 
+type TFailedQueue = {
+  resolve: () => void;
+  reject: (err: unknown) => void;
+};
 let isRefreshing = false;
-let failedQueue: any[] = [];
+let failedQueue: TFailedQueue[] = [];
 
-const processQueue = (error?: any) => {
+const processQueue = (error?: unknown) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -30,7 +34,7 @@ axiosInstance.interceptors.response.use(
             resolve: () => {
               resolve(axiosInstance(originalRequest));
             },
-            reject: (err: any) => reject(err),
+            reject: (err: unknown) => reject(err),
           });
         });
       }
@@ -39,13 +43,16 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await axios.post(APIEndpoint.POST_REFRESH);
-        processQueue()
+        await axios.post(APIEndpoint.AUTH.POST_REFRESH);
+        processQueue();
         return axiosInstance(originalRequest);
       } catch (err) {
         processQueue(err);
 
-        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+        if (
+          typeof window !== "undefined" &&
+          !window.location.pathname.startsWith("/login")
+        ) {
           window.location.href = "/dashboard/login";
         }
       } finally {

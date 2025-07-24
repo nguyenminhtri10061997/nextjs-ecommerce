@@ -106,7 +106,6 @@ export default function Index(props: TProps) {
             onClick={() =>
               productAttArrField.append({
                 id: v4(),
-                isNew: true,
                 name: "",
                 slug: "",
                 status: "ACTIVE",
@@ -114,10 +113,6 @@ export default function Index(props: TProps) {
                 attributeValues: [
                   {
                     id: v4(),
-                    image: {
-                      file: null,
-                      url: null,
-                    },
                     name: "",
                     slug: "",
                     status: "ACTIVE",

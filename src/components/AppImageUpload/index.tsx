@@ -1,5 +1,5 @@
-import { getPresignedUrl, uploadFileToS3 } from "@/call-api/file";
-import { slugifyFilename } from "@/common";
+import { getSignedUrl, uploadFileToS3ByGetSignedUrl } from "@/call-api/file";
+import { calculateChecksumSHA256, slugifyFilename } from "@/common";
 import { AppEnvironment } from "@/environment/appEnvironment";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -71,19 +71,15 @@ export default function AppImageUpload(props: TProps) {
         setLoading(true);
         onUploading?.(true);
         try {
-          const { url, fields } = await getPresignedUrl({
+          const checksum = await calculateChecksumSHA256(file);
+          const res = await getSignedUrl({
             fileName: slugifyFilename(file.name),
             contentType: file.type,
+            checksumSHA256: checksum,
           });
-          key = fields.key;
-          // upload to s3
-          const formData = new FormData();
-          Object.entries(fields).forEach(([key, value]) => {
-            formData.append(key, value as string);
-          });
-          formData.append("file", file);
 
-          await uploadFileToS3(url, formData);
+          await uploadFileToS3ByGetSignedUrl(res.signedUrl, file, checksum);
+          key = res.key;
         } catch (err) {
           console.error(err);
           let mes = "An error occurred";
@@ -94,7 +90,7 @@ export default function AppImageUpload(props: TProps) {
             mes = err;
           }
           if (err instanceof AxiosError) {
-            mes = err.response?.data?.message;
+            mes = err.response?.data?.message || "An error occurred";
           }
           showAlert(mes, "error");
         }
@@ -185,6 +181,7 @@ export default function AppImageUpload(props: TProps) {
               backgroundColor: "white",
               objectFit: "contain",
             }}
+            sizes="100%"
           />
           {hover && (
             <Stack

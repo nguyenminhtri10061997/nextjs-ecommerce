@@ -11,8 +11,10 @@ import {
 } from "@aws-sdk/client-s3";
 import { fromIni } from "@aws-sdk/credential-provider-ini";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { extension as mimeExtension } from "mime-types";
 import { v4 } from "uuid";
+import { retry } from "../retry";
 
 export default class AppS3Client {
   private static s3Client = new S3Client({
@@ -104,19 +106,32 @@ export default class AppS3Client {
     return true;
   }
 
-  static async s3DeleteFiles(keys: string[]) {
-    await this.s3Client.send(
-      new DeleteObjectsCommand({
-        Bucket: this.bucketName,
-        Delete: {
-          Objects: keys.map(
-            (k) =>
-              ({
-                Key: k,
-              } as ObjectIdentifier)
-          ),
+  static async s3DeleteFiles(keys: (string | null)[], funcName?: string) {
+    const objs = keys.filter(Boolean).map(
+      (k) =>
+        ({
+          Key: k,
+        } as ObjectIdentifier)
+    );
+    retry(
+      async () => {
+        await this.s3Client.send(
+          new DeleteObjectsCommand({
+            Bucket: this.bucketName,
+            Delete: {
+              Objects: objs,
+            },
+          })
+        );
+      },
+      {
+        args: {
+          Delete: {
+            Objects: objs,
+          },
         },
-      })
+        funcName,
+      }
     );
     return true;
   }
@@ -135,7 +150,7 @@ export default class AppS3Client {
     return fileKey;
   }
 
-  static async s3PresignedUploadUrl(data: {
+  static async createPresignedPost(data: {
     fileName: string;
     contentType: string;
   }) {
@@ -157,14 +172,39 @@ export default class AppS3Client {
     });
   }
 
+  static async getSignedUrl(data: {
+    fileName: string;
+    contentType: string;
+    checksumSHA256?: string;
+  }) {
+    const key = this.genFileKeyFromContentType(data);
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+      ContentType: data.contentType,
+      ChecksumSHA256: data.checksumSHA256,
+    });
+
+    const signedUrl = await getSignedUrl(this.s3Client, command, {
+      expiresIn: 5 * 60, // 5 minutes,
+      unhoistableHeaders: new Set(["x-amz-checksum-sha256"]),
+    });
+    return {
+      signedUrl,
+      key,
+    };
+  }
+
   static async moveS3File({
     Bucket,
     fromKey,
     toKey,
+    isDeleteOld,
   }: {
     Bucket: string;
     fromKey: string;
     toKey?: string;
+    isDeleteOld?: boolean;
   }) {
     // Step 1: Copy
     await this.s3Client.send(
@@ -175,35 +215,66 @@ export default class AppS3Client {
       })
     );
 
-    // Step 2: Delete original
-    await this.s3Client.send(
-      new DeleteObjectCommand({
-        Bucket,
-        Key: fromKey,
-      })
-    );
+    if (isDeleteOld) {
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Bucket,
+          Key: fromKey,
+        })
+      );
+    }
     return true;
   }
 
-  static async moveFromTempToFinalS3File(key: string) {
+  static async moveFromTempToFinalS3File(
+    key?: string | null,
+    isDeleteOld = true,
+    funcName?: string,
+  ) {
+    if (!key) {
+      return null;
+    }
     const fileName = key.split("/")[1];
     const toKey = `final/${fileName}`;
     // Step 1: Copy
-    await this.s3Client.send(
-      new CopyObjectCommand({
-        Bucket: this.bucketName,
-        CopySource: `${this.bucketName}/${key}`,
-        Key: toKey,
-      })
+    await retry(
+      async () => {
+        await this.s3Client.send(
+          new CopyObjectCommand({
+            Bucket: this.bucketName,
+            CopySource: `${this.bucketName}/${key}`,
+            Key: toKey,
+          })
+        );
+      },
+      {
+        args: {
+          CopySource: `${this.bucketName}/${key}`,
+          Key: toKey,
+        },
+        funcName,
+      }
     );
+    if (isDeleteOld) {
+      // Step 2: Delete original
+      await retry(
+        async () => {
+          await this.s3Client.send(
+            new DeleteObjectCommand({
+              Bucket: this.bucketName,
+              Key: key,
+            })
+          );
+        },
+        {
+          args: {
+            Key: key,
+          },
+          funcName,
+        }
+      );
+    }
 
-    // Step 2: Delete original
-    await this.s3Client.send(
-      new DeleteObjectCommand({
-        Bucket: this.bucketName,
-        Key: key,
-      })
-    );
     return toKey;
   }
 }

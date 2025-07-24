@@ -1,7 +1,9 @@
 export class APIEndpoint {
-  static POST_LOG_OUT = "/api/auth/logout";
-
-  static POST_REFRESH = "/api/auth/refresh-token";
+  static AUTH = {
+    POST_LOG_IN: "/api/auth/login",
+    POST_LOG_OUT: "/api/auth/logout",
+    POST_REFRESH: "/api/auth/refresh-token",
+  };
 
   static POST_ME = "/api/auth/me";
 
@@ -25,5 +27,5 @@ export class APIEndpoint {
 
   static API_PRODUCT = "/api/product";
 
-  static API_FILE_PRESIGNED_URL = '/api/file/presigned-url'
+  static API_FILE = "/api/file";
 }

@@ -31,29 +31,7 @@ export const usePage = () => {
   });
 
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
-    console.log(data)
-    mutation.mutate({
-      ...data,
-      skus: data.skus.map((sku) => ({ ...sku, image: sku.image.file })),
-      listImages: data.listImages.map((i) => i.file).filter(Boolean) as File[],
-      mainImage: data.mainImage.file!,
-      attributes: data.attributes.map((i, idx) => ({
-        id: i.id,
-        name: i.name,
-        slug: i.slug,
-        status: i.status,
-        displayOrder: idx,
-        type: i.type,
-        attributeValues: i.attributeValues.map((v, idxV) => ({
-          id: i.id,
-          name: v.name,
-          slug: v.slug,
-          image: v.image.file,
-          displayOrder: idxV,
-          status: v.status,
-        })),
-      })),
-    });
+    mutation.mutate(data);
   };
 
   const { formRef, handleSetForm, handleClickSubmitForm } = useFormRef<TForm>({

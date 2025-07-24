@@ -503,3 +503,14 @@ model ProductRating {
 
     @@unique([productId, userId])
 }
+
+model RetryError {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    retryKey  String?
+    funcName  String?
+    args      Json?
+    message   String?
+    stack     String?
+    metadata  Json?
+}

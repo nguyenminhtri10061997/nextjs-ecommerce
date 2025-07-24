@@ -26,7 +26,14 @@ export default function useLoadingWhenRoutePush() {
     });
   };
 
+  const replace = (href: string, options?: NavigateOptions) => {
+    startTransition(() => {
+      router.replace(href, options);
+    });
+  };
+
   return {
     push,
+    replace,
   };
 }

@@ -1,3 +1,4 @@
+import { handleNumberChange } from "@/common";
 import AppSortableItem from "@/components/AppSortableItem";
 import {
   closestCenter,
@@ -20,8 +21,9 @@ import {
   MenuItem,
   TextField,
 } from "@mui/material";
-import { Prisma, EPriceModifierType } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { UseQueryResult } from "@tanstack/react-query";
+import React from "react";
 import {
   Controller,
   FieldArrayWithId,
@@ -29,8 +31,8 @@ import {
   UseFormReturn,
 } from "react-hook-form";
 import { TForm } from "../product-form/useIndex";
+import ProductOptionItem from "../product-option-item";
 import useIndex from "./useIndex";
-import { handleNumberChange } from "@/common";
 
 type TProps = {
   idx: number;
@@ -47,7 +49,7 @@ type TProps = {
   }[];
 };
 
-export default function Index(props: TProps) {
+export default React.memo(function Index(props: TProps) {
   const {
     idx: idxProps,
     field: fieldProps,
@@ -59,9 +61,9 @@ export default function Index(props: TProps) {
   const { control } = form;
   const {
     productOptionItemArrField,
-    productOIIdSelected,
-    optionIdWatch,
+    productOIIdSelectedDeferred,
     handleDragEnd,
+    handleFillDefaultOption,
   } = useIndex({
     form,
     idx: idxProps,
@@ -93,7 +95,10 @@ export default function Index(props: TProps) {
               error={!!fieldState.error}
               helperText={fieldState.error?.message || " "}
               value={field.value ?? ""}
-              onChange={field.onChange}
+              onChange={(e) => {
+                field.onChange(e.target.value);
+                handleFillDefaultOption(e.target.value, idxProps);
+              }}
               onBlur={field.onBlur}
               inputRef={field.ref}
               sx={{ width: "30%" }}
@@ -197,126 +202,28 @@ export default function Index(props: TProps) {
             items={productOptionItemArrField.fields.map((i) => i.id)}
           >
             {productOptionItemArrField.fields.map((field, idx) => (
-              <AppSortableItem key={field.id} id={field.id}>
-                <Controller
-                  name={`productOptions.${idxProps}.optionItems.${idx}.optionItemId`}
-                  control={control}
-                  rules={{ required: "Option Item is required" }}
-                  render={({ field, fieldState }) => (
-                    <TextField
-                      label="Option Item"
-                      required
-                      select
-                      error={!!fieldState.error}
-                      helperText={fieldState.error?.message || " "}
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      inputRef={field.ref}
-                      sx={{ width: "30%" }}
-                    >
-                      {queryOption.isLoading ? (
-                        <MenuItem disabled value="">
-                          Loading...
-                        </MenuItem>
-                      ) : (
-                        (
-                          queryOption.data?.find((i) => i.id === optionIdWatch)
-                            ?.optionItems || []
-                        )
-                          ?.filter((op) => {
-                            const found = productOIIdSelected.find(
-                              (i) => i.optionItemId === op.id
-                            );
-                            if (!found) {
-                              return true;
-                            }
-                            return idx === found.idx;
-                          })
-                          ?.map((i) => {
-                            return (
-                              <MenuItem key={i.id} value={i.id}>
-                                {i.name}
-                              </MenuItem>
-                            );
-                          })
-                      )}
-                    </TextField>
-                  )}
-                />
-
-                <Controller
-                  name={`productOptions.${idxProps}.optionItems.${idx}.priceModifierType`}
-                  control={control}
-                  rules={{ required: "Price Type is required" }}
-                  render={({ field, fieldState }) => (
-                    <TextField
-                      label="Price Type"
-                      select
-                      error={!!fieldState.error}
-                      helperText={fieldState.error?.message || " "}
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      inputRef={field.ref}
-                      sx={{ width: "30%" }}
-                    >
-                      {Object.values(EPriceModifierType)?.map((i) => {
-                        return (
-                          <MenuItem key={i} value={i}>
-                            {i}
-                          </MenuItem>
-                        );
-                      })}
-                    </TextField>
-                  )}
-                />
-
-                <Controller
-                  name={`productOptions.${idxProps}.optionItems.${idx}.priceModifierValue`}
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <TextField
-                      label="Price Value"
-                      type="number"
-                      error={!!fieldState.error}
-                      helperText={fieldState.error?.message || " "}
-                      value={field.value ?? ""}
-                      onChange={(e) => {
-                        handleNumberChange(e, field.onChange);
-                      }}
-                      onBlur={field.onBlur}
-                      inputRef={field.ref}
-                      slotProps={{
-                        input: {
-                          inputMode: "numeric",
-                        },
-                      }}
-                      onWheel={(e) =>
-                        e.target instanceof HTMLElement && e.target.blur()
-                      }
-                    />
-                  )}
-                />
-
-                {productOptionItemArrField.fields.length > 1 && (
-                  <IconButton
-                    onClick={() => {
-                      productOptionItemArrField.remove(idx);
-                      form.resetField(
-                        `productOptions.${idxProps}.optionItems.${idx}.optionItemId`
-                      );
-                    }}
-                    color="error"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                )}
-              </AppSortableItem>
+              <ProductOptionItem
+                key={field.id}
+                control={form.control}
+                field={field}
+                idxPO={idxProps}
+                idxPOI={idx}
+                isLoading={queryOption.isLoading}
+                isRenderDeleteBtn={productOptionItemArrField.fields.length > 1}
+                optionItemsOpt={
+                  queryOption.data?.find(
+                    (i) =>
+                      i.id ===
+                      form.getValues("productOptions")?.[idxProps].optionId
+                  )?.optionItems || []
+                }
+                productOIIdSelected={productOIIdSelectedDeferred}
+                remove={productOptionItemArrField.remove}
+              />
             ))}
           </SortableContext>
         </DndContext>
       </Box>
     </Box>
   );
-}
+});

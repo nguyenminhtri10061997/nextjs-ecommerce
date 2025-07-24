@@ -1,10 +1,10 @@
+import { AppError } from "@/common/appError";
 import { AppResponse } from "@/common/appResponse";
 import { THofContext } from "@/lib/HOF/type";
 import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
 import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
 import AppS3Client from "@/lib/s3";
 import { GetQueryDTO } from "./validator";
-import { AppError } from "@/common/appError";
 
 export const GET = withValidateFieldHandler(
   null,
@@ -14,12 +14,13 @@ export const GET = withValidateFieldHandler(
     async (_, ctx: THofContext<never, typeof GetQueryDTO>) => {
       const { queryParse } = ctx;
 
-      const { fileName, contentType } = queryParse!;
+      const { fileName, contentType, checksumSHA256 } = queryParse!;
 
       try {
-        const res = await AppS3Client.s3PresignedUploadUrl({
+        const res = await AppS3Client.getSignedUrl({
           fileName,
           contentType,
+          checksumSHA256,
         });
         return AppResponse.json({ status: 200, data: res });
       } catch (error) {

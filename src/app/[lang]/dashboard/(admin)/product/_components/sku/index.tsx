@@ -1,4 +1,4 @@
-import { handleNumberChange } from "@/common";
+import { getS3ImgFullUrl, handleNumberChange } from "@/common";
 import AppImageUpload from "@/components/AppImageUpload";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import {
@@ -76,11 +76,11 @@ export default React.memo(function Index(props: TProps) {
           render={({ field, fieldState }) => (
             <FormControl required sx={{ flexShrink: 0 }}>
               <AppImageUpload
-                file={field.value?.file}
-                url={form.getValues(`skus.${idx}.image`)?.url}
-                onChange={(file: File) => {
-                  field.onChange({ file });
+                url={getS3ImgFullUrl(field.value)}
+                onChange={(file: File, key?: string | null) => {
+                  field.onChange(key);
                 }}
+                isCallUploadWhenOnChange
                 width={75}
                 height={75}
                 iconFontSize={12}

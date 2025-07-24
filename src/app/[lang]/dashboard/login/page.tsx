@@ -12,7 +12,7 @@ export default function Login() {
   const {
     errors,
     showPassword,
-    isLoading,
+    mutation,
     handleTogglePassword,
     handleClickSubmit,
     register,
@@ -65,7 +65,7 @@ export default function Login() {
           }}
           {...register("password", { required: "password is required" })}
         />
-        <Button type="submit" variant="contained" loading={isLoading}>
+        <Button type="submit" variant="contained" loading={mutation.isPending}>
           Login
         </Button>
       </Box>

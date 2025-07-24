@@ -9,9 +9,9 @@
     "lint": "next lint",
     "migrate": "npx prisma migrate dev --name init",
     "migrate-reset": "npx prisma migrate reset",
-    "generate-prisma": "npx prisma generate",
-    "generate-dict-type": "npx quicktype --lang typescript --src ./src/dictionaries/en-US.json -o ./src/types/dictTypeGenerated.ts --just-types --alphabetize-properties",
-    "generate-locales-json-file": "tsx src/generate/locales.ts"
+    "prisma-generate": "npx prisma generate",
+    "dict-type-generate": "npx quicktype --lang typescript --src ./src/dictionaries/en-US.json -o ./src/types/dictTypeGenerated.ts --just-types --alphabetize-properties",
+    "locales-json-file-generate": "tsx src/generate/locales.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -20,6 +20,7 @@
     "@aws-sdk/client-s3": "^3.842.0",
     "@aws-sdk/credential-provider-ini": "^3.848.0",
     "@aws-sdk/s3-presigned-post": "^3.850.0",
+    "@aws-sdk/s3-request-presigner": "^3.850.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@emotion/cache": "^11.14.0",

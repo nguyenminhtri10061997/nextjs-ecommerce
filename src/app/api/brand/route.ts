@@ -81,12 +81,19 @@ export const POST = withValidateFieldHandler(
           }
         }
 
+        let localImageFinal;
+        if (logoImage) {
+          localImageFinal = await AppS3Client.moveFromTempToFinalS3File(
+            logoImage
+          );
+        }
+
         const res = await prisma.brand.create({
           data: {
             isActive,
             name,
             slug,
-            logoImage,
+            logoImage: localImageFinal,
           },
         });
         return AppResponse.json({ status: 200, data: res });

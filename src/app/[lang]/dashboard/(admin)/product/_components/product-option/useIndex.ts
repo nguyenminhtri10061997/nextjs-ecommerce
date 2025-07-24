@@ -1,9 +1,9 @@
 import { DragEndEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { Prisma } from "@prisma/client";
+import { EPriceModifierType, Prisma } from "@prisma/client";
 import { UseQueryResult } from "@tanstack/react-query";
-import { startTransition, useEffect, useMemo } from "react";
-import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form";
+import { startTransition, useDeferredValue, useEffect, useState } from "react";
+import { useFieldArray, UseFormReturn } from "react-hook-form";
 import { TForm } from "../product-form/useIndex";
 
 type TProps = {
@@ -23,40 +23,27 @@ export default function useIndex(props: TProps) {
     name: `productOptions.${idx}.optionItems`,
   });
 
-  const productOIsWatch = useWatch({
-    control: form.control,
-    name: `productOptions.${idx}.optionItems`,
-  });
-
-  const productOIIdSelected = useMemo(
-    () =>
-      (productOIsWatch || []).map((i, idx) => ({
-        idx,
-        optionItemId: i.optionItemId,
-      })),
-    [productOIsWatch]
-  );
-
-  const optionIdWatch = useWatch({
-    control: form.control,
-    name: `productOptions.${idx}.optionId`,
-  });
+  const [productOIIdSelected, setProductOIIdSelected] = useState<
+    (string | null)[]
+  >([]);
+  const productOIIdSelectedDeferred = useDeferredValue(productOIIdSelected);
 
   useEffect(() => {
-    if (!productOptionItemArrField.fields.length) {
-      startTransition(() => {
-        queryOption.data
-          ?.find((i) => i.id === optionIdWatch)
-          ?.optionItems?.forEach((oi) => {
-            productOptionItemArrField.append({
-              optionItemId: oi.id,
-              priceModifierType: "FREE",
-              priceModifierValue: 0,
-            });
-          });
-      });
-    }
-  }, [optionIdWatch, productOptionItemArrField, queryOption.data]);
+    const callbackSub = form.subscribe({
+      name: `productOptions.${idx}.optionItems`,
+      formState: {
+        values: true,
+      },
+      callback: (ctx) => {
+        setProductOIIdSelected(
+          ctx.values.productOptions?.[idx].optionItems?.map(
+            (i) => i.optionItemId
+          ) || []
+        );
+      },
+    });
+    return () => callbackSub();
+  }, [form, idx]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -76,10 +63,26 @@ export default function useIndex(props: TProps) {
     }
   };
 
+  const handleFillDefaultOption = (id: string, idxOpt: number) => {
+    const found = queryOption.data?.find((i) => i.id === id);
+    if (found) {
+      startTransition(() => {
+        form.setValue(
+          `productOptions.${idxOpt}.optionItems`,
+          found.optionItems.map((i) => ({
+            optionItemId: i.id,
+            priceModifierType: EPriceModifierType.FREE,
+            priceModifierValue: 0,
+          }))
+        );
+      });
+    }
+  };
+
   return {
     productOptionItemArrField,
-    productOIIdSelected,
-    optionIdWatch,
+    productOIIdSelectedDeferred,
     handleDragEnd,
+    handleFillDefaultOption,
   };
 }

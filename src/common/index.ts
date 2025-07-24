@@ -113,3 +113,11 @@ export function getS3ImgFullUrl(key?: string | null) {
   }
   return `https://${AppEnvironment.S3_BUCKET_NAME}.s3.${AppEnvironment.S3_REGION}.amazonaws.com/${key}`;
 }
+
+export const calculateChecksumSHA256 = async (file: File): Promise<string> => {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const base64 = btoa(String.fromCharCode(...hashArray));
+  return base64;
+};

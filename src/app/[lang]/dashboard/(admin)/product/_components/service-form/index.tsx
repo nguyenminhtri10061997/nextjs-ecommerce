@@ -14,6 +14,7 @@ export default function Index(props: TProps) {
       idx={0}
       isRenderStockType={false}
       isRenderShippingInfo={false}
+      isRenderDeleteBtn={false}
     />
   );
 }
