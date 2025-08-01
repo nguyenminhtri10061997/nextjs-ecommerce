@@ -502,6 +502,7 @@ export default function Index(props: TProps) {
                     <TextField
                       label="Tag"
                       select
+                      required
                       fullWidth
                       error={!!fieldState.error}
                       helperText={fieldState.error?.message || " "}

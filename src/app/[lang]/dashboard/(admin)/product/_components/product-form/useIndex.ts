@@ -7,13 +7,16 @@ import { useMemo } from "react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { output } from "zod/v4";
 
-export type TForm = output<typeof PostCreateBodyDTO> & {
+export type TForm = Omit<output<typeof PostCreateBodyDTO>, 'listImages'> & {
   listImages: { name?: string | null }[];
 };
 
 export default function useIndex() {
   const form = useForm<TForm>({
     mode: "onBlur",
+    defaultValues: {
+      isActive: true,
+    }
   });
   const listImageArrField = useFieldArray<TForm, "listImages">({
     control: form.control,

@@ -223,7 +223,7 @@ const handleCreate = async (
             displayOrder: op.displayOrder,
             isRequired: op.isRequired,
             maxSelect: op.maxSelect,
-            ProductToOptionToOptionItem: {
+            productToOptionToOptionItem: {
               createMany: {
                 data: op.optionItems?.map(
                   (opI) =>

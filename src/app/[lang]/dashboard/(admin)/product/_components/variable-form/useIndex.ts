@@ -85,6 +85,7 @@ export default function useIndex(props: TProps) {
             ({
               price: 0,
               stockType: "MANUAL",
+              stockStatus: 'STOCKING',
               status: "ACTIVE",
               skuAttributeValues: attVs.map((v) => ({
                 productAttributeId: v.attributeId,

@@ -72,7 +72,6 @@ export default React.memo(function Index(props: TProps) {
         <Controller
           name={`skus.${idx}.image`}
           control={control}
-          rules={{ required: "Main image is required" }}
           render={({ field, fieldState }) => (
             <FormControl required sx={{ flexShrink: 0 }}>
               <AppImageUpload

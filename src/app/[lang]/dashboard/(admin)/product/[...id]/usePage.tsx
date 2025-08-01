@@ -52,7 +52,11 @@ export const usePage = () => {
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
     mutation.mutate({
       id,
-      body: {},
+      body: {
+        ...data,
+        listImages: data.listImages.map(i => i.name!),
+        
+      }
     });
   };
 

@@ -127,7 +127,7 @@ const ProductToOptionDTO = z.object({
   displayOrder: z.number().nonnegative().nullable().optional(),
   isRequired: z.boolean().optional(),
   maxSelect: z.number().nonnegative().nullable(),
-  optionItems: z.array(ProductToOptionToOptionItemDTO).optional(),
+  optionItems: z.array(ProductToOptionToOptionItemDTO),
 });
 
 const ProductTagDTO = z.object({
@@ -163,6 +163,7 @@ export const PostCreateBodyDTO = z.object({
   listImages: z.array(z.string()),
   viewCount: z.number().nonnegative().optional(),
   soldCount: z.number().nonnegative().optional(),
+  type: z.enum(EProductType),
   isActive: z.boolean().optional(),
   productTags: z
     .array(ProductTagDTO)
@@ -192,7 +193,6 @@ export const PostCreateBodyDTO = z.object({
       }
     })
     .optional(),
-  type: z.enum(EProductType),
   attributes: z.array(ProductAttributeDTO),
   skus: z.array(ProductSkuDTO),
 });

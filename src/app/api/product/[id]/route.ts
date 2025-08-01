@@ -73,7 +73,6 @@ const syncAttribute = async (data: {
     attributes.map((attr) => attr.id).filter(Boolean)
   );
 
-  // Xóa (soft delete) attribute
   const toDeleteAttrIds = currentAttributes
     .filter((attr) => !incomingAttrIds.has(attr.id))
     .map((attr) => attr.id);
@@ -85,7 +84,6 @@ const syncAttribute = async (data: {
     });
   }
 
-  // Cập nhật attribute
   const toUpdateAttrs = attributes.filter((attr) => attr.id);
   await Promise.all(
     toUpdateAttrs.map((attr) =>
@@ -94,27 +92,31 @@ const syncAttribute = async (data: {
         data: {
           name: attr.name,
           slug: attr.slug,
-          displayOrder: attr.displayOrder,
+          type: attr.type,
           status: attr.status,
+          displayOrder: attr.displayOrder,
         },
       })
     )
   );
 
-  // Tạo mới attribute
   const toCreateAttrs = attributes
     .filter((attr) => !attr.id)
     .map((att) => ({ ...att, id: v4() }));
   if (toCreateAttrs.length) {
     await prisma.productAttribute.createMany({
-      data: toCreateAttrs.map((attr) => ({
-        id: attr.id,
-        productId: product.id,
-        name: attr.name,
-        slug: attr.slug,
-        displayOrder: attr.displayOrder,
-        status: attr.status,
-      })),
+      data: toCreateAttrs.map(
+        (attr) =>
+          ({
+            id: attr.id,
+            productId: product.id,
+            name: attr.name,
+            slug: attr.slug,
+            displayOrder: attr.displayOrder,
+            status: attr.status,
+            type: attr.type,
+          } as Prisma.ProductAttributeCreateManyInput)
+      ),
     });
   }
 
@@ -164,14 +166,17 @@ const syncAttribute = async (data: {
   });
   if (toCreateVals.length) {
     await prisma.productAttributeValue.createMany({
-      data: toCreateVals.map((val) => ({
-        productAttributeId: val.id,
-        name: val.name,
-        slug: val.slug,
-        displayOrder: val.displayOrder,
-        status: val.status,
-        image: val.image,
-      })),
+      data: toCreateVals.map(
+        (val) =>
+          ({
+            productAttributeId: val.id,
+            name: val.name,
+            slug: val.slug,
+            displayOrder: val.displayOrder,
+            status: val.status,
+            image: val.image,
+          } as Prisma.ProductAttributeValueCreateManyInput)
+      ),
     });
   }
 };
@@ -208,6 +213,7 @@ async function syncSkus(data: {
           sellerSku: sku.sellerSku,
           stockStatus: sku.stockStatus,
           stockType: sku.stockType,
+          image: sku.image,
           salePrice: sku.salePrice,
           price: sku.price,
           costPrice: sku.costPrice,
@@ -220,6 +226,7 @@ async function syncSkus(data: {
           note: sku.note,
           displayOrder: sku.displayOrder,
           status: sku.status,
+          downloadUrl: sku.downloadUrl,
           isDefault: sku.isDefault,
         },
       })
@@ -234,6 +241,7 @@ async function syncSkus(data: {
         sellerSku: sku.sellerSku,
         stockStatus: sku.stockStatus,
         stockType: sku.stockType,
+        image: sku.image,
         salePrice: sku.salePrice,
         price: sku.price,
         costPrice: sku.costPrice,
@@ -246,6 +254,7 @@ async function syncSkus(data: {
         note: sku.note,
         displayOrder: sku.displayOrder,
         status: sku.status,
+        downloadUrl: sku.downloadUrl,
         isDefault: sku.isDefault,
       })),
     });
