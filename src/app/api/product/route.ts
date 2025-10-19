@@ -1,17 +1,16 @@
-import { getOrderBy, getSkipAndTake } from "@/common";
-import { AppError } from "@/common/appError";
-import { AppResponse } from "@/common/appResponse";
-import { THofContext } from "@/lib/HOF/type";
-import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
-import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
-import prisma from "@/lib/prisma";
-import { ESearchType } from "@/lib/zod/paginationDTO";
+import { getOrderBy, getSkipAndTake } from "@/common/server";
+import { AppError } from "@/common/server/appError";
+import { AppResponse } from "@/common/server/appResponse";
+import { ESearchType } from "@/common/zod/paginationDTO";
+import { THofContext } from "@/constants/HOF/type";
+import { withValidateFieldHandler } from "@/constants/HOF/withValidateField";
+import { withVerifyAccessToken } from "@/constants/HOF/withVerifyAccessToken";
+import { withVerifyCanDoAction } from "@/constants/HOF/withVerifyCanDoAction";
+import prisma from "@/constants/prisma";
 import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
-import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator";
 import dayjs from "dayjs";
-import { TGetProductListResponse } from "@/types/api/product";
-import AppS3Client from "@/lib/s3";
+import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator";
+import { TGetProductListResponse } from "./types";
 
 export const GET = withValidateFieldHandler(
   null,
@@ -90,8 +89,6 @@ export const POST = withValidateFieldHandler(
           skus,
           productTags,
           productOptions,
-          mainImage,
-          listImages,
           ...omit
         } = ctx.bodyParse!;
 
@@ -117,44 +114,39 @@ export const POST = withValidateFieldHandler(
           });
         }
 
-        const mainImageUrl = await AppS3Client.s3CreateFile(mainImage);
-
         const objCreate: Prisma.ProductCreateInput = {
           code,
           name,
           slug,
-          mainImage: mainImageUrl,
-          listImages: [],
           ...omit,
         };
 
-        if (listImages?.length) {
-          const res = await AppS3Client.s3CreateFiles(listImages);
-          objCreate.listImages = res.successKeys;
-        }
-
         if (attributes?.length) {
           objCreate.attributes = {
-            create: attributes.map((at) => ({
-              name: at.name,
-              slug: at.slug,
-              image: at.image,
-              displayOrder: at.displayOrder,
-              status: at.status,
+            create: attributes.map(
+              (at) =>
+                ({
+                  name: at.name,
+                  slug: at.slug,
+                  type: at.type,
+                  displayOrder: at.displayOrder,
+                  status: at.status,
+                  isUsedForVariations: at.isUsedForVariations,
 
-              attributeValues: {
-                create: at.attributeValues.map(
-                  (atv) =>
-                    ({
-                      image: atv.image,
-                      slug: atv.slug,
-                      name: atv.name,
-                      displayOrder: atv.displayOrder,
-                      status: atv.status,
-                    } as Prisma.ProductAttributeValueCreateInput)
-                ),
-              },
-            })),
+                  attributeValues: {
+                    create: at.attributeValues.map(
+                      (atv) =>
+                        ({
+                          image: atv.image,
+                          slug: atv.slug,
+                          name: atv.name,
+                          displayOrder: atv.displayOrder,
+                          status: atv.status,
+                        } as Prisma.ProductAttributeValueCreateInput)
+                    ),
+                  },
+                } as Prisma.ProductAttributeCreateWithoutProductInput)
+            ),
           };
         }
 
@@ -177,7 +169,8 @@ export const POST = withValidateFieldHandler(
                   length: sku.length,
                   note: sku.note,
                   status: sku.status,
-                  isDefault: sku.isDefault,
+                  image: sku.image,
+                  downloadUrl: sku.downloadUrl,
                   displayOrder: sku.displayOrder,
                   skuAttributeValues: {
                     create: sku.skuAttributeValues,

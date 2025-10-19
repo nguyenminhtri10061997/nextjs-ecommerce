@@ -1,6 +1,6 @@
-import { textToSlug } from "@/common";
-import AppImageUpload from "@/components/AppImageUpload";
-import AppSortableItem from "@/components/AppSortableItem";
+import { textToSlug } from "@/common/client";
+import AppImageUpload from "@/components/customComponents/appImageUpload";
+import AppSortableItem from "@/components/customComponents/appSortableItem";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import {
   Autocomplete,

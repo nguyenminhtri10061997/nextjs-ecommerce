@@ -1,6 +1,6 @@
 import { APIEndpoint } from "@/app/api/apiEndpoint";
 import { GetQueryDTO } from "@/app/api/permission/validator";
-import { axiosInstance } from "@/lib/axiosInstance";
+import { axiosInstance } from "@/lib/axios/axiosInstance";
 import { TAppResponseBody } from "@/types/api/common";
 import { TGetPermissionListResponse } from "@/types/api/permission";
 

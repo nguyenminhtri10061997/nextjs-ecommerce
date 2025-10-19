@@ -1,10 +1,11 @@
 import { PostCreateBodyDTO } from "@/app/api/product/validator";
+import useAppUseForm from "@/constants/reactHookForm";
 import { useGetBrandListQuery } from "@/lib/reactQuery/brand";
 import { useGetOptionListQuery } from "@/lib/reactQuery/option";
 import { useGetProductCategoryListQuery } from "@/lib/reactQuery/product-category";
 import { useGetProductTagListQuery } from "@/lib/reactQuery/product-tag";
 import { useMemo } from "react";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { useFieldArray, useWatch } from "react-hook-form";
 import { output } from "zod/v4";
 
 export type TForm<
@@ -27,9 +28,7 @@ export type TForm<
 };
 
 export default function useIndex() {
-  const form = useForm<TForm>({
-    mode: "onBlur",
-  });
+  const form = useAppUseForm<TForm>();
   const listImageArrField = useFieldArray({
     control: form.control,
     name: "listImages",

@@ -1,15 +1,15 @@
 "use client";
 
-import AppConfirmDialog from "@/components/AppConfirmDialog";
-import useAppConfirmDialog from "@/components/AppConfirmDialog/useAppConfirmDialog";
-import AppTable, { TColumn } from "@/components/AppTable";
+import AppConfirmDialog from "@/components/customComponents/appConfirmDialog";
+import useAppConfirmDialog from "@/components/customComponents/appConfirmDialog/useAppConfirmDialog";
+import AppTable from "@/components/customComponents/appTable";
 import LinkLoadingIndicator from "@/components/LinkLoadingIndicator";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import usePaginationAndSort from "@/hooks/usePaginationAndSort";
 import useSearch from "@/hooks/useSearch";
 import useSelectTable from "@/hooks/useSelectTable";
 import useTableDeleteRow from "@/hooks/useTableDeleteRow";
-import { ESearchType } from "@/lib/zod/paginationDTO";
+import { ESearchType } from "@/common/zod/paginationDTO";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -26,6 +26,7 @@ import { useEffect, useMemo } from "react";
 import usePage from "./usePage";
 import { Product } from "@prisma/client";
 import { useGetProductListQuery } from "@/lib/reactQuery/product";
+import { TColumn } from "@/components/customComponents/appTable/types";
 
 export default function Page() {
   const { showAlert } = useAlertContext();

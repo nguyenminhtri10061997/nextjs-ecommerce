@@ -1,4 +1,4 @@
-import { DashBoardLineProgressCtx } from "@/contexts/dashboardLineProgressCtx";
+import { DashBoardLineProgressCtx } from "@/components/contexts/dashboardLineProgressCtx";
 import { useContext } from "react";
 
 export const useDashBoardLineProgressCtx = () => {

@@ -1,7 +1,7 @@
 "use client";
 
-import AppConfirmDialog from "@/components/AppConfirmDialog";
-import AppTable, { EFilterList, TColumn } from "@/components/AppTable";
+import AppConfirmDialog from "@/components/customComponents/appConfirmDialog";
+import AppTable from "@/components/customComponents/appTable";
 import useSelectTable from "@/hooks/useSelectTable";
 import usePaginationAndSort from "@/hooks/usePaginationAndSort";
 import useSearch from "@/hooks/useSearch";
@@ -19,12 +19,16 @@ import dayjs from "dayjs";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import usePage from "./usePage";
-import { ESearchType } from "@/lib/zod/paginationDTO";
+import { ESearchType } from "@/common/zod/paginationDTO";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { Badge } from "@mui/material";
 import LinkLoadingIndicator from "@/components/LinkLoadingIndicator";
 import useTableDeleteRow from "@/hooks/useTableDeleteRow";
 import { UseMutationResult } from "@tanstack/react-query";
+import {
+  EFilterList,
+  TColumn,
+} from "@/components/customComponents/appTable/types";
 
 export default function User() {
   const { showAlert } = useAlertContext();
@@ -32,7 +36,7 @@ export default function User() {
   const { pagination, orderQuery, setPagination, setOrderQuery } =
     usePaginationAndSort<keyof UserEntity>({
       defaultOrder: {
-        orderKey: "fullName",
+        orderKey: "createdAt",
         orderType: "desc",
       },
     });
@@ -44,11 +48,10 @@ export default function User() {
 
   const [isOpenConfirm, setIsOpenConfirm] = useState(false);
 
-  const {
-    mutation,
-    dateRange,
-    setDateRange,
-  } = usePage({ setSelectedHash, setIsOpenConfirm });
+  const { mutation, dateRange, setDateRange } = usePage({
+    setSelectedHash,
+    setIsOpenConfirm,
+  });
 
   const {
     isOkMany,
@@ -60,7 +63,7 @@ export default function User() {
     mutation: mutation as UseMutationResult,
     selectedHash,
     setIsOpenConfirm,
-  })
+  });
 
   const query = useGetUserListQuery({
     pagination: pagination,
@@ -76,9 +79,9 @@ export default function User() {
     dateRangeQuery:
       dateRange?.from && dateRange.to
         ? {
-          startDate: dateRange.from,
-          endDate: dateRange.to,
-        }
+            startDate: dateRange.from,
+            endDate: dateRange.to,
+          }
         : undefined,
   });
 
@@ -140,7 +143,7 @@ export default function User() {
         display: "flex",
         flexDirection: "column",
         gap: 1,
-        height: '100%',
+        height: "100%",
       }}
     >
       <Box>

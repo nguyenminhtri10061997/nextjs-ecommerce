@@ -5,7 +5,7 @@ import {
   GetQueryDTO,
   PostCreateBodyDTO,
 } from "@/app/api/brand/validator";
-import { axiosInstance } from "@/lib/axiosInstance";
+import { axiosInstance } from "@/lib/axios/axiosInstance";
 import { TAppResponseBody } from "@/types/api/common";
 import { Brand } from "@prisma/client";
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";

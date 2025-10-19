@@ -1,7 +1,7 @@
 "use client";
 
-import { handleNumberChange, textToSlug } from "@/common";
-import AppSortableItem from "@/components/AppRowSortable";
+import { handleNumberChange, textToSlug } from "@/common/client";
+import AppSortableItem from "@/components/customComponents/appRowSortable";
 import {
   closestCenter,
   DndContext,

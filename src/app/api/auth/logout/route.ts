@@ -1,7 +1,7 @@
-import { AppResponse } from "@/common/appResponse";
-import { AppEnvironment } from "@/environment/appEnvironment";
-import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
-import prisma from "@/lib/prisma";
+import { AppResponse } from "@/common/server/appResponse";
+import { AppEnvironment } from "@/constants/appEnvironment";
+import { withVerifyAccessToken } from "@/constants/HOF/withVerifyAccessToken";
+import prisma from "@/constants/prisma";
 import { AuthService } from "@/lib/auth/authService";
 import { NextRequest } from "next/server";
 

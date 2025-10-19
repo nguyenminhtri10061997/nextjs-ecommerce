@@ -1,7 +1,7 @@
 import { APIEndpoint } from "@/app/api/apiEndpoint";
 import { idParamsDTO as idParamsRoleDTO, PatchBodyDTO as PatchRoleBodyDTO } from "@/app/api/role/[id]/validator";
 import { DeleteBodyDTO as DeleteRoleBodyDTO, GetQueryDTO as GetRoleQueryDTO, PostCreateBodyDTO as PostCreateRoleBodyDTO } from "@/app/api/role/validator";
-import { axiosInstance } from "@/lib/axiosInstance";
+import { axiosInstance } from "@/lib/axios/axiosInstance";
 import { TAppResponseBody } from "@/types/api/common";
 import { TGetRoleListResponse } from "@/types/api/role";
 import { Prisma, Role } from "@prisma/client";

@@ -1,5 +1,5 @@
 import { PostAccountLoginBodyDTO } from '@/app/api/auth/login/validator';
-import prisma from '@/lib/prisma';
+import prisma from '@/constants/prisma';
 import { EUserOrAccountType } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { NextRequest } from 'next/server';

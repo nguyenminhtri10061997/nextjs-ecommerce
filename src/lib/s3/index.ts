@@ -1,5 +1,5 @@
-import { getBaseFileName } from "@/common";
-import { AppEnvironment } from "@/environment/appEnvironment";
+import { getBaseFileName } from "@/common/server";
+import { AppEnvironment } from "@/constants/appEnvironment";
 import {
   DeleteObjectCommand,
   DeleteObjectsCommand,

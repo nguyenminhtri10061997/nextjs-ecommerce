@@ -1,7 +1,7 @@
 "use client";
+import useAppUseForm from "@/constants/reactHookForm";
 import { useGetRoleListQuery } from "@/lib/reactQuery/role";
 import { Account, User } from "@prisma/client";
-import { useForm } from "react-hook-form";
 
 export type Inputs = Pick<User, "fullName" | "type"> &
   Pick<
@@ -16,9 +16,7 @@ export type Inputs = Pick<User, "fullName" | "type"> &
 
 export default function useIndex() {
   const queryRole = useGetRoleListQuery();
-  const form = useForm<Inputs>({
-    mode: "onBlur",
-  });
+  const form = useAppUseForm<Inputs>();
 
   return {
     form,

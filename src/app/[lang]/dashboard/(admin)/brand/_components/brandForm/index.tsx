@@ -5,8 +5,8 @@ import TextField from "@mui/material/TextField";
 import { useEffect } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import useIndex, { TForm } from "./useIndex";
-import { textToSlug } from "@/common";
-import AppImageUpload from "@/components/AppImageUpload";
+import { textToSlug } from "@/common/client";
+import AppImageUpload from "@/components/customComponents/appImageUpload";
 import { Checkbox, FormControlLabel } from "@mui/material";
 
 type TProps = {

@@ -1,4 +1,5 @@
 "use client";
+import AppLinkWithLoading from "@/components/customComponents/applinkWithLoading";
 import DashboardMenu from "@/components/DashboardMenu";
 import LinkLoadingIndicator from "@/components/LinkLoadingIndicator";
 import { ADMIN_DRAWER_WIDTH } from "@/constants/dashBoardMenu";
@@ -29,12 +30,14 @@ import Toolbar from "@mui/material/Toolbar";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
+import { useParams, useSelectedLayoutSegments } from "next/navigation";
 import { useMemo } from "react";
 import useLayout from "./useLayout";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const { breadcrumbs } = useDashboardCtx();
+  const segments = useSelectedLayoutSegments();
   const { dict } = useDashboardCtx();
+  const params = useParams<{ lang: string }>();
 
   const theme = useTheme();
   const {
@@ -52,21 +55,33 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   } = useLayout();
 
   const breadcrumbsRender = useMemo(() => {
-    return breadcrumbs?.map((segment, idx) => {
-      const href = "/" + breadcrumbs.slice(0, idx + 1).join("/");
+    const segmentsLen = segments.length;
+    if (segmentsLen === 0) {
+      return <Typography>DASHBOARD</Typography>;
+    }
 
-      if (idx === breadcrumbs.length - 1) {
-        return <Typography key={href}>{segment.toUpperCase()}</Typography>;
-      }
-
-      return (
-        <Link key={href} href={href}>
-          <LinkLoadingIndicator />
-          {segment.toUpperCase()}
-        </Link>
-      );
-    });
-  }, [breadcrumbs]);
+    let segmentPre = `/${params.lang}/dashboard`;
+    const dashboardBreadcrumb = (
+      <AppLinkWithLoading key={segmentPre} href={segmentPre}>
+        DASHBOARD
+      </AppLinkWithLoading>
+    );
+    return [dashboardBreadcrumb].concat(
+      segments.map((segment, idx) => {
+        const href = `${segmentPre}/${segment}`;
+        segmentPre = href;
+        if (idx === segmentsLen - 1) {
+          return <Typography key={href}>{segment.toUpperCase()}</Typography>;
+        }
+        return (
+          <Link key={href} href={segmentPre}>
+            <LinkLoadingIndicator />
+            {segment.toUpperCase()}
+          </Link>
+        );
+      })
+    );
+  }, [segments, params.lang]);
 
   if (query.isLoading) {
     return (
@@ -81,16 +96,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Drawer variant="persistent" anchor="left" open={isOpenDrawer}>
         <Box sx={{ width: 250 }}>
           <Toolbar sx={{ gap: 2 }}>
-            <Link
+            <AppLinkWithLoading
               href={"/dashboard"}
               className="flex items-center grow-1 gap-4"
             >
-              <LinkLoadingIndicator />
               <LogoDevIcon fontSize="large" />
               <Box>
                 <Typography variant="h6">{dict.AppName}</Typography>
               </Box>
-            </Link>
+            </AppLinkWithLoading>
             <IconButton size="large" onClick={handleClickCloseDrawer}>
               <ChevronLeftIcon />
             </IconButton>
@@ -102,7 +116,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             }}
           ></Box>
           <Divider />
-          <DashboardMenu arrMenuRender={arrMenuRender} />
+          <DashboardMenu
+            arrMenuRender={arrMenuRender}
+            handleClickCloseDrawer={handleClickCloseDrawer}
+          />
         </Box>
       </Drawer>
       <Box

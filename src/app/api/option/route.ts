@@ -1,15 +1,15 @@
-import { AppResponse } from "@/common/appResponse";
-import { AppError } from "@/common/appError";
-import { getOrderBy } from "@/common";
-import prisma from "@/lib/prisma";
-import { THofContext } from "@/lib/HOF/type";
-import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
-import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
+import { AppResponse } from "@/common/server/appResponse";
+import { AppError } from "@/common/server/appError";
+import prisma from "@/constants/prisma";
+import { THofContext } from "@/constants/HOF/type";
+import { withValidateFieldHandler } from "@/constants/HOF/withValidateField";
+import { withVerifyAccessToken } from "@/constants/HOF/withVerifyAccessToken";
+import { withVerifyCanDoAction } from "@/constants/HOF/withVerifyCanDoAction";
 import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
 import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator";
-import { ESearchType } from "@/lib/zod/paginationDTO";
-import { AppStatusCode } from "@/common/statusCode";
+import { ESearchType } from "@/common/zod/paginationDTO";
+import { AppStatusCode } from "@/constants/statusCode";
+import { getOrderBy } from "@/common/server";
 
 export const GET = withValidateFieldHandler(
   null,
@@ -25,7 +25,8 @@ export const GET = withValidateFieldHandler(
         if (searchQuery?.searchKey && searchQuery?.searchStr) {
           const key = searchQuery.searchKey as keyof Prisma.OptionWhereInput;
           where[key] = {
-            [searchQuery.searchType || ESearchType.contains]: searchQuery.searchStr,
+            [searchQuery.searchType || ESearchType.contains]:
+              searchQuery.searchStr,
           } as never;
         }
 
@@ -47,7 +48,10 @@ export const POST = withValidateFieldHandler(
   PostCreateBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.OPTION, action: EPermissionAction.CREATE },
+      {
+        resource: EPermissionResource.OPTION,
+        action: EPermissionAction.CREATE,
+      },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
         const { name, slug, optionItems } = ctx.bodyParse!;
 
@@ -60,15 +64,21 @@ export const POST = withValidateFieldHandler(
               {
                 slug,
               },
-            ]
-          }
-        })
+            ],
+          },
+        });
         if (exists) {
           if (exists.name === name) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Name already exist' })
+            return AppError.json({
+              status: AppStatusCode.EXISTING,
+              message: "Name already exist",
+            });
           }
           if (exists.slug === slug) {
-            return AppError.json({ status: AppStatusCode.EXISTING, message: 'Slug already exist' })
+            return AppError.json({
+              status: AppStatusCode.EXISTING,
+              message: "Slug already exist",
+            });
           }
         }
 
@@ -76,18 +86,18 @@ export const POST = withValidateFieldHandler(
           name,
           slug,
           context: "PRODUCT",
-        }
+        };
 
         if (optionItems?.length) {
           objCreate.optionItems = {
             createMany: {
-              data: optionItems.map(atv => ({
+              data: optionItems.map((atv) => ({
                 name: atv.name,
                 slug: atv.slug,
-                displayOrder: atv.displayOrder
-            }))
-            }
-          }
+                displayOrder: atv.displayOrder,
+              })),
+            },
+          };
         }
 
         const created = await prisma.option.create({
@@ -106,7 +116,10 @@ export const DELETE = withValidateFieldHandler(
   DeleteBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.OPTION, action: EPermissionAction.DELETE },
+      {
+        resource: EPermissionResource.OPTION,
+        action: EPermissionAction.DELETE,
+      },
       async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
         const res = await prisma.option.deleteMany({
           where: { id: { in: ctx.bodyParse!.ids } },

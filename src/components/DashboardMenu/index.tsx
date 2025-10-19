@@ -7,14 +7,14 @@ import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import Link from "next/link";
 import React, { useEffect } from "react";
-import LinkLoadingIndicator from "../LinkLoadingIndicator";
 import { useDashboardMenu } from "./useDashboardMenu";
 import { usePathname } from "next/navigation";
+import AppLinkWithLoading from "../customComponents/applinkWithLoading";
 
 type TProps = {
   arrMenuRender: TDashBoardMenuItem[];
+  handleClickCloseDrawer: () => void;
 };
 
 const DashboardMenu = (props: TProps) => {
@@ -35,56 +35,54 @@ const DashboardMenu = (props: TProps) => {
     }
   }, [pathname, arrMenuRender, pathnameCompare, toggleSubmenu]);
 
+  const renderLinkParent = (
+    menu: TDashBoardMenuItem,
+    handleClickCallback: () => void
+  ) => {
+    return (
+      <ListItemButton
+        onClick={handleClickCallback}
+        selected={menu.to === pathnameCompare}
+      >
+        <ListItemIcon>{menu.icon}</ListItemIcon>
+        <ListItemText primary={menu.label} />
+        {menu.children ? (
+          openMap[menu.label] ? (
+            <ExpandLessIcon />
+          ) : (
+            <ExpandMoreIcon />
+          )
+        ) : null}
+      </ListItemButton>
+    );
+  };
+
   return (
     <List>
       {arrMenuRender.map((m) => {
         if (!m.children?.length) {
           return (
-            <Link key={m.label} href={m.to || ""}>
-              <ListItemButton
-                onClick={() => toggleSubmenu(m.label)}
-                selected={m.to === pathnameCompare}
-              >
-                <ListItemIcon>{m.icon}</ListItemIcon>
-                <ListItemText primary={m.label} />
-                {m.children ? (
-                  openMap[m.label] ? (
-                    <ExpandLessIcon />
-                  ) : (
-                    <ExpandMoreIcon />
-                  )
-                ) : null}
-              </ListItemButton>
-              <LinkLoadingIndicator />
-            </Link>
+            <AppLinkWithLoading key={m.label} href={m.to || ""}>
+              {renderLinkParent(m, props.handleClickCloseDrawer)}
+            </AppLinkWithLoading>
           );
         }
         return (
           <React.Fragment key={m.label}>
-            <ListItemButton onClick={() => toggleSubmenu(m.label)}>
-              <ListItemIcon>{m.icon}</ListItemIcon>
-              <ListItemText primary={m.label} />
-              {m.children ? (
-                openMap[m.label] ? (
-                  <ExpandLessIcon />
-                ) : (
-                  <ExpandMoreIcon />
-                )
-              ) : null}
-            </ListItemButton>
+            {renderLinkParent(m, () => toggleSubmenu(m.label))}
             <Collapse in={!!openMap[m.label]} timeout="auto" unmountOnExit>
               <List component="div" disablePadding sx={{ ml: 2 }}>
                 {m.children.map((child) => (
-                  <Link href={child.to || ""} key={child.label}>
-                    <LinkLoadingIndicator />
+                  <AppLinkWithLoading href={child.to || ""} key={child.label}>
                     <ListItemButton
                       key={child.label}
                       selected={child.to === pathnameCompare}
+                      onClick={props.handleClickCloseDrawer}
                     >
                       <ListItemIcon>{child.icon}</ListItemIcon>
                       <ListItemText primary={child.label} />
                     </ListItemButton>
-                  </Link>
+                  </AppLinkWithLoading>
                 ))}
               </List>
             </Collapse>

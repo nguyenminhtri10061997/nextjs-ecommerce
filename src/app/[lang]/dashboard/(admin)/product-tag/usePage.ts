@@ -1,6 +1,6 @@
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { TSelectedHash } from "@/hooks/useSelectTable";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/constants/queryClient";
 import { productTagKeys, deleteProductTags } from "@/lib/reactQuery/product-tag";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation } from "@tanstack/react-query";

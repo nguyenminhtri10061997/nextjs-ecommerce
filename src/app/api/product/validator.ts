@@ -4,7 +4,7 @@ import {
   OrderQueryDTO,
   PagingQueryDTO,
   SearchQueryDTO,
-} from "@/lib/zod/paginationDTO";
+} from "@/common/zod/paginationDTO";
 import {
   EAttributeStatus,
   EAttributeType,
@@ -20,8 +20,9 @@ import {
 const ProductAttributeValueDTO = z.object({
   id: z.uuid().optional(),
   name: z.string(),
-  slug: z.string(),
-  image: z.file().nullable().optional(),
+  slug: z.string().optional(),
+  image: z.string().nullable().optional(),
+  isDefault: z.boolean().optional(),
   displayOrder: z.number().nonnegative().nullable().optional(),
   status: z.enum([
     EAttributeValueStatus.ACTIVE,
@@ -32,32 +33,32 @@ const ProductAttributeValueDTO = z.object({
 const ProductAttributeDTO = z.object({
   id: z.uuid().optional(),
   name: z.string(),
-  type: z.enum(EAttributeType),
   slug: z.string(),
-  displayOrder: z.number().nonnegative().nullable().optional(),
+  type: z.enum(EAttributeType),
   status: z.enum([EAttributeStatus.ACTIVE, EAttributeStatus.INACTIVE_BY_ADMIN]),
+  displayOrder: z.number().nonnegative().nullable().optional(),
   attributeValues: z.array(ProductAttributeValueDTO),
+  isUsedForVariations: z.boolean().optional(),
 });
 
 const ProductSkuAttributeValue = z.object({
   productAttributeId: z.string(),
   productAttributeValueId: z.string(),
   image: z.string().optional(),
-  Label: z.string().optional(),
 });
 
 const ProductSkuDTO = z
   .object({
     sellerSku: z.string().nullable().optional(),
-    price: z.number().min(0),
+    stockStatus: z.enum(EStockStatus).nullable().optional(),
+    stockType: z.enum(EStockType),
+    image: z.string().nullable().optional(),
     salePrice: z.number().min(0).nullable().optional(),
+    price: z.number().min(0),
     costPrice: z.number().min(0).nullable().optional(),
     barcode: z.string().nullable().optional(),
-    stockType: z.enum(EStockType),
     stock: z.number().nullable().optional(),
-    image: z.file().nullable().optional(),
     downloadUrl: z.string().nullable().optional(),
-    stockStatus: z.enum(EStockStatus).nullable().optional(),
     note: z.string().nullable().optional(),
     weight: z.number().nullable().optional(),
     width: z.number().nullable().optional(),
@@ -65,7 +66,6 @@ const ProductSkuDTO = z
     height: z.number().nullable().optional(),
     displayOrder: z.number().nonnegative().nullable().optional(),
     status: z.enum(ESkuStatus),
-    isDefault: z.boolean().optional(),
     skuAttributeValues: z.array(ProductSkuAttributeValue),
   })
   .check((ctx) => {
@@ -136,7 +136,6 @@ const ProductTagDTO = z.object({
 });
 
 // API
-
 export const GetQueryDTO = z.object({
   pagination: PagingQueryDTO.shape.pagination.optional(),
   orderQuery: OrderQueryDTO([
@@ -150,20 +149,24 @@ export const GetQueryDTO = z.object({
 });
 
 export const PostCreateBodyDTO = z.object({
+  productCategoryId: z.uuid().optional().nullable(),
+  brandId: z.uuid().optional().nullable(),
   code: z.string().min(1),
   name: z.string().min(1),
   slug: z.string().min(1),
   seoTitle: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   seoDescription: z.string().nullable().optional(),
-  productCategoryId: z.uuid().optional().nullable(),
-  brandId: z.uuid().optional().nullable(),
   detail: z.string().nullable().optional(),
-  mainImage: z.file(),
-  listImages: z.array(z.file()),
+  mainImage: z.string().nullable().optional(),
+  listImages: z.array(z.string()),
   viewCount: z.number().nonnegative().optional(),
   soldCount: z.number().nonnegative().optional(),
+  type: z.enum(EProductType),
+  avgRateByAdmin: z.number().nonnegative().optional(),
   isActive: z.boolean().optional(),
+
+  attributes: z.array(ProductAttributeDTO),
   productTags: z
     .array(ProductTagDTO)
     .check((ctx) => {
@@ -192,8 +195,6 @@ export const PostCreateBodyDTO = z.object({
       }
     })
     .optional(),
-  type: z.enum(EProductType),
-  attributes: z.array(ProductAttributeDTO),
   skus: z.array(ProductSkuDTO),
 });
 

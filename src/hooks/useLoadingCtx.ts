@@ -1,4 +1,4 @@
-import { LoadingCtx } from "@/contexts/loadingCtx";
+import { LoadingCtx } from "@/components/contexts/loadingCtx";
 import { useContext } from "react";
 
 export const useLoadingCtx = () => {

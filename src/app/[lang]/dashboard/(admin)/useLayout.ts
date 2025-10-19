@@ -1,7 +1,7 @@
 import { APIEndpoint } from "@/app/api/apiEndpoint";
 import { DASHBOARD_MENU_ITEMS } from "@/constants/dashBoardMenu";
 import { useAlertContext } from "@/hooks/useAlertContext";
-import { withRequestHandler } from "@/lib/HOF/withRequestHandler";
+import { withRequestHandler } from "@/constants/HOF/withRequestHandler";
 import { useMeQuery } from "@/lib/reactQuery/me";
 import { PaletteMode, useColorScheme } from "@mui/material/styles";
 import axios from "axios";

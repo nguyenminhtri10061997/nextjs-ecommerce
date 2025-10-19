@@ -1,15 +1,15 @@
-import { AppResponse } from "@/common/appResponse";
-import { THofContext } from "@/lib/HOF/type";
-import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
-import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
-import prisma from "@/lib/prisma";
+import { AppResponse } from "@/common/server/appResponse";
+import { THofContext } from "@/constants/HOF/type";
+import { withValidateFieldHandler } from "@/constants/HOF/withValidateField";
+import { withVerifyAccessToken } from "@/constants/HOF/withVerifyAccessToken";
+import { withVerifyCanDoAction } from "@/constants/HOF/withVerifyCanDoAction";
+import prisma from "@/constants/prisma";
 import { TGetPermissionListResponse } from "@/types/api/permission";
 import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
 import {
     GetQueryDTO
 } from "./validator";
-import { getOrderBy, getSkipAndTake } from "@/common";
+import { getOrderBy, getSkipAndTake } from "@/common/client";
 
 export const GET = withValidateFieldHandler(
     null,

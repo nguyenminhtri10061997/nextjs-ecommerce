@@ -1,35 +1,36 @@
-import { AppError } from "@/common/appError";
-import { AppResponse } from "@/common/appResponse";
-import { AppEnvironment } from "@/environment/appEnvironment";
-import { getToken } from "@/lib/dal";
-import prisma from "@/lib/prisma";
+import { AppError } from "@/common/server/appError";
+import { AppResponse } from "@/common/server/appResponse";
+import { AppEnvironment } from "@/constants/appEnvironment";
+import { getToken } from "@/common/dal";
+import prisma from "@/constants/prisma";
 import { AuthService } from "@/lib/auth/authService";
 import { JwtService } from "@/lib/auth/jwtService";
 import dayjs from "dayjs";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 import { NextRequest } from "next/server";
-
+import { defaultCookieOption } from "@/constants";
 
 const deleteCookiesAndReturnError = (cookie: ReadonlyRequestCookies) => {
   cookie.delete(AppEnvironment.ACCESS_TOKEN_COOKIE_KEY);
   cookie.delete(AppEnvironment.REFRESH_TOKEN_COOKIE_KEY);
   return AppError.json({ status: 401 });
-}
+};
 
 export async function POST(request: NextRequest) {
   const resGetToken = await getToken();
   const { ipAddress, userAgent } = AuthService.getClientInfo(request);
 
-
   if (!resGetToken.refreshToken) {
-    return deleteCookiesAndReturnError(resGetToken.cookie)
+    return deleteCookiesAndReturnError(resGetToken.cookie);
   }
 
-  let refreshTokenDecoded
+  let refreshTokenDecoded;
   try {
-    refreshTokenDecoded = JwtService.verifyToken(resGetToken.refreshToken)
-  } catch (err) {
-    return deleteCookiesAndReturnError(resGetToken.cookie)
+    refreshTokenDecoded = JwtService.verifyRefreshToken(
+      resGetToken.refreshToken
+    );
+  } catch {
+    return deleteCookiesAndReturnError(resGetToken.cookie);
   }
 
   const refreshToken = await prisma.refreshToken.findFirst({
@@ -37,6 +38,7 @@ export async function POST(request: NextRequest) {
       token: resGetToken.refreshToken,
       ipAddress,
       userAgent,
+      accountId: refreshTokenDecoded.accountId,
     },
     select: {
       id: true,
@@ -46,24 +48,24 @@ export async function POST(request: NextRequest) {
   });
 
   if (!refreshToken) {
-    return deleteCookiesAndReturnError(resGetToken.cookie)
+    return deleteCookiesAndReturnError(resGetToken.cookie);
   }
 
   if (refreshToken && refreshToken.expiresAt < new Date()) {
     await prisma.refreshToken.delete({
       where: {
         id: refreshToken.id,
-      }
+      },
     });
-    return deleteCookiesAndReturnError(resGetToken.cookie)
+    return deleteCookiesAndReturnError(resGetToken.cookie);
   }
 
   const account = await prisma.account.findUnique({
-    where: { id: refreshTokenDecoded.accountId }
-  })
+    where: { id: refreshToken.accountId },
+  });
 
   if (!account) {
-    return deleteCookiesAndReturnError(resGetToken.cookie)
+    return deleteCookiesAndReturnError(resGetToken.cookie);
   }
 
   const accessToken = await JwtService.generateAccessToken({
@@ -77,11 +79,8 @@ export async function POST(request: NextRequest) {
     .toDate();
 
   resGetToken.cookie.set("accessToken", accessToken, {
-    httpOnly: true,
-    secure: true,
+    ...defaultCookieOption,
     expires: accessTokenExpiresAt,
-    sameSite: "lax",
-    path: "/",
   });
 
   return AppResponse.json();

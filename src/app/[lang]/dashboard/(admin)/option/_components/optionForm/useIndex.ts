@@ -1,19 +1,25 @@
-import { textToSlug } from "@/common";
+import { textToSlug } from "@/common/client";
+import useAppUseForm from "@/constants/reactHookForm";
 import { Option, OptionItem } from "@prisma/client";
 import { ChangeEvent } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray } from "react-hook-form";
 import { v4 } from "uuid";
 
-export type TForm = Pick<Option, "name" | "slug" | "displayOrder" | "isActive"> & {
-  optionItems: (Pick<OptionItem, "name" | "slug" | "displayOrder" | "isActive"> & { idDnD: string })[];
+export type TForm = Pick<
+  Option,
+  "name" | "slug" | "displayOrder" | "isActive"
+> & {
+  optionItems: (Pick<
+    OptionItem,
+    "name" | "slug" | "displayOrder" | "isActive"
+  > & { idDnD: string })[];
 };
 
 export default function useIndex() {
-  const form = useForm<TForm>({
-    mode: "onBlur",
+  const form = useAppUseForm<TForm>({
     defaultValues: {
       isActive: true,
-    }
+    },
   });
   const optionValueArrField = useFieldArray({
     control: form.control,

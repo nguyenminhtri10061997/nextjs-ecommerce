@@ -1,6 +1,6 @@
 "use client";
 
-import { textToSlug } from "@/common";
+import { textToSlug } from "@/common/client";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { useEffect } from "react";

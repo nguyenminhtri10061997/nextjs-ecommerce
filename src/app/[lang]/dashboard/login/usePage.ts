@@ -1,10 +1,9 @@
 "use client";
+import useAppUseForm from "@/constants/reactHookForm";
 import { useAlertContext } from "@/hooks/useAlertContext";
-import { withRequestHandler } from "@/lib/HOF/withRequestHandler";
-import axios from "axios";
-import { redirect } from "next/navigation";
-import { useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { postLogin } from "@/lib/reactQuery/login";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 
 type Inputs = {
   username: string;
@@ -16,41 +15,31 @@ export const usePage = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Inputs>({
-    mode: "onBlur",
+  } = useAppUseForm<Inputs>();
+  const { showAlert } = useAlertContext();
+  const router = useRouter();
+
+  const mutation = useMutation({
+    mutationFn: postLogin,
+    onSuccess: () => {
+      router.replace("/dashboard");
+    },
+    onError: () => {
+      showAlert("Tài khoản hoặc mật khẩu bị sai", "error");
+    },
   });
-  const { showAlert } = useAlertContext()
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleTogglePassword = () => {
-    setShowPassword((prev) => !prev);
-  };
-
-  const handleClickSubmit: SubmitHandler<Inputs> = async (data) => {
-    setIsLoading(true)
-    const res = await withRequestHandler(
-      axios.post("/api/auth/login", {
-        username: data.username,
-        password: data.password,
-      })
-    );
-    setIsLoading(false)
-
-    if (!res.isSuccess) {
-      showAlert("Tài khoản hoặc mật khẩu bị sai", 'error')
-    }
-
-    redirect('/dashboard')
-  };
+  const handleClickSubmit = handleSubmit(async (data) => {
+    mutation.mutate({
+      username: data.username,
+      password: data.password,
+    });
+  });
 
   return {
     errors,
-    showPassword,
-    isLoading,
-    handleTogglePassword,
+    mutation,
     handleClickSubmit,
     register,
-    handleSubmit,
   };
 };

@@ -1,7 +1,7 @@
 import { APIEndpoint } from "@/app/api/apiEndpoint";
 import { IdParamsDTO, PatchBodyDTO } from "@/app/api/attribute/[id]/validator";
 import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "@/app/api/attribute/validator";
-import { axiosInstance } from "@/lib/axiosInstance";
+import { axiosInstance } from "@/lib/axios/axiosInstance";
 import { TAppResponseBody } from "@/types/api/common";
 import { Attribute, Prisma } from "@prisma/client";
 import { QueryFunctionContext, useQuery } from "@tanstack/react-query";

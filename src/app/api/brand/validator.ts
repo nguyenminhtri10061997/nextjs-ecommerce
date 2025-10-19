@@ -1,4 +1,4 @@
-import { OrderQueryDTO, SearchQueryDTO } from "@/lib/zod/paginationDTO";
+import { OrderQueryDTO, SearchQueryDTO } from "@/common/zod/paginationDTO";
 import { Brand } from "@prisma/client";
 import { z } from "zod/v4";
 

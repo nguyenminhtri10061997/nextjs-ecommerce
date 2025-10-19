@@ -1,7 +1,7 @@
 "use client";
 
 import { useLinkStatus } from "next/link";
-import AppLineProgress from "../AppLineProgress";
+import AppLineProgress from "../customComponents/appLineProgress";
 
 export default function LinkLoadingIndicator() {
   const { pending } = useLinkStatus();

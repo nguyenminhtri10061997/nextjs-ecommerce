@@ -1,5 +1,5 @@
 import { APIEndpoint } from "@/app/api/apiEndpoint";
-import { axiosInstance } from "@/lib/axiosInstance";
+import { axiosInstance } from "@/lib/axios/axiosInstance";
 import { TPostMeResponse } from "@/types/api/auth/meResponse";
 import { TAppResponseBody } from "@/types/api/common";
 import { useQuery } from "@tanstack/react-query";

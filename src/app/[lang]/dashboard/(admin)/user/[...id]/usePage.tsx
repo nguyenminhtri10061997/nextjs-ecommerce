@@ -1,11 +1,11 @@
 "use client";
 
 import { Inputs as UserInputForm } from "@/app/[lang]/dashboard/(admin)/user/_components/UserForm/useIndex";
+import { queryClient } from "@/constants/queryClient";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { useDashboardCtx } from "@/hooks/useDashboardCtx";
 import { useLoadingCtx } from "@/hooks/useLoadingCtx";
 import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
-import { queryClient } from "@/lib/queryClient";
 import { getUserDetail, putUser, userKeys } from "@/lib/reactQuery/user";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery } from "@tanstack/react-query";

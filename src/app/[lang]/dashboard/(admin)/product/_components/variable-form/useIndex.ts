@@ -1,4 +1,4 @@
-import { generateCombinations } from "@/common";
+import { generateCombinations } from "@/common/client";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import { useGetAttributeListQuery } from "@/lib/reactQuery/attribute";
 import { startTransition, useDeferredValue, useState } from "react";

@@ -1,8 +1,7 @@
 "use client";
 
-import { handleNumberChange, textToSlug } from "@/common";
-import { handleDragEnd } from "@/common/indexClient";
-import AppImageUpload from "@/components/AppImageUpload";
+import { handleDragEnd, handleNumberChange, textToSlug } from "@/common/client";
+import AppImageUpload from "@/components/customComponents/appImageUpload";
 import {
   closestCenter,
   DndContext,

@@ -1,4 +1,4 @@
-import { OrderQueryDTO, SearchQueryDTO } from "@/lib/zod/paginationDTO";
+import { OrderQueryDTO, SearchQueryDTO } from "@/common/zod/paginationDTO";
 import { ProductTag, ETagDisplayType } from "@prisma/client";
 import { z } from "zod/v4";
 

@@ -1,4 +1,4 @@
-import { DateRangeQueryDTO, OrderQueryDTO, PagingQueryDTO, SearchQueryDTO } from "@/lib/zod/paginationDTO";
+import { DateRangeQueryDTO, OrderQueryDTO, PagingQueryDTO, SearchQueryDTO } from "@/common/zod/paginationDTO";
 import { Role } from "@prisma/client";
 import { z } from "zod/v4";
 

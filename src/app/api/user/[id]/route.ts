@@ -1,13 +1,13 @@
-import { AppResponse } from "@/common/appResponse";
-import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
-import prisma from "@/lib/prisma";
+import { AppResponse } from "@/common/server/appResponse";
+import { withValidateFieldHandler } from "@/constants/HOF/withValidateField";
+import prisma from "@/constants/prisma";
 import { idParamsDTO, patchBodyDTO } from "./validator";
-import { THofContext } from "@/lib/HOF/type";
-import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
+import { THofContext } from "@/constants/HOF/type";
+import { withVerifyAccessToken } from "@/constants/HOF/withVerifyAccessToken";
+import { withVerifyCanDoAction } from "@/constants/HOF/withVerifyCanDoAction";
 import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
-import { AppError } from "@/common/appError";
-import { AppStatusCode } from "@/common/statusCode";
+import { AppError } from "@/common/server/appError";
+import { AppStatusCode } from "@/constants/statusCode";
 import { AuthService } from "@/lib/auth/authService";
 
 export const GET = withValidateFieldHandler(

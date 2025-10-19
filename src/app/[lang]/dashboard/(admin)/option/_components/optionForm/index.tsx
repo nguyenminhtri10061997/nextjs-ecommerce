@@ -1,7 +1,7 @@
 "use client";
 
-import { textToSlug } from "@/common";
-import AppSortableItem from "@/components/AppRowSortable";
+import { textToSlug } from "@/common/client";
+import AppSortableItem from "@/components/customComponents/appRowSortable";
 import {
   closestCenter,
   DndContext,

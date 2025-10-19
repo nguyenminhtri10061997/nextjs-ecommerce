@@ -1,4 +1,4 @@
-import { ESearchType } from "@/lib/zod/paginationDTO";
+import { ESearchType } from "@/common/zod/paginationDTO";
 import { useState } from "react";
 
 type TProps<T> = {

@@ -1,17 +1,15 @@
 "use client";
+import useAppUseForm from "@/constants/reactHookForm";
 import { useGetPermissionList } from "@/lib/reactQuery/permission";
 import { EPermissionAction, EPermissionResource, Role } from "@prisma/client";
 import { useMemo } from "react";
-import { useForm } from "react-hook-form";
 
 export type Inputs = Pick<Role, "name" | "description"> & {
   permissionIds: string[];
 };
 
 export default function Page() {
-  const form = useForm<Inputs>({
-    mode: "onBlur",
-  });
+  const form = useAppUseForm<Inputs>();
 
   const queryPermissions = useGetPermissionList({
     orderQuery: {

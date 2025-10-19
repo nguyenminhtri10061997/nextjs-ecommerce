@@ -1,27 +1,31 @@
 export class APIEndpoint {
-  static POST_LOG_OUT = "/api/auth/logout";
+  static BASE = "/api";
 
-  static POST_REFRESH = "/api/auth/refresh-token";
+  static POST_LOG_IN = `${this.BASE}/auth/login`;
 
-  static POST_ME = "/api/auth/me";
+  static POST_LOG_OUT = `${this.BASE}/auth/logout`;
 
-  static API_USER = "/api/user";
+  static POST_REFRESH = `${this.BASE}/auth/refresh-token`;
 
-  static API_PERMISSION = "/api/permission";
+  static POST_ME = `${this.BASE}/auth/me`;
 
-  static API_ROLE = "/api/role";
+  static API_USER = `${this.BASE}/user`;
 
-  static API_ATTRIBUTE = "/api/attribute";
+  static API_PERMISSION = `${this.BASE}/permission`;
 
-  static API_OPTION = "/api/option";
+  static API_ROLE = `${this.BASE}/role`;
 
-  static API_BRAND = "/api/brand";
+  static API_ATTRIBUTE = `${this.BASE}/attribute`;
 
-  static API_PRODUCT_CATEGORY = "/api/product-category";
+  static API_OPTION = `${this.BASE}/option`;
 
-  static API_LANGUAGE = "/api/language";
+  static API_BRAND = `${this.BASE}/brand`;
 
-  static API_PRODUCT_TAG = "/api/product-tag";
+  static API_PRODUCT_CATEGORY = `${this.BASE}/product-category`;
 
-  static API_PRODUCT = "/api/product";
+  static API_LANGUAGE = `${this.BASE}/language`;
+
+  static API_PRODUCT_TAG = `${this.BASE}/product-tag`;
+
+  static API_PRODUCT = `${this.BASE}/product`;
 }

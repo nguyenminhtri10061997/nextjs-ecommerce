@@ -1,5 +1,4 @@
-import { handleDragEnd } from "@/common/indexClient";
-import AppButtonConfirm from "@/components/AppButtonConfirm";
+import AppButtonConfirm from "@/components/customComponents/appButtonConfirm";
 import {
   closestCenter,
   DndContext,
@@ -13,12 +12,7 @@ import {
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import AddIcon from "@mui/icons-material/Add";
-import {
-  Button,
-  FormControl,
-  FormLabel,
-  Toolbar
-} from "@mui/material";
+import { Button, FormControl, FormLabel, Toolbar } from "@mui/material";
 import { startTransition, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { v4 } from "uuid";
@@ -26,6 +20,7 @@ import AttributeItem from "../attribute";
 import { TForm } from "../product-form/useIndex";
 import SkuVariableForm from "../sku-variable-form";
 import useIndex, { TAttValHash } from "./useIndex";
+import { handleDragEnd } from "@/common/client";
 
 type TProps = {
   form: UseFormReturn<TForm>;
@@ -113,6 +108,7 @@ export default function Index(props: TProps) {
                 id: v4(),
                 isNew: true,
                 name: "",
+                type: "RADIO",
                 slug: "",
                 status: "ACTIVE",
                 attributeValues: [

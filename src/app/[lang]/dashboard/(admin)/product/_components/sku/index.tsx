@@ -1,5 +1,5 @@
-import { handleNumberChange } from "@/common";
-import AppImageUpload from "@/components/AppImageUpload";
+import { handleNumberChange } from "@/common/client";
+import AppImageUpload from "@/components/customComponents/appImageUpload";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import {
   Box,

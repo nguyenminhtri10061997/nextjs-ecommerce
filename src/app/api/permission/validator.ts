@@ -1,4 +1,4 @@
-import { OrderQueryDTO, PagingQueryDTO } from "@/lib/zod/paginationDTO";
+import { OrderQueryDTO, PagingQueryDTO } from "@/common/zod/paginationDTO";
 import { EPermissionAction, EPermissionResource, Permission } from "@prisma/client";
 import { z } from "zod/v4";
 

@@ -1,4 +1,4 @@
-import AppSortableItem from "@/components/AppSortableItem";
+import AppSortableItem from "@/components/customComponents/appSortableItem";
 import {
   closestCenter,
   DndContext,
@@ -30,7 +30,7 @@ import {
 } from "react-hook-form";
 import { TForm } from "../product-form/useIndex";
 import useIndex from "./useIndex";
-import { handleNumberChange } from "@/common";
+import { handleNumberChange } from "@/common/client";
 
 type TProps = {
   idx: number;

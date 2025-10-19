@@ -1,4 +1,4 @@
-import { DashboardCtx } from "@/contexts/dashboardCtx";
+import { DashboardCtx } from "@/components/contexts/dashboardCtx";
 import { useContext } from "react";
 
 export const useDashboardCtx = () => {

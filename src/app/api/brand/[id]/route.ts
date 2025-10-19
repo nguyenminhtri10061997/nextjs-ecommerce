@@ -1,14 +1,14 @@
-import { AppError } from "@/common/appError";
-import { AppResponse } from "@/common/appResponse";
-import { AppStatusCode } from "@/common/statusCode";
-import { THofContext } from "@/lib/HOF/type";
-import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
-import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
-import prisma from "@/lib/prisma";
-import { Brand, EPermissionAction, EPermissionResource } from "@prisma/client";
-import { IdParamsDTO, PatchBodyDTO } from "./validator";
+import { AppError } from "@/common/server/appError";
+import { AppResponse } from "@/common/server/appResponse";
+import { THofContext } from "@/constants/HOF/type";
+import { withValidateFieldHandler } from "@/constants/HOF/withValidateField";
+import { withVerifyAccessToken } from "@/constants/HOF/withVerifyAccessToken";
+import { withVerifyCanDoAction } from "@/constants/HOF/withVerifyCanDoAction";
+import prisma from "@/constants/prisma";
+import { AppStatusCode } from "@/constants/statusCode";
 import AppS3Client from "@/lib/s3";
+import { EPermissionAction, EPermissionResource } from "@prisma/client";
+import { IdParamsDTO, PatchBodyDTO } from "./validator";
 
 export const GET = withValidateFieldHandler(
   IdParamsDTO,
@@ -28,12 +28,11 @@ export const GET = withValidateFieldHandler(
             message: "Brand not found",
           });
         }
-        console.log(brand.logoImage)
 
-        return AppResponse.json({ status: 200, data: {
-          ...brand,
-          logoImage: brand.logoImage ? AppS3Client.getS3ImgFullUrl(brand.logoImage) : brand.logoImage,
-        } as Brand });
+        return AppResponse.json({
+          status: 200,
+          data: brand,
+        });
       }
     )
   )
@@ -98,7 +97,7 @@ export const PATCH = withValidateFieldHandler(
           if (logoImgFile !== null) {
             logoImage = await AppS3Client.s3CreateFile(logoImgFile);
           } else {
-            logoImage = null
+            logoImage = null;
           }
           if (brand.logoImage) {
             await AppS3Client.s3DeleteFile(brand.logoImage);

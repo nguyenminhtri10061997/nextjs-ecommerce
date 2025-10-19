@@ -3,7 +3,7 @@
 import { useAlertContext } from "@/hooks/useAlertContext";
 import useFormRef from "@/hooks/useFormRef";
 import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/constants/queryClient";
 import { postCreateProduct, productKeys } from "@/lib/reactQuery/product";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation } from "@tanstack/react-query";

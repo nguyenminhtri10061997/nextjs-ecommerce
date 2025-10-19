@@ -1,14 +1,14 @@
 "use client";
 
-import AppConfirmDialog from "@/components/AppConfirmDialog";
-import AppTable, { EFilterList, TColumn } from "@/components/AppTable";
+import AppConfirmDialog from "@/components/customComponents/appConfirmDialog";
+import AppTable, { EFilterList, TColumn } from "@/components/customComponents/appTable";
 import useSelectTable from "@/hooks/useSelectTable";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import usePaginationAndSort from "@/hooks/usePaginationAndSort";
 import useSearch from "@/hooks/useSearch";
 import useTableDeleteRow from "@/hooks/useTableDeleteRow";
 import { useGetRoleListQuery } from "@/lib/reactQuery/role";
-import { ESearchType } from "@/lib/zod/paginationDTO";
+import { ESearchType } from "@/common/zod/paginationDTO";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";

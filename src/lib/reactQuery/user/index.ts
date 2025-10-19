@@ -1,7 +1,7 @@
 import { APIEndpoint } from "@/app/api/apiEndpoint";
 import { idParamsDTO as idParamUser, PatchBodyDTO as PathBodyUserDTO } from "@/app/api/user/[id]/validator";
 import { DeleteUserBodyDTO, GetUserQueryDTO, PostUserCreateBodyDTO } from "@/app/api/user/validator";
-import { axiosInstance } from "@/lib/axiosInstance";
+import { axiosInstance } from "@/lib/axios/axiosInstance";
 import { TAppResponseBody } from "@/types/api/common";
 import { TGetUserListResponse } from "@/types/api/user";
 import { Prisma, User } from "@prisma/client";

@@ -1,5 +1,5 @@
 import { z } from "zod/v4";
-import { OrderQueryDTO, SearchQueryDTO } from "@/lib/zod/paginationDTO";
+import { OrderQueryDTO, SearchQueryDTO } from "@/common/zod/paginationDTO";
 import { ProductCategory } from "@prisma/client";
 
 export const GetQueryDTO = z.object({
