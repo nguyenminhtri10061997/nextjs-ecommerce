@@ -1,4 +1,4 @@
-import { AppResponse } from "@/common/appResponse";
+import { AppResponse } from "@/common/server/appResponse";
 import { AppEnvironment } from "@/environment/appEnvironment";
 import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
 import prisma from "@/lib/prisma";

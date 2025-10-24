@@ -16,7 +16,7 @@ async function main() {
     }
     return i.code
   })
-  const targetPath = join(__dirname, '../constants/locale/locales.json')
+  const targetPath = join(__dirname, '../../src/constants/locale/locales.json')
   writeFileSync(targetPath, JSON.stringify({
     defaultLocale,
     locales,

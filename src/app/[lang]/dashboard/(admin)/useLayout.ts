@@ -1,4 +1,4 @@
-import { postLogout } from "@/call-api/auth";
+import { postLogout } from "@/lib/reactQuery/auth";
 import { DASHBOARD_MENU_ITEMS } from "@/constants/dashBoardMenu";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";

@@ -1,6 +1,6 @@
 import { getS3ImgFullUrl, textToSlug } from "@/common";
-import AppImageUpload from "@/components/AppImageUpload";
-import AppSortableItem from "@/components/AppSortableItem";
+import AppImageUpload from "@/components/customComponents/AppImageUpload";
+import AppSortableItem from "@/components/customComponents/AppSortableItem";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import { FormControl, IconButton, MenuItem, TextField } from "@mui/material";
 import { EAttributeValueStatus } from "@prisma/client";

@@ -1,5 +1,5 @@
-import { AppResponse } from "@/common/appResponse";
-import { AppError } from "@/common/appError";
+import { AppResponse } from "@/common/server/appResponse";
+import { AppError } from "@/common/server/appError";
 import { getOrderBy } from "@/common";
 import prisma from "@/lib/prisma";
 import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";

@@ -2,7 +2,7 @@
 
 import { getS3ImgFullUrl, handleNumberChange, textToSlug } from "@/common";
 import { handleDragEnd } from "@/common/indexClient";
-import AppImageUpload from "@/components/AppImageUpload";
+import AppImageUpload from "@/components/customComponents/AppImageUpload";
 import {
   closestCenter,
   DndContext,

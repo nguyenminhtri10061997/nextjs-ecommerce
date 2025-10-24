@@ -1,4 +1,4 @@
-import { LoadingCtx } from "@/contexts/loadingCtx";
+import { LoadingCtx } from "@/components/contexts/loadingCtx";
 import { Backdrop, CircularProgress } from "@mui/material";
 import Fade from "@mui/material/Fade";
 import { useDeferredValue, useState } from "react";

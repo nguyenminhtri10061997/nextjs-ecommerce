@@ -1,5 +1,5 @@
-import { AppError } from "@/common/appError";
-import { AppResponse } from "@/common/appResponse";
+import { AppError } from "@/common/server/appError";
+import { AppResponse } from "@/common/server/appResponse";
 import { AuthService } from "@/lib/auth/authService";
 import { JwtService } from "@/lib/auth/jwtService";
 import { THofContext } from "@/lib/HOF/type";

@@ -1,5 +1,5 @@
 import { getS3ImgFullUrl, handleNumberChange } from "@/common";
-import AppImageUpload from "@/components/AppImageUpload";
+import AppImageUpload from "@/components/customComponents/AppImageUpload";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import {
   Box,

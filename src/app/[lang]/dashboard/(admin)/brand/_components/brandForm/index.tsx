@@ -1,7 +1,7 @@
 "use client";
 
 import { getS3ImgFullUrl, textToSlug } from "@/common";
-import AppImageUpload from "@/components/AppImageUpload";
+import AppImageUpload from "@/components/customComponents/AppImageUpload";
 import {
   Checkbox,
   FormControl,

@@ -1,5 +1,5 @@
-import { AppResponse } from "@/common/appResponse";
-import { AppError } from "@/common/appError";
+import { AppResponse } from "@/common/server/appResponse";
+import { AppError } from "@/common/server/appError";
 import { AppStatusCode } from "@/common/statusCode";
 import prisma from "@/lib/prisma";
 import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";

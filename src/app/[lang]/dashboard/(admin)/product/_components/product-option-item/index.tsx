@@ -1,5 +1,5 @@
 import { handleNumberChange } from "@/common";
-import AppSortableItem from "@/components/AppSortableItem";
+import AppSortableItem from "@/components/customComponents/AppSortableItem";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import { IconButton, MenuItem, TextField } from "@mui/material";
 import { EPriceModifierType, OptionItem } from "@prisma/client";

@@ -1,10 +1,10 @@
-import { AppResponse } from "@/common/appResponse";
+import { AppResponse } from "@/common/server/appResponse";
 import { THofContext } from "@/lib/HOF/type";
 import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
 import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
 import AppS3Client from "@/lib/s3";
 import { GetQueryDTO } from "./validator";
-import { AppError } from "@/common/appError";
+import { AppError } from "@/common/server/appError";
 
 export const GET = withValidateFieldHandler(
   null,

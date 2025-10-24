@@ -1,8 +1,8 @@
 'use client'
 import { queryClient } from "@/lib/queryClient";
-import AlertProvider from "@/providers/AlertProvider";
-import DashboardProvider from "@/providers/dashBoardProvider";
-import LoadingProvider from "@/providers/loadingProvider";
+import AlertProvider from "@/components/providers/AlertProvider";
+import DashboardProvider from "@/components/providers/dashBoardProvider";
+import LoadingProvider from "@/components/providers/loadingProvider";
 import { DictTypeGenerated } from "@/types/dictTypeGenerated";
 import { QueryClientProvider } from "@tanstack/react-query";
 

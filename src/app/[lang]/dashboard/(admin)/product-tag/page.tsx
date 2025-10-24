@@ -1,8 +1,8 @@
 "use client";
 
-import AppConfirmDialog from "@/components/AppConfirmDialog";
-import useAppConfirmDialog from "@/components/AppConfirmDialog/useAppConfirmDialog";
-import AppTable, { TColumn } from "@/components/AppTable";
+import AppConfirmDialog from "@/components/customComponents/AppConfirmDialog";
+import useAppConfirmDialog from "@/components/customComponents/AppConfirmDialog/useAppConfirmDialog";
+import AppTable, { TColumn } from "@/components/customComponents/AppTable";
 import LinkLoadingIndicator from "@/components/LinkLoadingIndicator";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import usePaginationAndSort from "@/hooks/usePaginationAndSort";

@@ -1,5 +1,5 @@
 "use client";
-import { postLogin } from "@/call-api/auth";
+import { postLogin } from "@/lib/reactQuery/auth";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
 import { useMutation } from "@tanstack/react-query";

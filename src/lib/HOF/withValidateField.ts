@@ -1,5 +1,5 @@
-import { AppError } from "@/common/appError";
-import { AppResponse } from "@/common/appResponse";
+import { AppError } from "@/common/server/appError";
+import { AppResponse } from "@/common/server/appResponse";
 import { NextRequest } from "next/server";
 import qs from "qs";
 import { core, ZodObject } from "zod/v4";

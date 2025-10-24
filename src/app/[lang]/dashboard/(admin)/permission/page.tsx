@@ -1,6 +1,6 @@
 "use client";
 
-import AppTable, { EFilterList, TColumn } from "@/components/AppTable";
+import AppTable, { EFilterList, TColumn } from "@/components/customComponents/AppTable";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import usePaginationAndSort from "@/hooks/usePaginationAndSort";
 import { useGetPermissionList } from "@/lib/reactQuery/permission";

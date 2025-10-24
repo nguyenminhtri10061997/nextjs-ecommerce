@@ -1,4 +1,4 @@
-import { getSignedUrl, uploadFileToS3ByGetSignedUrl } from "@/call-api/file";
+import { getSignedUrl, uploadFileToS3ByGetSignedUrl } from "@/lib/reactQuery/file";
 import { calculateChecksumSHA256, slugifyFilename } from "@/common";
 import { AppEnvironment } from "@/environment/appEnvironment";
 import { useAlertContext } from "@/hooks/useAlertContext";

@@ -1,7 +1,7 @@
 "use client";
 
 import { textToSlug } from "@/common";
-import AppImageUpload from "@/components/AppImageUpload";
+import AppImageUpload from "@/components/customComponents/AppImageUpload";
 import {
   Box,
   Checkbox,
@@ -16,7 +16,7 @@ import { ETagDisplayType } from "@prisma/client";
 import { useEffect } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import useIndex, { TForm } from "./useIndex";
-import AppColorPicker from "@/components/AppColorPicker";
+import AppColorPicker from "@/components/customComponents/AppColorPicker";
 
 type TProps = {
   file?: File | null;

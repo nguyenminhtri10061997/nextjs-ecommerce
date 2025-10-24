@@ -1,6 +1,6 @@
 "use client";
 
-import AppTextFieldPassword from "@/components/AppTexFieldPassword";
+import AppTextFieldPassword from "@/components/customComponents/AppTexFieldPassword";
 import { Autocomplete, Checkbox, FormControlLabel } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";

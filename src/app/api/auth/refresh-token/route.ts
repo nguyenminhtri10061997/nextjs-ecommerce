@@ -1,25 +1,23 @@
-import { AppError } from "@/common/appError";
-import { AppResponse } from "@/common/appResponse";
-import { AppEnvironment } from "@/environment/appEnvironment";
-import { getToken } from "@/lib/dal";
-import prisma from "@/lib/prisma";
-import { AuthService } from "@/lib/auth/authService";
-import { JwtService } from "@/lib/auth/jwtService";
-import dayjs from "dayjs";
-import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
-import { NextRequest } from "next/server";
-
+import { AppError } from "@/common/server/appError"
+import { AppResponse } from "@/common/server/appResponse"
+import { getToken } from "@/common/dal"
+import { AppEnvironment } from "@/constants/environment/appEnvironment"
+import { AuthService } from "@/lib/auth/authService"
+import { JwtService } from "@/lib/auth/jwtService"
+import prisma from "@/lib/prisma"
+import dayjs from "dayjs"
+import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies"
+import { NextRequest } from "next/server"
 
 const deleteCookiesAndReturnError = (cookie: ReadonlyRequestCookies) => {
-  cookie.delete(AppEnvironment.ACCESS_TOKEN_COOKIE_KEY);
-  cookie.delete(AppEnvironment.REFRESH_TOKEN_COOKIE_KEY);
-  return AppError.json({ status: 401 });
+  cookie.delete(AppEnvironment.ACCESS_TOKEN_COOKIE_KEY)
+  cookie.delete(AppEnvironment.REFRESH_TOKEN_COOKIE_KEY)
+  return AppError.json({ status: 401 })
 }
 
 export async function POST(request: NextRequest) {
-  const resGetToken = await getToken();
-  const { ipAddress, userAgent } = AuthService.getClientInfo(request);
-
+  const resGetToken = await getToken()
+  const { ipAddress, userAgent } = AuthService.getClientInfo(request)
 
   if (!resGetToken.refreshToken) {
     return deleteCookiesAndReturnError(resGetToken.cookie)
@@ -28,7 +26,7 @@ export async function POST(request: NextRequest) {
   let refreshTokenDecoded
   try {
     refreshTokenDecoded = JwtService.verifyToken(resGetToken.refreshToken)
-  } catch (err) {
+  } catch {
     return deleteCookiesAndReturnError(resGetToken.cookie)
   }
 
@@ -43,7 +41,7 @@ export async function POST(request: NextRequest) {
       accountId: true,
       expiresAt: true,
     },
-  });
+  })
 
   if (!refreshToken) {
     return deleteCookiesAndReturnError(resGetToken.cookie)
@@ -53,13 +51,13 @@ export async function POST(request: NextRequest) {
     await prisma.refreshToken.delete({
       where: {
         id: refreshToken.id,
-      }
-    });
+      },
+    })
     return deleteCookiesAndReturnError(resGetToken.cookie)
   }
 
   const account = await prisma.account.findUnique({
-    where: { id: refreshTokenDecoded.accountId }
+    where: { id: refreshTokenDecoded.accountId },
   })
 
   if (!account) {
@@ -70,11 +68,11 @@ export async function POST(request: NextRequest) {
     accountId: account.id,
     tokenVersion: account.accessTokenVersion,
     sessionId: refreshToken.id,
-  });
+  })
 
   const accessTokenExpiresAt = dayjs()
     .add(JwtService.jwtAccessExpiresValue, JwtService.jwtAccessExpiresUnit)
-    .toDate();
+    .toDate()
 
   resGetToken.cookie.set("accessToken", accessToken, {
     httpOnly: true,
@@ -82,7 +80,7 @@ export async function POST(request: NextRequest) {
     expires: accessTokenExpiresAt,
     sameSite: "lax",
     path: "/",
-  });
+  })
 
-  return AppResponse.json();
+  return AppResponse.json()
 }

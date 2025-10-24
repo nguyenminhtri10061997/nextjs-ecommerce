@@ -1,5 +1,5 @@
 import { handleDragEnd } from "@/common/indexClient";
-import AppButtonConfirm from "@/components/AppButtonConfirm";
+import AppButtonConfirm from "@/components/customComponents/AppButtonConfirm";
 import {
   closestCenter,
   DndContext,

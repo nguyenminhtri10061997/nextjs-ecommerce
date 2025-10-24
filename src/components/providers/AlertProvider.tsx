@@ -1,5 +1,5 @@
 "use client";
-import { AlertContext } from "@/contexts/alertContext";
+import { AlertContext } from "@/components/contexts/alertContext";
 import Alert, {
   AlertColor,
   AlertPropsColorOverrides,

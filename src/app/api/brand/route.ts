@@ -1,6 +1,6 @@
 import { getOrderBy } from "@/common";
-import { AppError } from "@/common/appError";
-import { AppResponse } from "@/common/appResponse";
+import { AppError } from "@/common/server/appError";
+import { AppResponse } from "@/common/server/appResponse";
 import { AppStatusCode } from "@/common/statusCode";
 import { THofContext } from "@/lib/HOF/type";
 import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";

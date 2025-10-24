@@ -3,8 +3,8 @@ import { EPermissionAction, EPermissionResource } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { cache } from "react";
 import { THofContext } from "./type";
-import { AppError } from "@/common/appError";
-import { AppResponse } from "@/common/appResponse";
+import { AppError } from "@/common/server/appError";
+import { AppResponse } from "@/common/server/appResponse";
 
 type TDataCanDoAction = {
     resource: EPermissionResource

@@ -1,4 +1,4 @@
-import { AppResponse } from "@/common/appResponse";
+import { AppResponse } from "@/common/server/appResponse";
 import { THofContext } from "@/lib/HOF/type";
 import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
 import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";

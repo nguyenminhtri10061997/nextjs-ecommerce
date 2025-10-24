@@ -1,5 +1,5 @@
 import { handleNumberChange } from "@/common";
-import AppSortableItem from "@/components/AppSortableItem";
+import AppSortableItem from "@/components/customComponents/AppSortableItem";
 import {
   closestCenter,
   DndContext,

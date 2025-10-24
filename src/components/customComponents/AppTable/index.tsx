@@ -2,9 +2,9 @@ import {
   TOrderQuery,
   TPaginationParams,
   TPaginationResponse,
-} from "@/types/api/common";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import RefreshIcon from '@mui/icons-material/Refresh';
+} from "@/types/api/common"
+import FilterListIcon from "@mui/icons-material/FilterList"
+import RefreshIcon from "@mui/icons-material/Refresh"
 import {
   FormControl,
   IconButton,
@@ -13,108 +13,59 @@ import {
   Menu,
   MenuItem,
   Select,
-  SelectChangeEvent,
   TextField,
   Toolbar,
-  Tooltip
-} from "@mui/material";
-import Checkbox from "@mui/material/Checkbox";
-import CircularProgress from "@mui/material/CircularProgress";
-import Stack from "@mui/material/Stack";
-import { useTheme } from "@mui/material/styles";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
-import { DatePicker, DatePickerProps } from "@mui/x-date-pickers";
-import { Dispatch, SetStateAction, useMemo } from "react";
-import { DateRange, DayPickerProps } from "react-day-picker";
-import "react-day-picker/style.css";
-import { TSelectedHash } from "../../hooks/useSelectTable";
-import AppDateRangePicker from "../AppDateRangePicker";
-import useIndex from "./useIndex";
-
-export type TColumn<T> = {
-  key: keyof T | "actionColumn";
-  header: string;
-  render?: (val: T[keyof T], row: T) => React.ReactNode;
-  minWidth?: number;
-  width?: number;
-  canSort?: boolean;
-};
-
-type TSearchOpt<T> = {
-  label: string;
-  value: T;
-};
-
-export enum EFilterList {
-  date,
-  dateRange,
-  select,
-}
-
-type TFilterOpt = {
-  label: string;
-  value: string;
-};
-
-export type TFilterList = {
-  defaultShow?: boolean;
-  label: string;
-} & (
-    | {
-      value: string,
-      type: EFilterList.select;
-      options: TFilterOpt[];
-      onChange: (event: SelectChangeEvent, child: React.ReactNode) => void;
-    }
-    | {
-      type: EFilterList.date;
-      options?: undefined;
-      componentProps?: DatePickerProps & React.RefAttributes<HTMLDivElement>;
-    }
-    | {
-      type: EFilterList.dateRange;
-      options?: undefined;
-      componentProps?: DayPickerProps;
-      onChange: (data: DateRange) => void;
-    }
-  );
+  Tooltip,
+} from "@mui/material"
+import Checkbox from "@mui/material/Checkbox"
+import CircularProgress from "@mui/material/CircularProgress"
+import Stack from "@mui/material/Stack"
+import { useTheme } from "@mui/material/styles"
+import Table from "@mui/material/Table"
+import TableBody from "@mui/material/TableBody"
+import TableCell from "@mui/material/TableCell"
+import TableContainer from "@mui/material/TableContainer"
+import TableHead from "@mui/material/TableHead"
+import TablePagination from "@mui/material/TablePagination"
+import TableRow from "@mui/material/TableRow"
+import TableSortLabel from "@mui/material/TableSortLabel"
+import { DatePicker } from "@mui/x-date-pickers"
+import { Dispatch, SetStateAction, useMemo } from "react"
+import "react-day-picker/style.css"
+import { TSelectedHash } from "../../../hooks/useSelectTable"
+import AppDateRangePicker from "../AppDateRangePicker"
+import { EFilterList, TColumn, TFilterList, TSearchOpt } from "./types"
+import useIndex from "./useIndex"
 
 export type TProps<T> = {
   hasSelect?: boolean
-  columns: TColumn<T>[];
-  data: T[];
-  pagination: TPaginationResponse;
-  isStickyHeader?: boolean;
-  selectedHash?: { [key: string]: boolean };
-  isLoading?: boolean;
+  columns: TColumn<T>[]
+  data: T[]
+  pagination: TPaginationResponse
+  isStickyHeader?: boolean
+  selectedHash?: { [key: string]: boolean }
+  isLoading?: boolean
   rowsPerPageOptions?: ReadonlyArray<
     | number
     | {
-      value: number;
-      label: string;
-    }
-  >;
-  orderQuery?: TOrderQuery;
-  actions?: React.ReactNode;
-  searchOpts?: TSearchOpt<keyof T>[];
-  searchKey?: string;
-  filterList?: TFilterList[];
+        value: number
+        label: string
+      }
+  >
+  orderQuery?: TOrderQuery
+  actions?: React.ReactNode
+  searchOpts?: TSearchOpt<keyof T>[]
+  searchKey?: string
+  filterList?: TFilterList[]
   onClickRefresh: () => void
-  setSelectedHash?: Dispatch<SetStateAction<TSelectedHash>>;
-  setSearchStr?: Dispatch<SetStateAction<string>>;
-  setSearchKey?: Dispatch<SetStateAction<Partial<keyof T>>>;
-  setOrderQuery?: Dispatch<SetStateAction<TOrderQuery<keyof T>>>;
-  setPagination: Dispatch<SetStateAction<TPaginationParams>>;
-};
+  setSelectedHash?: Dispatch<SetStateAction<TSelectedHash>>
+  setSearchStr?: Dispatch<SetStateAction<string>>
+  setSearchKey?: Dispatch<SetStateAction<Partial<keyof T>>>
+  setOrderQuery?: Dispatch<SetStateAction<TOrderQuery<keyof T>>>
+  setPagination: Dispatch<SetStateAction<TPaginationParams>>
+}
 const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
-  const theme = useTheme();
+  const theme = useTheme()
   const {
     anchorElFilterList,
     isOpenMenuFilterList,
@@ -141,7 +92,7 @@ const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
     setOrderQuery: props.setOrderQuery,
     setPagination: props.setPagination,
     isLoading: props.isLoading,
-  });
+  })
   const {
     selectedHash = {},
     rowsPerPageOptions = [10, 25, 50],
@@ -154,14 +105,14 @@ const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
     pagination,
     hasSelect,
     onClickRefresh,
-  } = props;
+  } = props
 
   const hasSearch = useMemo(
     () => !!props.searchOpts?.length,
     [props.searchOpts?.length]
-  );
+  )
 
-  const numSelected = Object.values(selectedHash).length;
+  const numSelected = Object.values(selectedHash).length
   return (
     <Stack sx={{ height: "100%" }}>
       <Toolbar disableGutters>
@@ -200,11 +151,11 @@ const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
             }
             switch (fl.type) {
               case EFilterList.date:
-                return <DatePicker key={fl.label} {...fl.componentProps} />;
+                return <DatePicker key={fl.label} {...fl.componentProps} />
               case EFilterList.dateRange:
                 return (
                   <AppDateRangePicker key={fl.label} onChange={fl.onChange} />
-                );
+                )
 
               case EFilterList.select:
                 return (
@@ -215,13 +166,15 @@ const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
                       label={fl.label}
                       onChange={fl.onChange}
                     >
-                      <MenuItem value={'all'}>All {fl.label}</MenuItem>
-                      {fl.options.map(o => (
-                        <MenuItem key={o.label} value={o.value}>{o.label}</MenuItem>
+                      <MenuItem value={"all"}>All {fl.label}</MenuItem>
+                      {fl.options.map((o) => (
+                        <MenuItem key={o.label} value={o.value}>
+                          {o.label}
+                        </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
-                );
+                )
             }
           })}
         </Stack>
@@ -295,8 +248,7 @@ const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
                       key={String(col.key)}
                       sx={{
                         right: 0,
-                        backgroundColor:
-                          theme.vars?.palette.background.default,
+                        backgroundColor: theme.vars?.palette.background.default,
                         borderLeft: `1px solid ${theme.vars?.palette?.TableCell?.border}`,
                         minWidth: col.minWidth,
                         width: col.width,
@@ -304,7 +256,7 @@ const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
                     >
                       {col.header}
                     </TableCell>
-                  );
+                  )
                 }
 
                 return (
@@ -326,7 +278,7 @@ const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
                       col.header
                     )}
                   </TableCell>
-                );
+                )
               })}
             </TableRow>
           </TableHead>
@@ -345,47 +297,48 @@ const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
                 </TableCell>
               </TableRow>
             )}
-            {!isLoading && data.map((row) => {
-              const isItemSelected = !!selectedHash[row.id];
-              return (
-                <TableRow hover key={row.id} selected={isItemSelected}>
-                  {hasSelect && (
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={isItemSelected}
-                        onClick={handleClickSelectRow(row.id)}
-                      />
-                    </TableCell>
-                  )}
-                  {columns.map((col) => {
-                    if (col.key === "actionColumn") {
-                      return (
-                        <TableCell
-                          key={String(col.key)}
-                          sx={{
-                            position: "sticky",
-                            right: 0,
-                            backgroundColor:
-                              theme.vars?.palette.background.default,
-                            borderLeft: `1px solid ${theme.vars?.palette?.TableCell?.border}`,
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {col.render?.(row[col.key as keyof T], row)}
-                        </TableCell>
-                      );
-                    }
-                    return (
-                      <TableCell key={String(col.key)}>
-                        {col.render
-                          ? col.render(row[col.key], row)
-                          : String(row[col.key] || "")}
+            {!isLoading &&
+              data.map((row) => {
+                const isItemSelected = !!selectedHash[row.id]
+                return (
+                  <TableRow hover key={row.id} selected={isItemSelected}>
+                    {hasSelect && (
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          checked={isItemSelected}
+                          onClick={handleClickSelectRow(row.id)}
+                        />
                       </TableCell>
-                    );
-                  })}
-                </TableRow>
-              );
-            })}
+                    )}
+                    {columns.map((col) => {
+                      if (col.key === "actionColumn") {
+                        return (
+                          <TableCell
+                            key={String(col.key)}
+                            sx={{
+                              position: "sticky",
+                              right: 0,
+                              backgroundColor:
+                                theme.vars?.palette.background.default,
+                              borderLeft: `1px solid ${theme.vars?.palette?.TableCell?.border}`,
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {col.render?.(row[col.key as keyof T], row)}
+                          </TableCell>
+                        )
+                      }
+                      return (
+                        <TableCell key={String(col.key)}>
+                          {col.render
+                            ? col.render(row[col.key], row)
+                            : String(row[col.key] || "")}
+                        </TableCell>
+                      )
+                    })}
+                  </TableRow>
+                )
+              })}
           </TableBody>
         </Table>
       </TableContainer>
@@ -402,7 +355,7 @@ const AppTable = <T extends object & { id: string }>(props: TProps<T>) => {
         onRowsPerPageChange={handleChangeRowPerPage}
       />
     </Stack>
-  );
-};
+  )
+}
 
-export default AppTable;
+export default AppTable

@@ -1,7 +1,7 @@
 "use client";
 
-import AppConfirmDialog from "@/components/AppConfirmDialog";
-import AppTable, { EFilterList, TColumn } from "@/components/AppTable";
+import AppConfirmDialog from "@/components/customComponents/AppConfirmDialog";
+import AppTable, { EFilterList, TColumn } from "@/components/customComponents/AppTable";
 import useSelectTable from "@/hooks/useSelectTable";
 import { useAlertContext } from "@/hooks/useAlertContext";
 import usePaginationAndSort from "@/hooks/usePaginationAndSort";
