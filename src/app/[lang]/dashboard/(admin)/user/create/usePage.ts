@@ -1,73 +1,59 @@
-"use client";
+"use client"
 
-import {
-  Inputs as InputUserForm,
-  Inputs as UserInputForm,
-} from "@/app/[lang]/dashboard/(admin)/user/_components/UserForm/useIndex";
-import { useAlertContext } from "@/hooks/useAlertContext";
-import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
-import { roleKeys } from "@/lib/reactQuery/role";
-import { postCreateUser } from "@/lib/reactQuery/user";
-import { TAppResponseBody } from "@/types/api/common";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AxiosError } from "axios";
-import { FormEvent, useEffect, useRef } from "react";
-import { SubmitHandler, UseFormReturn } from "react-hook-form";
+import { PostUserCreateBodyDTO } from "@/app/api/user/validator"
+import { useAlertContext } from "@/components/hooks/useAlertContext"
+import useFormRef from "@/components/hooks/useFormRef"
+import useLoadingWhenRoutePush from "@/components/hooks/useLoadingWhenRoutePush"
+import { roleKeys } from "@/lib/reactQuery/role"
+import { postCreateUser } from "@/lib/reactQuery/user"
+import { TAppResponseBody } from "@/types/api/common"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { AxiosError } from "axios"
+import { useEffect } from "react"
+import { SubmitHandler } from "react-hook-form"
+import { output } from "zod/v4"
 
 export const usePage = () => {
-  const queryClient = useQueryClient();
-  const { showAlert } = useAlertContext();
-  const { push } = useLoadingWhenRoutePush();
-  const formRef = useRef<UseFormReturn<UserInputForm>>(null);
+  const queryClient = useQueryClient()
+  const { showAlert } = useAlertContext()
+  const { push } = useLoadingWhenRoutePush()
 
   const mutation = useMutation({
     mutationFn: postCreateUser,
     onSuccess: async () => {
-      showAlert("create User success");
-      await queryClient.invalidateQueries({ queryKey: roleKeys.lists() });
-      push("/dashboard/user");
+      showAlert("create User success")
+      await queryClient.invalidateQueries({ queryKey: roleKeys.lists() })
+      push("/dashboard/user")
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
-      const message = err.response?.data.message || err.message;
-      showAlert(message, "error");
+      const message = err.response?.data.message || err.message
+      showAlert(message, "error")
     },
-  });
+  })
 
-  const handleFormSubmit: SubmitHandler<InputUserForm> = async (data) => {
-    mutation.mutate({
-      fullName: data.fullName,
-      type: data.type,
-      account: {
-        password: data.password,
-        username: data.username,
-        roleId: data.roleId,
-        isBanned: data.isBanned,
-        isBlocked: data.isBlocked,
-      },
-    });
-  };
+  const handleFormSubmit: SubmitHandler<
+    output<typeof PostUserCreateBodyDTO>
+  > = async (data) => {
+    mutation.mutate(data)
+  }
 
-  const handleClickSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    formRef.current?.handleSubmit(handleFormSubmit)(e);
-  };
-
-  const handleSetForm = (form: UseFormReturn<UserInputForm>) => {
-    formRef.current = form;
-  };
+  const { formRef, handleClickSubmitForm, handleSetForm } = useFormRef<
+    output<typeof PostUserCreateBodyDTO>
+  >({
+    handleFormSubmit,
+  })
 
   useEffect(() => {
     formRef.current?.reset({
-      accessTokenVersion: 1,
       type: "STAFF",
-    });
-  }, []);
+    })
+  }, [formRef])
 
   return {
     formRef,
     mutation,
-    handleClickSubmit,
+    handleClickSubmitForm,
     handleSetForm,
     handleFormSubmit,
-  };
-};
+  }
+}

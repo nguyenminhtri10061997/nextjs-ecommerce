@@ -1,4 +1,4 @@
-import { AppEnvironment } from "@/environment/appEnvironment"
+import { AppEnvironment } from "@/constants/environment/appEnvironment"
 import { PrismaClient } from "@prisma/client"
 
 const globalForPrisma = global as unknown as {

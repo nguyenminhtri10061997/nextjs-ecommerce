@@ -1,13 +1,13 @@
-import { AppError } from "@/common/server/appError";
-import { AppResponse } from "@/common/server/appResponse";
-import { NextRequest } from "next/server";
-import qs from "qs";
-import { core, ZodObject } from "zod/v4";
-import { THofContext } from "./type";
+import { AppError } from "@/common/server/appError"
+import { AppResponse } from "@/common/server/appResponse"
+import { NextRequest } from "next/server"
+import qs from "qs"
+import { core, ZodObject } from "zod/v4"
+import { THofContext } from "./type"
 
 const convertMessage = (issues: core.$ZodIssue[]) => {
-  return issues.map((i) => `${String(i.path?.["0"])}: ${i.message}`).join(", ");
-};
+  return issues.map((i) => `${String(i.path?.["0"])}: ${i.message}`).join(", ")
+}
 
 export function withValidateFieldHandler<
   TParamsSchema extends ZodObject = never,
@@ -21,45 +21,45 @@ export function withValidateFieldHandler<
   handler: (
     req: NextRequest,
     ctx: T & {
-      paramParse?: THofContext["paramParse"];
-      queryParse?: THofContext["queryParse"];
-      bodyParse?: THofContext["bodyParse"];
+      paramParse?: THofContext["paramParse"]
+      queryParse?: THofContext["queryParse"]
+      bodyParse?: THofContext["bodyParse"]
     }
   ) => Promise<AppError | AppResponse>
 ) {
   return async (req: NextRequest, ctx: T) => {
-    const url = new URL(req.url);
+    const url = new URL(req.url)
 
-    let resultParam;
+    let resultParam
     if (paramSchema) {
-      const params = await ctx.params;
-      resultParam = paramSchema.safeParse(params);
+      const params = await ctx.params
+      resultParam = paramSchema.safeParse(params)
       if (!resultParam.success) {
         return AppError.json({
           message: convertMessage(resultParam.error.issues),
-        });
+        })
       }
     }
 
-    let queryResult;
-    const queryStr = qs.parse(url.search.substring(1));
+    let queryResult
+    const queryStr = qs.parse(url.search.substring(1))
     if (querySchema && Object.keys(queryStr).length) {
-      queryResult = querySchema.safeParse(queryStr);
+      queryResult = querySchema.safeParse(queryStr)
       if (!queryResult.success) {
         return AppError.json({
           message: convertMessage(queryResult.error.issues),
-        });
+        })
       }
     }
 
-    let resultBody;
+    let resultBody
     if (req.method !== "GET" && bodySchema) {
-      const body = await req.json();
-      resultBody = bodySchema.safeParse(body);
+      const body = await req.json()
+      resultBody = bodySchema.safeParse(body)
       if (!resultBody.success) {
         return AppError.json({
           data: convertMessage(resultBody.error.issues),
-        });
+        })
       }
     }
 
@@ -68,6 +68,6 @@ export function withValidateFieldHandler<
       bodyParse: resultBody?.data,
       paramParse: resultParam?.data,
       queryParse: queryResult?.data,
-    });
-  };
+    })
+  }
 }

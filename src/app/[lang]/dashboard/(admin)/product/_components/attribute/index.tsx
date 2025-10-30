@@ -1,5 +1,5 @@
 import { textToSlug } from "@/common";
-import { handleDragEnd } from "@/common/indexClient";
+import { handleDragEnd } from "@/common/client";
 import AppSortableItem from "@/components/customComponents/AppSortableItem";
 import {
   closestCenter,

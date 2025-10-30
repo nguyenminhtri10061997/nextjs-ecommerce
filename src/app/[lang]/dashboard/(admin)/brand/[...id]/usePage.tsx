@@ -1,10 +1,10 @@
 "use client";
 
-import { useAlertContext } from "@/hooks/useAlertContext";
-import { useDashboardCtx } from "@/hooks/useDashboardCtx";
-import useFormRef from "@/hooks/useFormRef";
-import { useLoadingCtx } from "@/hooks/useLoadingCtx";
-import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
+import { useAlertContext } from "@/components/hooks/useAlertContext";
+import { useDashboardCtx } from "@/components/hooks/useDashboardCtx";
+import useFormRef from "@/components/hooks/useFormRef";
+import { useLoadingCtx } from "@/components/hooks/useLoadingCtx";
+import useLoadingWhenRoutePush from "@/components/hooks/useLoadingWhenRoutePush";
 import { brandKeys, getBrandDetail, patchBrand } from "@/lib/reactQuery/brand";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

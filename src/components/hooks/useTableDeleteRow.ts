@@ -1,4 +1,4 @@
-import { TSelectedHash } from "@/hooks/useSelectTable";
+import { TSelectedHash } from "@/components/hooks/useSelectTable";
 import { UseMutationResult } from "@tanstack/react-query";
 import { Dispatch, SetStateAction, useCallback, useRef } from "react";
 

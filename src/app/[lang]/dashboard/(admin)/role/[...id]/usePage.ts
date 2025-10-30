@@ -1,51 +1,49 @@
-"use client";
+"use client"
 
-import { useAlertContext } from "@/hooks/useAlertContext";
-import { useDashboardCtx } from "@/hooks/useDashboardCtx";
-import { useLoadingCtx } from "@/hooks/useLoadingCtx";
-import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
-import { getRoleDetail, patchRole, roleKeys } from "@/lib/reactQuery/role";
-import { TAppResponseBody } from "@/types/api/common";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AxiosError } from "axios";
-import { useParams } from "next/navigation";
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { SubmitHandler, UseFormReturn } from "react-hook-form";
-import { Inputs as RoleInputs } from "../_components/RoleForm/useIndex";
+import { useAlertContext } from "@/components/hooks/useAlertContext"
+import { useLoadingCtx } from "@/components/hooks/useLoadingCtx"
+import useLoadingWhenRoutePush from "@/components/hooks/useLoadingWhenRoutePush"
+import { getRoleDetail, patchRole, roleKeys } from "@/lib/reactQuery/role"
+import { TAppResponseBody } from "@/types/api/common"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { AxiosError } from "axios"
+import { useParams } from "next/navigation"
+import { FormEvent, useEffect, useRef, useState } from "react"
+import { SubmitHandler, UseFormReturn } from "react-hook-form"
+import { Inputs as RoleInputs } from "../_components/RoleForm/useIndex"
 
-export type TPermissionState = Partial<Record<string, boolean>>;
+export type TPermissionState = Partial<Record<string, boolean>>
 export const usePage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>()
   const [permissionSelected, setPermissionSelected] =
-    useState<TPermissionState>({});
-  const queryClient = useQueryClient();
-  const { showAlert } = useAlertContext();
-  const { setLoading } = useLoadingCtx();
-  const formRef = useRef<UseFormReturn<RoleInputs>>(null);
-  const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
-  const { push } = useLoadingWhenRoutePush();
+    useState<TPermissionState>({})
+  const queryClient = useQueryClient()
+  const { showAlert } = useAlertContext()
+  const { setLoading } = useLoadingCtx()
+  const formRef = useRef<UseFormReturn<RoleInputs>>(null)
+  const { push } = useLoadingWhenRoutePush()
 
   const query = useQuery({
     queryKey: roleKeys.detail(id),
     queryFn: getRoleDetail,
     enabled: !!id,
-  });
+  })
 
   const mutation = useMutation({
     mutationFn: patchRole,
     onSuccess: async () => {
-      showAlert("Update Role success");
+      showAlert("Update Role success")
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: roleKeys.detail(id) }),
         queryClient.invalidateQueries({ queryKey: roleKeys.lists() }),
-      ]);
-      push("/dashboard/role");
+      ])
+      push("/dashboard/role")
     },
     onError: (err: AxiosError<TAppResponseBody>) => {
-      const message = err.response?.data.message || err.message;
-      showAlert(message, "error");
+      const message = err.response?.data.message || err.message
+      showAlert(message, "error")
     },
-  });
+  })
 
   const handleFormSubmit: SubmitHandler<RoleInputs> = async ({
     description,
@@ -58,55 +56,50 @@ export const usePage = () => {
         permissionIds: Object.keys(permissionSelected),
         description: description || "",
       },
-    });
-  };
+    })
+  }
 
   const handleClickSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    formRef.current?.handleSubmit(handleFormSubmit)(e);
-  };
+    e.preventDefault()
+    formRef.current?.handleSubmit(handleFormSubmit)(e)
+  }
 
   const handleSetForm = (form: UseFormReturn<RoleInputs>) => {
-    formRef.current = form;
-  };
+    formRef.current = form
+  }
 
   const handleChangeCheckbox =
     (id: string) =>
     (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
-      const clone = { ...permissionSelected };
+      const clone = { ...permissionSelected }
       if (!checked) {
-        delete clone[id];
+        delete clone[id]
       } else {
-        clone[id] = true;
+        clone[id] = true
       }
       setPermissionSelected({
         ...clone,
-      });
-    };
+      })
+    }
 
   useEffect(() => {
-    setLoading(query.isLoading);
-  }, [query.isLoading, setLoading]);
+    setLoading(query.isLoading)
+  }, [query.isLoading, setLoading])
 
   useEffect(() => {
     if (query.data?.id) {
-      const { name, description, permissions } = query.data;
-      if (breadcrumbs.length === 3) {
-        setBreadCrumbs(
-          breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.name)
-        );
-      }
+      const { name, description, permissions } = query.data
       formRef.current?.reset({
         name,
         description,
-      });
+      })
       const permissionSelectedDb = Object.fromEntries(
         permissions.map((i) => [i.id, true])
-      );
-      setPermissionSelected(permissionSelectedDb);
+      )
+      setPermissionSelected(permissionSelectedDb)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.data?.id, breadcrumbs.length === 3]);
+  }, [query.data?.id])
 
   return {
     formRef,
@@ -116,5 +109,5 @@ export const usePage = () => {
     handleSetForm,
     handleFormSubmit,
     handleChangeCheckbox,
-  };
-};
+  }
+}

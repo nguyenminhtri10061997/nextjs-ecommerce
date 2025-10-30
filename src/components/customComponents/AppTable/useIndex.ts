@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { TFilterList } from ".";
-import { TSelectedHash } from "../../../hooks/useSelectTable";
+import { TSelectedHash } from "../../hooks/useSelectTable";
 import { debounce } from "lodash";
 import { SelectChangeEvent } from "@mui/material";
 import { SortOrder, TOrderQuery, TPaginationParams } from "@/types/api/common";

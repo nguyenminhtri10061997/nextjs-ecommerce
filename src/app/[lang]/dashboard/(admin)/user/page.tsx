@@ -1,30 +1,30 @@
 "use client";
 
 import AppConfirmDialog from "@/components/customComponents/AppConfirmDialog";
-import AppTable, { EFilterList, TColumn } from "@/components/customComponents/AppTable";
-import useSelectTable from "@/hooks/useSelectTable";
-import usePaginationAndSort from "@/hooks/usePaginationAndSort";
-import useSearch from "@/hooks/useSearch";
+import AppLinkWithLoading from "@/components/customComponents/AppLinkIndicator";
+import AppTable from "@/components/customComponents/AppTable";
+import { EFilterList, TColumn } from "@/components/customComponents/AppTable/types";
+import { useAlertContext } from "@/components/hooks/useAlertContext";
+import usePaginationAndSort from "@/components/hooks/usePaginationAndSort";
+import useSearch from "@/components/hooks/useSearch";
+import useSelectTable from "@/components/hooks/useSelectTable";
+import useTableDeleteRow from "@/components/hooks/useTableDeleteRow";
 import { useGetUserListQuery } from "@/lib/reactQuery/user";
+import { ESearchType } from "@/lib/zod/paginationDTO";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import { Badge } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { User as UserEntity } from "@prisma/client";
+import { UseMutationResult } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import usePage from "./usePage";
-import { ESearchType } from "@/lib/zod/paginationDTO";
-import { useAlertContext } from "@/hooks/useAlertContext";
-import { Badge } from "@mui/material";
-import LinkLoadingIndicator from "@/components/LinkLoadingIndicator";
-import useTableDeleteRow from "@/hooks/useTableDeleteRow";
-import { UseMutationResult } from "@tanstack/react-query";
 
 export default function User() {
   const { showAlert } = useAlertContext();
@@ -32,7 +32,7 @@ export default function User() {
   const { pagination, orderQuery, setPagination, setOrderQuery } =
     usePaginationAndSort<keyof UserEntity>({
       defaultOrder: {
-        orderKey: "fullName",
+        orderKey: "createdAt",
         orderType: "desc",
       },
     });
@@ -111,12 +111,11 @@ export default function User() {
         render: (_, row) => {
           return (
             <Stack direction="row">
-              <Link href={`user/${row.id}`}>
-                <LinkLoadingIndicator />
+              <AppLinkWithLoading href={`user/${row.id}`}>
                 <IconButton>
                   <EditIcon color="primary" />
                 </IconButton>
-              </Link>
+              </AppLinkWithLoading>
               <IconButton onClick={handleClickDeleteRow(row.id)}>
                 <DeleteIcon color="error" />
               </IconButton>
@@ -166,11 +165,11 @@ export default function User() {
           orderQuery={orderQuery}
           actions={
             <Stack direction="row" alignItems="center" spacing={2}>
-              <Link href="user/create">
+              <AppLinkWithLoading href="user/create">
                 <Button variant="contained" endIcon={<AddIcon />}>
                   Create
                 </Button>
-              </Link>
+              </AppLinkWithLoading>
               <Badge badgeContent={selectedLength} color="warning">
                 <Button
                   disabled={!selectedLength}

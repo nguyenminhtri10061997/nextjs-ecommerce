@@ -1,54 +1,57 @@
-"use client";
+"use client"
 
-import AppConfirmDialog from "@/components/customComponents/AppConfirmDialog";
-import AppTable, { EFilterList, TColumn } from "@/components/customComponents/AppTable";
-import useSelectTable from "@/hooks/useSelectTable";
-import { useAlertContext } from "@/hooks/useAlertContext";
-import usePaginationAndSort from "@/hooks/usePaginationAndSort";
-import useSearch from "@/hooks/useSearch";
-import useTableDeleteRow from "@/hooks/useTableDeleteRow";
-import { useGetRoleListQuery } from "@/lib/reactQuery/role";
-import { ESearchType } from "@/lib/zod/paginationDTO";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import { Badge } from "@mui/material";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import { Role } from "@prisma/client";
-import { UseMutationResult } from "@tanstack/react-query";
-import dayjs from "dayjs";
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import usePage from "./usePage";
-import LinkLoadingIndicator from "@/components/LinkLoadingIndicator";
+import AppConfirmDialog from "@/components/customComponents/AppConfirmDialog"
+import AppLinkWithLoading from "@/components/customComponents/AppLinkIndicator"
+import AppTable from "@/components/customComponents/AppTable"
+import {
+  EFilterList,
+  TColumn,
+} from "@/components/customComponents/AppTable/types"
+import { useAlertContext } from "@/components/hooks/useAlertContext"
+import usePaginationAndSort from "@/components/hooks/usePaginationAndSort"
+import useSearch from "@/components/hooks/useSearch"
+import useSelectTable from "@/components/hooks/useSelectTable"
+import useTableDeleteRow from "@/components/hooks/useTableDeleteRow"
+import { useGetRoleListQuery } from "@/lib/reactQuery/role"
+import { ESearchType } from "@/lib/zod/paginationDTO"
+import AddIcon from "@mui/icons-material/Add"
+import DeleteIcon from "@mui/icons-material/Delete"
+import EditIcon from "@mui/icons-material/Edit"
+import { Badge } from "@mui/material"
+import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import IconButton from "@mui/material/IconButton"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
+import { Role } from "@prisma/client"
+import { UseMutationResult } from "@tanstack/react-query"
+import dayjs from "dayjs"
+import { useEffect, useMemo, useState } from "react"
+import { DateRange } from "react-day-picker"
+import usePage from "./usePage"
 
 export default function User() {
-  const { showAlert } = useAlertContext();
-  const { selectedHash, selectedLength, setSelectedHash } = useSelectTable();
+  const { showAlert } = useAlertContext()
+  const { selectedHash, selectedLength, setSelectedHash } = useSelectTable()
   const { pagination, orderQuery, setPagination, setOrderQuery } =
     usePaginationAndSort<keyof Role>({
       defaultOrder: {
         orderKey: "createdAt",
         orderType: "desc",
       },
-    });
+    })
   const { searchKey, searchStr, searchType, setSearchKey, setSearchStr } =
     useSearch<keyof Role>({
       defaultSearchKey: "name",
       searchType: ESearchType.contains,
-    });
+    })
 
-  const [isOpenConfirm, setIsOpenConfirm] = useState(false);
+  const [isOpenConfirm, setIsOpenConfirm] = useState(false)
 
-  const {
-    mutation,
-    dateRange,
-    setDateRange,
-  } = usePage({ setSelectedHash, setIsOpenConfirm });
+  const { mutation, dateRange, setDateRange } = usePage({
+    setSelectedHash,
+    setIsOpenConfirm,
+  })
   const {
     isOkMany,
     handleCancelConfirm,
@@ -75,11 +78,11 @@ export default function User() {
     dateRangeQuery:
       dateRange?.from && dateRange.to
         ? {
-          startDate: dateRange.from,
-          endDate: dateRange.to,
-        }
+            startDate: dateRange.from,
+            endDate: dateRange.to,
+          }
         : undefined,
-  });
+  })
 
   const columns: TColumn<Role>[] = useMemo(
     () => [
@@ -110,28 +113,27 @@ export default function User() {
         render: (_, row) => {
           return (
             <Stack direction="row">
-              <Link href={`role/${row.id}`}>
-                <LinkLoadingIndicator />
+              <AppLinkWithLoading href={`role/${row.id}`}>
                 <IconButton>
                   <EditIcon color="primary" />
                 </IconButton>
-              </Link>
+              </AppLinkWithLoading>
               <IconButton onClick={handleClickDeleteRow(row.id)}>
                 <DeleteIcon color="error" />
               </IconButton>
             </Stack>
-          );
+          )
         },
       },
     ],
     [handleClickDeleteRow]
-  );
+  )
 
   useEffect(() => {
     if (query.isError) {
-      showAlert(query.error?.message || "Error get list", "error");
+      showAlert(query.error?.message || "Error get list", "error")
     }
-  }, [query.error?.message, query.isError, showAlert]);
+  }, [query.error?.message, query.isError, showAlert])
 
   return (
     <Box
@@ -176,12 +178,11 @@ export default function User() {
                 </Button>
               </Badge>
 
-              <Link href="role/create">
-                <LinkLoadingIndicator />
+              <AppLinkWithLoading href="role/create">
                 <Button variant="contained" endIcon={<AddIcon />}>
                   Create
                 </Button>
-              </Link>
+              </AppLinkWithLoading>
             </Stack>
           }
           searchKey={searchKey}
@@ -195,8 +196,8 @@ export default function User() {
             {
               type: EFilterList.dateRange,
               label: "Date",
-              onChange: (date) => {
-                setDateRange(date);
+              onChange: (date: DateRange) => {
+                setDateRange(date)
               },
             },
           ]}
@@ -215,5 +216,5 @@ export default function User() {
         isOkMany={isOkMany}
       />
     </Box>
-  );
+  )
 }

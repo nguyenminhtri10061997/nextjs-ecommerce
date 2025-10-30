@@ -1,7 +1,7 @@
 import { postLogout } from "@/lib/reactQuery/auth";
 import { DASHBOARD_MENU_ITEMS } from "@/constants/dashBoardMenu";
-import { useAlertContext } from "@/hooks/useAlertContext";
-import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
+import { useAlertContext } from "@/components/hooks/useAlertContext";
+import useLoadingWhenRoutePush from "@/components/hooks/useLoadingWhenRoutePush";
 import { useMeQuery } from "@/lib/reactQuery/me";
 import { PaletteMode, useColorScheme } from "@mui/material/styles";
 import { useMutation } from "@tanstack/react-query";

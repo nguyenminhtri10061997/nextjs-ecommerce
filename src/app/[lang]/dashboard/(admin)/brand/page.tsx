@@ -1,51 +1,51 @@
-"use client";
+"use client"
 
-import AppConfirmDialog from "@/components/customComponents/AppConfirmDialog";
-import useAppConfirmDialog from "@/components/customComponents/AppConfirmDialog/useAppConfirmDialog";
-import AppTable, { TColumn } from "@/components/customComponents/AppTable";
-import LinkLoadingIndicator from "@/components/LinkLoadingIndicator";
-import { useAlertContext } from "@/hooks/useAlertContext";
-import usePaginationAndSort from "@/hooks/usePaginationAndSort";
-import useSearch from "@/hooks/useSearch";
-import useSelectTable from "@/hooks/useSelectTable";
-import useTableDeleteRow from "@/hooks/useTableDeleteRow";
-import { useGetBrandListQuery } from "@/lib/reactQuery/brand";
-import { ESearchType } from "@/lib/zod/paginationDTO";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import { Badge } from "@mui/material";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import { Brand } from "@prisma/client";
-import { UseMutationResult } from "@tanstack/react-query";
-import dayjs from "dayjs";
-import Link from "next/link";
-import { useEffect, useMemo } from "react";
-import usePage from "./usePage";
+import AppConfirmDialog from "@/components/customComponents/AppConfirmDialog"
+import useAppConfirmDialog from "@/components/customComponents/AppConfirmDialog/useAppConfirmDialog"
+import AppLinkWithLoading from "@/components/customComponents/AppLinkIndicator"
+import AppTable from "@/components/customComponents/AppTable"
+import { TColumn } from "@/components/customComponents/AppTable/types"
+import { useAlertContext } from "@/components/hooks/useAlertContext"
+import usePaginationAndSort from "@/components/hooks/usePaginationAndSort"
+import useSearch from "@/components/hooks/useSearch"
+import useSelectTable from "@/components/hooks/useSelectTable"
+import useTableDeleteRow from "@/components/hooks/useTableDeleteRow"
+import { useGetBrandListQuery } from "@/lib/reactQuery/brand"
+import { ESearchType } from "@/lib/zod/paginationDTO"
+import AddIcon from "@mui/icons-material/Add"
+import DeleteIcon from "@mui/icons-material/Delete"
+import EditIcon from "@mui/icons-material/Edit"
+import { Badge } from "@mui/material"
+import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import IconButton from "@mui/material/IconButton"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
+import { Brand } from "@prisma/client"
+import { UseMutationResult } from "@tanstack/react-query"
+import dayjs from "dayjs"
+import { useEffect, useMemo } from "react"
+import usePage from "./usePage"
 
 export default function Page() {
-  const { showAlert } = useAlertContext();
-  const { selectedHash, selectedLength, setSelectedHash } = useSelectTable();
+  const { showAlert } = useAlertContext()
+  const { selectedHash, selectedLength, setSelectedHash } = useSelectTable()
   const { pagination, orderQuery, setPagination, setOrderQuery } =
     usePaginationAndSort<keyof Brand>({
       defaultOrder: {
         orderKey: "createdAt",
         orderType: "desc",
       },
-    });
+    })
   const { searchKey, searchStr, searchType, setSearchKey, setSearchStr } =
     useSearch<keyof Brand>({
       defaultSearchKey: "name",
       searchType: ESearchType.contains,
-    });
+    })
 
-  const { isOpenConfirm, setIsOpenConfirm } = useAppConfirmDialog();
+  const { isOpenConfirm, setIsOpenConfirm } = useAppConfirmDialog()
 
-  const { mutation } = usePage({ setSelectedHash, setIsOpenConfirm });
+  const { mutation } = usePage({ setSelectedHash, setIsOpenConfirm })
   const {
     isOkMany,
     handleCancelConfirm,
@@ -56,7 +56,7 @@ export default function Page() {
     mutation: mutation as UseMutationResult,
     selectedHash,
     setIsOpenConfirm,
-  });
+  })
 
   const query = useGetBrandListQuery({
     orderQuery: {
@@ -68,7 +68,7 @@ export default function Page() {
       searchStr,
       searchType,
     },
-  });
+  })
 
   const columns: TColumn<Brand>[] = useMemo(
     () => [
@@ -99,28 +99,27 @@ export default function Page() {
         render: (_, row) => {
           return (
             <Stack direction="row">
-              <Link href={`brand/${row.id}`}>
-                <LinkLoadingIndicator />
+              <AppLinkWithLoading href={`brand/${row.id}`}>
                 <IconButton>
                   <EditIcon color="primary" />
                 </IconButton>
-              </Link>
+              </AppLinkWithLoading>
               <IconButton onClick={handleClickDeleteRow(row.id)}>
                 <DeleteIcon color="error" />
               </IconButton>
             </Stack>
-          );
+          )
         },
       },
     ],
     [handleClickDeleteRow]
-  );
+  )
 
   useEffect(() => {
     if (query.isError) {
-      showAlert(query.error?.message || "Error get list", "error");
+      showAlert(query.error?.message || "Error get list", "error")
     }
-  }, [query.error?.message, query.isError, showAlert]);
+  }, [query.error?.message, query.isError, showAlert])
 
   return (
     <Box
@@ -154,12 +153,11 @@ export default function Page() {
           orderQuery={orderQuery}
           actions={
             <Stack direction="row" alignItems="center" spacing={2}>
-              <Link href="brand/create">
-                <LinkLoadingIndicator />
+              <AppLinkWithLoading href="brand/create">
                 <Button variant="contained" endIcon={<AddIcon />}>
                   Create
                 </Button>
-              </Link>
+              </AppLinkWithLoading>
 
               <Badge badgeContent={selectedLength} color="warning">
                 <Button
@@ -195,5 +193,5 @@ export default function Page() {
         isOkMany={isOkMany}
       />
     </Box>
-  );
+  )
 }

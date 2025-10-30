@@ -1,4 +1,4 @@
-import { handleDragEnd } from "@/common/indexClient";
+import { handleDragEnd } from "@/common/client";
 import AppButtonConfirm from "@/components/customComponents/AppButtonConfirm";
 import {
   closestCenter,

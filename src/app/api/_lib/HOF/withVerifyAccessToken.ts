@@ -5,7 +5,7 @@ import { AppEnvironment } from "@/constants/environment/appEnvironment"
 import { JwtService } from "@/lib/auth/jwtService"
 import { redirect } from "next/navigation"
 import { NextRequest } from "next/server"
-import prisma from "../prisma"
+import prisma from "../../../../lib/prisma"
 import { THofContext } from "./type"
 
 export const withVerifyAccessToken = <T extends THofContext>(

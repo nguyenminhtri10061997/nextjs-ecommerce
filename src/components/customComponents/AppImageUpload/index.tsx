@@ -1,7 +1,7 @@
 import { getSignedUrl, uploadFileToS3ByGetSignedUrl } from "@/lib/reactQuery/file";
 import { calculateChecksumSHA256, slugifyFilename } from "@/common";
 import { AppEnvironment } from "@/environment/appEnvironment";
-import { useAlertContext } from "@/hooks/useAlertContext";
+import { useAlertContext } from "@/components/hooks/useAlertContext";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";

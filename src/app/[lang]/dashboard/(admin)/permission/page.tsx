@@ -1,14 +1,15 @@
 "use client";
 
-import AppTable, { EFilterList, TColumn } from "@/components/customComponents/AppTable";
-import { useAlertContext } from "@/hooks/useAlertContext";
-import usePaginationAndSort from "@/hooks/usePaginationAndSort";
+import AppTable from "@/components/customComponents/AppTable";
+import { useAlertContext } from "@/components/hooks/useAlertContext";
+import usePaginationAndSort from "@/components/hooks/usePaginationAndSort";
 import { useGetPermissionList } from "@/lib/reactQuery/permission";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { EPermissionAction, EPermissionResource, Permission } from "@prisma/client";
 import { useEffect, useMemo } from "react";
 import usePage from "./usePage";
+import { EFilterList, TColumn } from "@/components/customComponents/AppTable/types";
 
 export default function User() {
   const { showAlert } = useAlertContext();

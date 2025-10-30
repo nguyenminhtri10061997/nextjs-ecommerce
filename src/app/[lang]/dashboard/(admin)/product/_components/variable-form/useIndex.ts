@@ -1,5 +1,5 @@
 import { generateCombinations } from "@/common";
-import { useAlertContext } from "@/hooks/useAlertContext";
+import { useAlertContext } from "@/components/hooks/useAlertContext";
 import { useGetAttributeListQuery } from "@/lib/reactQuery/attribute";
 import { startTransition, useDeferredValue, useState } from "react";
 import { useFieldArray, UseFormReturn } from "react-hook-form";

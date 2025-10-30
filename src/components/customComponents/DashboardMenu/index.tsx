@@ -69,17 +69,7 @@ const DashboardMenu = (props: TProps) => {
         }
         return (
           <React.Fragment key={m.label}>
-            <ListItemButton onClick={() => toggleSubmenu(m.label)}>
-              <ListItemIcon>{m.icon}</ListItemIcon>
-              <ListItemText primary={m.label} />
-              {m.children ? (
-                openMap[m.label] ? (
-                  <ExpandLessIcon />
-                ) : (
-                  <ExpandMoreIcon />
-                )
-              ) : null}
-            </ListItemButton>
+            {renderLinkParent(m, () => toggleSubmenu(m.label))}
             <Collapse in={!!openMap[m.label]} timeout="auto" unmountOnExit>
               <List component="div" disablePadding sx={{ ml: 2 }}>
                 {m.children.map((child) => (
@@ -87,6 +77,7 @@ const DashboardMenu = (props: TProps) => {
                     <ListItemButton
                       key={child.label}
                       selected={child.to === pathnameCompare}
+                      onClick={props.handleClickCloseDrawer}
                     >
                       <ListItemIcon>{child.icon}</ListItemIcon>
                       <ListItemText primary={child.label} />

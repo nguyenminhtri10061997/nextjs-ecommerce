@@ -1,8 +1,8 @@
 "use client";
 
-import { useAlertContext } from "@/hooks/useAlertContext";
-import useFormRef from "@/hooks/useFormRef";
-import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
+import { useAlertContext } from "@/components/hooks/useAlertContext";
+import useFormRef from "@/components/hooks/useFormRef";
+import useLoadingWhenRoutePush from "@/components/hooks/useLoadingWhenRoutePush";
 import { queryClient } from "@/lib/queryClient";
 import { optionKeys, postCreateOption } from "@/lib/reactQuery/option";
 import { TAppResponseBody } from "@/types/api/common";

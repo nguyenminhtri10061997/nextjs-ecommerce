@@ -1,5 +1,5 @@
-import { useAlertContext } from "@/hooks/useAlertContext";
-import { TSelectedHash } from "@/hooks/useSelectTable";
+import { useAlertContext } from "@/components/hooks/useAlertContext";
+import { TSelectedHash } from "@/components/hooks/useSelectTable";
 import { queryClient } from "@/lib/queryClient";
 import { optionKeys, deleteOptions } from "@/lib/reactQuery/option";
 import { TAppResponseBody } from "@/types/api/common";

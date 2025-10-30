@@ -1,11 +1,11 @@
 import { AppResponse } from "@/common/server/appResponse";
 import { AppError } from "@/common/server/appError";
-import { AppStatusCode } from "@/common/statusCode";
+import { AppStatusCode } from "@/common/server/statusCode";
 import prisma from "@/lib/prisma";
-import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
-import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
-import { THofContext } from "@/lib/HOF/type";
+import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField";
+import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken";
+import { withVerifyCanDoAction } from "@/app/api/_lib/HOF/withVerifyCanDoAction";
+import { THofContext } from "@/app/api/_lib/HOF/type";
 import { EPermissionAction, EPermissionResource } from "@prisma/client";
 import { IdParamsDTO, PatchBodyDTO } from "./validator";
 

@@ -1,10 +1,10 @@
 import { AppError } from "@/common/server/appError";
 import { AppResponse } from "@/common/server/appResponse";
-import { AppStatusCode } from "@/common/statusCode";
-import { THofContext } from "@/lib/HOF/type";
-import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
-import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
+import { AppStatusCode } from "@/common/server/statusCode";
+import { THofContext } from "@/app/api/_lib/HOF/type";
+import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField";
+import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken";
+import { withVerifyCanDoAction } from "@/app/api/_lib/HOF/withVerifyCanDoAction";
 import prisma from "@/lib/prisma";
 import AppS3Client from "@/lib/s3";
 import { EPermissionAction, EPermissionResource } from "@prisma/client";

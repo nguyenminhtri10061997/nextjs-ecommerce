@@ -1,5 +1,4 @@
 import { getBaseFileName, textToSlug } from "@/common";
-import { AppEnvironment } from "@/environment/appEnvironment";
 import {
   CopyObjectCommand,
   DeleteObjectCommand,
@@ -15,6 +14,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { extension as mimeExtension } from "mime-types";
 import { v4 } from "uuid";
 import { retry } from "../retry";
+import { AppEnvironment } from "@/constants/environment/appEnvironment";
 
 export default class AppS3Client {
   private static s3Client = new S3Client({

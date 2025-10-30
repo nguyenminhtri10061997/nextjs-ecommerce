@@ -1,5 +1,5 @@
 import { AppResponse } from "@/common/server/appResponse";
-import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
+import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken";
 import prisma from "@/lib/prisma";
 import { TPostMeResponse } from "@/types/api/auth/meResponse";
 import { EPermissionAction, EPermissionResource } from "@prisma/client";

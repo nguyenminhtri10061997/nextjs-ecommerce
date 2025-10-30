@@ -1,31 +1,30 @@
-"use client";
+"use client"
 
-import AppTextFieldPassword from "@/components/customComponents/AppTexFieldPassword";
-import { Autocomplete, Checkbox, FormControlLabel } from "@mui/material";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
-import MenuItem from "@mui/material/MenuItem";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import { EUserOrAccountType, Role } from "@prisma/client";
-import { useEffect } from "react";
-import { Controller, UseFormReturn } from "react-hook-form";
-import useIndex, { Inputs } from "./useIndex";
+import AppTextFieldPassword from "@/components/customComponents/AppTexFieldPassword"
+import { Autocomplete, Checkbox, FormControlLabel } from "@mui/material"
+import Card from "@mui/material/Card"
+import CardContent from "@mui/material/CardContent"
+import CardHeader from "@mui/material/CardHeader"
+import MenuItem from "@mui/material/MenuItem"
+import Stack from "@mui/material/Stack"
+import TextField from "@mui/material/TextField"
+import { EUserOrAccountType, Role } from "@prisma/client"
+import { useEffect } from "react"
+import { Controller, UseFormReturn } from "react-hook-form"
+import useIndex, { FormInputs } from "./useIndex"
 
 type TProps = {
-  onGetForm: (form: UseFormReturn<Inputs>) => void;
-  isEdit?: boolean;
-};
+  onGetForm: (form: UseFormReturn<FormInputs>) => void
+}
 
 export default function UserForm(props: TProps) {
-  const { form, queryRole } = useIndex();
+  const { form, queryRole } = useIndex()
 
   useEffect(() => {
-    props.onGetForm(form);
-  }, [form, props]);
+    props.onGetForm(form)
+  }, [form, props])
 
-  const { control } = form;
+  const { control } = form
 
   return (
     <>
@@ -86,7 +85,7 @@ export default function UserForm(props: TProps) {
         <CardContent>
           <Stack direction={"column"} gap={2}>
             <Controller
-              name="username"
+              name="account.username"
               control={control}
               rules={{ required: "Username is required" }}
               render={({ field, fieldState }) => (
@@ -105,15 +104,15 @@ export default function UserForm(props: TProps) {
             />
 
             <Controller
-              name="password"
+              name="account.password"
               control={control}
               rules={{
-                required: props.isEdit ? false : "Password is required",
+                required: "Password is required",
               }}
               render={({ field, fieldState }) => (
                 <AppTextFieldPassword
-                  label={props.isEdit ? "New Password" : "Password"}
-                  required={!props.isEdit}
+                  label={"Password"}
+                  required={true}
                   fullWidth
                   error={!!fieldState.error}
                   helperText={fieldState.error?.message}
@@ -127,7 +126,7 @@ export default function UserForm(props: TProps) {
             />
 
             <Controller
-              name="roleId"
+              name="account.roleId"
               control={control}
               rules={{ required: "Role is required" }}
               render={({ field, fieldState }) => (
@@ -159,28 +158,7 @@ export default function UserForm(props: TProps) {
             />
 
             <Controller
-              name="accessTokenVersion"
-              control={control}
-              rules={{ required: "Access Token Version is required" }}
-              disabled={props.isEdit}
-              render={({ field, fieldState }) => (
-                <TextField
-                  label="Access Token Version"
-                  type="number"
-                  required
-                  fullWidth
-                  error={!!fieldState.error}
-                  helperText={fieldState?.error?.message}
-                  value={field.value ?? ""}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  inputRef={field.ref}
-                />
-              )}
-            />
-
-            <Controller
-              name="isBanned"
+              name="account.isBanned"
               control={control}
               render={({ field }) => (
                 <FormControlLabel
@@ -196,7 +174,7 @@ export default function UserForm(props: TProps) {
             />
 
             <Controller
-              name="isBlocked"
+              name="account.isBlocked"
               control={control}
               render={({ field }) => (
                 <FormControlLabel
@@ -214,5 +192,5 @@ export default function UserForm(props: TProps) {
         </CardContent>
       </Card>
     </>
-  );
-};
+  )
+}

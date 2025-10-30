@@ -1,8 +1,8 @@
 import { AppError } from "@/common/server/appError";
 import { AppResponse } from "@/common/server/appResponse";
-import { THofContext } from "@/lib/HOF/type";
-import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
-import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
+import { THofContext } from "@/app/api/_lib/HOF/type";
+import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField";
+import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken";
 import AppS3Client from "@/lib/s3";
 import { GetQueryDTO } from "./validator";
 

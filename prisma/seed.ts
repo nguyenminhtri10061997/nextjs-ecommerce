@@ -95,6 +95,12 @@ const userDatas: Prisma.UserCreateInput[] = [
   },
 ];
 
+const attributes: Prisma.AttributeCreateInput = [
+  {
+name: 
+  }
+]
+
 export async function main() {
   for (const userData of userDatas) {
     await prisma.user.upsert({

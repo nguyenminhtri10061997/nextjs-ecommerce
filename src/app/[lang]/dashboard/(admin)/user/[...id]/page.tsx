@@ -1,11 +1,11 @@
-"use client";
+"use client"
 
-import UserForm from "@/app/[lang]/dashboard/(admin)/user/_components/UserForm";
-import { Box, Button, Stack, Typography } from "@mui/material";
-import usePage from "./usePage";
+import { Box, Button, Stack, Typography } from "@mui/material"
+import UserForm from "./_components/UserForm"
+import usePage from "./usePage"
 
 export default function Edit() {
-  const { query, mutation, handleClickSubmit, handleSetForm } = usePage();
+  const { query, mutation, handleClickSubmit, handleSetForm } = usePage()
   return (
     <Box>
       <Typography variant="h4">Update {query.data?.fullName}</Typography>
@@ -15,7 +15,7 @@ export default function Edit() {
         sx={{ mt: 2 }}
         onSubmit={handleClickSubmit}
       >
-        <UserForm onGetForm={handleSetForm} isEdit />
+        <UserForm onGetForm={handleSetForm} />
 
         <Stack direction={"row-reverse"}>
           <Button
@@ -31,5 +31,5 @@ export default function Edit() {
         </Stack>
       </Box>
     </Box>
-  );
+  )
 }

@@ -1,42 +1,45 @@
-"use client";
-import DashboardMenu from "@/components/DashboardMenu";
-import LinkLoadingIndicator from "@/components/LinkLoadingIndicator";
-import { ADMIN_DRAWER_WIDTH } from "@/constants/dashBoardMenu";
-import { useDashboardCtx } from "@/hooks/useDashboardCtx";
-import { Logout } from "@mui/icons-material";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import LogoDevIcon from "@mui/icons-material/LogoDev";
-import MenuIcon from "@mui/icons-material/Menu";
-import { ListItemIcon } from "@mui/material";
-import AppBar from "@mui/material/AppBar";
-import Avatar from "@mui/material/Avatar";
-import Backdrop from "@mui/material/Backdrop";
-import Box from "@mui/material/Box";
-import Breadcrumbs from "@mui/material/Breadcrumbs";
-import CircularProgress from "@mui/material/CircularProgress";
-import Divider from "@mui/material/Divider";
-import Drawer from "@mui/material/Drawer";
-import IconButton from "@mui/material/IconButton";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Stack from "@mui/material/Stack";
-import { useTheme } from "@mui/material/styles";
-import Toolbar from "@mui/material/Toolbar";
-import Tooltip from "@mui/material/Tooltip";
-import Typography from "@mui/material/Typography";
-import Link from "next/link";
-import { useMemo } from "react";
-import useLayout from "./useLayout";
+"use client"
+import AppLinkWithLoading from "@/components/customComponents/AppLinkIndicator"
+import DashboardMenu from "@/components/customComponents/DashboardMenu"
+import { useDashboardCtx } from "@/components/hooks/useDashboardCtx"
+import { ADMIN_DRAWER_WIDTH } from "@/constants/dashBoardMenu"
+import { Logout } from "@mui/icons-material"
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
+import DarkModeIcon from "@mui/icons-material/DarkMode"
+import LightModeIcon from "@mui/icons-material/LightMode"
+import LogoDevIcon from "@mui/icons-material/LogoDev"
+import MenuIcon from "@mui/icons-material/Menu"
+import { ListItemIcon } from "@mui/material"
+import AppBar from "@mui/material/AppBar"
+import Avatar from "@mui/material/Avatar"
+import Backdrop from "@mui/material/Backdrop"
+import Box from "@mui/material/Box"
+import Breadcrumbs from "@mui/material/Breadcrumbs"
+import CircularProgress from "@mui/material/CircularProgress"
+import Divider from "@mui/material/Divider"
+import Drawer from "@mui/material/Drawer"
+import IconButton from "@mui/material/IconButton"
+import ListItem from "@mui/material/ListItem"
+import ListItemButton from "@mui/material/ListItemButton"
+import Menu from "@mui/material/Menu"
+import MenuItem from "@mui/material/MenuItem"
+import Stack from "@mui/material/Stack"
+import { useTheme } from "@mui/material/styles"
+import Toolbar from "@mui/material/Toolbar"
+import Tooltip from "@mui/material/Tooltip"
+import Typography from "@mui/material/Typography"
+import Link from "next/link"
+import { useParams, useSelectedLayoutSegments } from "next/navigation"
+import { useMemo } from "react"
+import { z } from "zod/v4"
+import useLayout from "./useLayout"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const { breadcrumbs } = useDashboardCtx();
-  const { dict } = useDashboardCtx();
+  const params = useParams<{ lang: string }>()
+  const segments = useSelectedLayoutSegments()
+  const { dict } = useDashboardCtx()
 
-  const theme = useTheme();
+  const theme = useTheme()
   const {
     anchorElUser,
     isOpenDrawer,
@@ -50,31 +53,54 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     handleClickCloseDrawer,
     handleSetMode,
     mode,
-  } = useLayout();
+  } = useLayout()
 
   const breadcrumbsRender = useMemo(() => {
-    return breadcrumbs?.map((segment, idx) => {
-      const href = "/" + breadcrumbs.slice(0, idx + 1).join("/");
+    const segmentsLen = segments.length
+    if (segmentsLen === 0) {
+      return <Typography>DASHBOARD</Typography>
+    }
+    let segmentPre = `/${params.lang}/dashboard`
 
-      if (idx === breadcrumbs.length - 1) {
-        return <Typography key={href}>{segment.toUpperCase()}</Typography>;
-      }
+    const dashboardBreadcrumb = (
+      <AppLinkWithLoading key={segmentPre} href={segmentPre}>
+        DASHBOARD
+      </AppLinkWithLoading>
+    )
 
-      return (
-        <Link key={href} href={href}>
-          <LinkLoadingIndicator />
-          {segment.toUpperCase()}
-        </Link>
-      );
-    });
-  }, [breadcrumbs]);
+    return [dashboardBreadcrumb].concat(
+      segments.map((segment, idx) => {
+        const href = `${segmentPre}/${segment}`
+        segmentPre = href
+
+        const isLast = idx === segmentsLen - 1
+
+        let label = segment.toUpperCase()
+        const isUuid = z.uuid().safeParse(segment).success
+
+        // Nếu là ID thì đổi label
+        if (isUuid) {
+          label = "EDIT"
+        }
+
+        if (isLast) {
+          return <Typography key={href}>{label}</Typography>
+        }
+        return (
+          <AppLinkWithLoading key={href} href={segmentPre}>
+            {segment.toUpperCase()}
+          </AppLinkWithLoading>
+        )
+      })
+    )
+  }, [segments, params.lang])
 
   if (query.isLoading) {
     return (
       <Backdrop open={true} sx={{ zIndex: 1600 }}>
         <CircularProgress color="inherit" />
       </Backdrop>
-    );
+    )
   }
 
   return (
@@ -86,7 +112,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               href={"/dashboard"}
               className="flex items-center grow-1 gap-4"
             >
-              <LinkLoadingIndicator />
               <LogoDevIcon fontSize="large" />
               <Box>
                 <Typography variant="h6">{dict.AppName}</Typography>
@@ -103,7 +128,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             }}
           ></Box>
           <Divider />
-          <DashboardMenu arrMenuRender={arrMenuRender} />
+          <DashboardMenu
+            arrMenuRender={arrMenuRender}
+            handleClickCloseDrawer={handleClickCloseDrawer}
+          />
         </Box>
       </Drawer>
       <Box
@@ -190,5 +218,5 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </Box>
       </Box>
     </Box>
-  );
+  )
 }

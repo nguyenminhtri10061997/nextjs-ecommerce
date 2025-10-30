@@ -1,13 +1,13 @@
 import { AppResponse } from "@/common/server/appResponse";
-import { withValidateFieldHandler } from "@/lib/HOF/withValidateField";
+import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField";
 import prisma from "@/lib/prisma";
-import { idParamsDTO, patchBodyDTO } from "./validator";
-import { THofContext } from "@/lib/HOF/type";
-import { withVerifyAccessToken } from "@/lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/lib/HOF/withVerifyCanDoAction";
+import { idParamsDTO, PatchBodyDTO } from "./validator";
+import { THofContext } from "@/app/api/_lib/HOF/type";
+import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken";
+import { withVerifyCanDoAction } from "@/app/api/_lib/HOF/withVerifyCanDoAction";
 import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
 import { AppError } from "@/common/server/appError";
-import { AppStatusCode } from "@/common/statusCode";
+import { AppStatusCode } from "@/common/server/statusCode";
 import { AuthService } from "@/lib/auth/authService";
 
 export const GET = withValidateFieldHandler(
@@ -42,7 +42,7 @@ export const GET = withValidateFieldHandler(
 export const PUT = withValidateFieldHandler(
   idParamsDTO,
   null,
-  patchBodyDTO,
+  PatchBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
       {
@@ -51,7 +51,7 @@ export const PUT = withValidateFieldHandler(
       },
       async (
         _,
-        ctx: THofContext<typeof idParamsDTO, never, typeof patchBodyDTO>
+        ctx: THofContext<typeof idParamsDTO, never, typeof PatchBodyDTO>
       ) => {
         const { id } = ctx.paramParse!;
         const { fullName, type, account } = ctx.bodyParse!;

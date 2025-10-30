@@ -117,11 +117,11 @@ enum EStockStatus {
 }
 
 enum EStockType {
-    INVENTORY
+    INVENTORY // => stock && has skuAttributeValues
     // EXTERNAL
-    ATTRIBUTE
-    DIGITAL
-    MANUAL
+    ATTRIBUTE // => stock
+    DIGITAL // => downloadUrl
+    MANUAL // => stockStatus
 }
 
 enum EPriceModifierType {
@@ -197,7 +197,8 @@ model Product {
     viewCount         Int          @default(0)
     soldCount         Int          @default(0)
     type              EProductType
-    avgRate           Float?
+    avgRateBySystem   Float?
+    avgRateByAdmin    Float?
     isActive          Boolean      @default(true)
     createdAt         DateTime     @default(now())
     updatedAt         DateTime     @default(now()) @updatedAt
@@ -215,7 +216,7 @@ model Product {
 model Brand {
     id        String    @id @default(uuid())
     name      String    @unique
-    slug      String    @unique
+    slug      String?    @unique
     logoImage String?
     isActive  Boolean   @default(true)
     createdAt DateTime  @default(now())
@@ -239,7 +240,7 @@ model Language {
 model ProductCategory {
     id                      String            @id @default(uuid())
     name                    String            @unique
-    slug                    String            @unique
+    slug                    String?            @unique
     seoTitle                String?
     description             String?
     seoDescription          String?
@@ -275,7 +276,7 @@ model ProductTranslation {
     productId      String
     languageId     String
     name           String   @unique
-    slug           String   @unique
+    slug           String?   @unique
     seoTitle       String?
     description    String?
     seoDescription String?
@@ -288,21 +289,20 @@ model ProductTranslation {
 }
 
 model Attribute {
-    id           String         @id @default(uuid())
-    name         String         @unique
-    slug         String         @unique
-    type         EAttributeType
-    displayOrder Int?
-    createdAt    DateTime       @default(now())
-    updatedAt    DateTime       @default(now()) @updatedAt
-
+    id              String           @id @default(uuid())
+    name            String           @unique
+    slug            String?          @unique
+    type            EAttributeType
+    displayOrder    Int?
+    createdAt       DateTime         @default(now())
+    updatedAt       DateTime         @default(now()) @updatedAt
     attributeValues AttributeValue[]
 }
 
 model AttributeValue {
     id           String   @id @default(uuid())
     name         String
-    slug         String
+    slug         String?
     displayOrder Int?
     createdAt    DateTime @default(now())
     updatedAt    DateTime @default(now()) @updatedAt
@@ -312,15 +312,16 @@ model AttributeValue {
 }
 
 model ProductAttribute {
-    id           String           @id @default(uuid())
-    productId    String
-    name         String           @unique
-    slug         String           @unique
-    type         EAttributeType
-    status       EAttributeStatus
-    displayOrder Int?
-    createdAt    DateTime         @default(now())
-    updatedAt    DateTime         @default(now()) @updatedAt
+    id                  String           @id @default(uuid())
+    productId           String
+    name                String           @unique
+    slug                String?           @unique
+    type                EAttributeType
+    status              EAttributeStatus
+    isUsedForVariations Boolean?
+    displayOrder        Int?
+    createdAt           DateTime         @default(now())
+    updatedAt           DateTime         @default(now()) @updatedAt
 
     product                  Product                    @relation(fields: [productId], references: [id])
     attributeValues          ProductAttributeValue[]
@@ -333,10 +334,11 @@ model ProductAttributeValue {
     id                 String                @id @default(uuid())
     productAttributeId String
     name               String
-    slug               String
+    slug               String?
     image              String?
     displayOrder       Int?
     status             EAttributeValueStatus
+    isDefault          Boolean?
     createdAt          DateTime              @default(now())
     updatedAt          DateTime              @default(now()) @updatedAt
 
@@ -357,16 +359,15 @@ model ProductSku {
     price        Float
     costPrice    Float?
     stock        Int?
+    downloadUrl  String?
+    note         String?
     barcode      String?
     weight       Float?
     width        Float?
     height       Float?
     length       Float?
-    note         String?
     displayOrder Int?
     status       ESkuStatus
-    downloadUrl  String?
-    isDefault    Boolean?
     createdAt    DateTime      @default(now())
     updatedAt    DateTime      @default(now()) @updatedAt
 
@@ -393,7 +394,7 @@ model ProductSkuAttributeValue {
 model Option {
     id           String         @id @default(uuid())
     name         String         @unique
-    slug         String         @unique
+    slug         String?         @unique
     displayOrder Int?
     isActive     Boolean        @default(true)
     context      EOptionContext
@@ -408,7 +409,7 @@ model OptionItem {
     id           String   @id @default(uuid())
     optionId     String
     name         String
-    slug         String
+    slug         String?
     displayOrder Int?
     isActive     Boolean  @default(true)
     createdAt    DateTime @default(now())
@@ -455,7 +456,7 @@ model ProductTag {
     id               String          @id @default(uuid())
     code             String          @unique
     name             String          @unique
-    slug             String          @unique
+    slug             String?          @unique
     description      String?
     expiredAfterDays Int?
     displayType      ETagDisplayType

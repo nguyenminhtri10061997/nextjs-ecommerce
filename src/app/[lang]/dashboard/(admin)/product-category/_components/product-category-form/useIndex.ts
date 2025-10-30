@@ -1,5 +1,5 @@
-import { useAlertContext } from "@/hooks/useAlertContext";
-import { useLoadingCtx } from "@/hooks/useLoadingCtx";
+import { useAlertContext } from "@/components/hooks/useAlertContext";
+import { useLoadingCtx } from "@/components/hooks/useLoadingCtx";
 import { useGetProductCategoryListQuery } from "@/lib/reactQuery/product-category";
 import { ProductCategory } from "@prisma/client";
 import { useEffect } from "react";

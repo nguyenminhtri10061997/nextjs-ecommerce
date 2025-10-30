@@ -1,7 +1,7 @@
 "use client";
 
-import { useAlertContext } from "@/hooks/useAlertContext";
-import useLoadingWhenRoutePush from "@/hooks/useLoadingWhenRoutePush";
+import { useAlertContext } from "@/components/hooks/useAlertContext";
+import useLoadingWhenRoutePush from "@/components/hooks/useLoadingWhenRoutePush";
 import { postCreateRole, roleKeys } from "@/lib/reactQuery/role";
 import { TAppResponseBody } from "@/types/api/common";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

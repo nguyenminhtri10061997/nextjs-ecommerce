@@ -1,23 +1,13 @@
-"use client";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
-import TextField from "@mui/material/TextField";
-import { usePage } from "./usePage";
+"use client"
+import AppTextFieldPassword from "@/components/customComponents/AppTexFieldPassword"
+import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import TextField from "@mui/material/TextField"
+import { usePage } from "./usePage"
 
 export default function Login() {
-  const {
-    errors,
-    showPassword,
-    mutation,
-    handleTogglePassword,
-    handleClickSubmit,
-    register,
-    handleSubmit,
-  } = usePage();
+  const { errors, mutation, handleClickSubmit, register, handleSubmit } =
+    usePage()
 
   return (
     <div className="bg-white w-screen h-screen flex items-center justify-center">
@@ -38,8 +28,7 @@ export default function Login() {
           margin="normal"
           {...register("username", { required: "username is required" })}
         />
-        <TextField
-          type={showPassword ? "text" : "password"}
+        <AppTextFieldPassword
           autoComplete="password"
           required
           fullWidth
@@ -47,22 +36,6 @@ export default function Login() {
           error={!!errors.password}
           helperText={errors.password?.message}
           margin="normal"
-          slotProps={{
-            input: {
-              label: "password",
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={handleTogglePassword}
-                    edge="end"
-                    aria-label="toggle password visibility"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
-          }}
           {...register("password", { required: "password is required" })}
         />
         <Button type="submit" variant="contained" loading={mutation.isPending}>
@@ -70,5 +43,5 @@ export default function Login() {
         </Button>
       </Box>
     </div>
-  );
+  )
 }

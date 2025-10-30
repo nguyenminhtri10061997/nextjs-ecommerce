@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { handleNumberChange, textToSlug } from "@/common";
-import AppSortableItem from "@/components/customComponents/AppRowSortable";
+import { handleNumberChange, textToSlug } from "@/common"
+import AppSortableItem from "@/components/customComponents/AppRowSortable"
 import {
   closestCenter,
   DndContext,
@@ -10,14 +10,14 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
+} from "@dnd-kit/core"
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+} from "@dnd-kit/sortable"
+import AddIcon from "@mui/icons-material/Add"
+import DeleteIcon from "@mui/icons-material/Delete"
 import {
   Button,
   IconButton,
@@ -27,17 +27,17 @@ import {
   TableCell,
   TableContainer,
   Toolbar,
-} from "@mui/material";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import { useEffect } from "react";
-import { Controller, UseFormReturn } from "react-hook-form";
-import useIndex, { TForm } from "./useIndex";
-import { EAttributeType } from "@prisma/client";
+} from "@mui/material"
+import Stack from "@mui/material/Stack"
+import TextField from "@mui/material/TextField"
+import { EAttributeType } from "@prisma/client"
+import { useEffect } from "react"
+import { Controller, UseFormReturn } from "react-hook-form"
+import useIndex, { TForm } from "./useIndex"
 
 type TProps = {
-  onGetForm: (form: UseFormReturn<TForm>) => void;
-};
+  onGetForm: (form: UseFormReturn<TForm>) => void
+}
 export default function Index(props: TProps) {
   const {
     form,
@@ -45,7 +45,7 @@ export default function Index(props: TProps) {
     handleRemoveAttValue,
     handleAddAttValue,
     handleChangeAttValue,
-  } = useIndex();
+  } = useIndex()
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -56,11 +56,11 @@ export default function Index(props: TProps) {
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
-  );
+  )
 
   useEffect(() => {
-    props.onGetForm(form);
-  }, [form, props]);
+    props.onGetForm(form)
+  }, [form, props])
 
   useEffect(() => {
     const callback = form.subscribe({
@@ -69,35 +69,35 @@ export default function Index(props: TProps) {
         values: true,
       },
       callback: ({ values }) => {
-        form.setValue("slug", textToSlug(values.name));
+        form.setValue("slug", textToSlug(values.name))
       },
-    });
+    })
 
-    return () => callback();
-  }, [form]);
+    return () => callback()
+  }, [form])
 
-  const { control } = form;
+  const { control } = form
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+    const { active, over } = event
 
     if (active.id !== over?.id) {
-      const attributeValuesFromForm = form.getValues("attributeValues");
+      const attributeValuesFromForm = form.getValues("attributeValues")
       const oldIndex = attributeValuesFromForm.findIndex(
         (i) => i.idDnD === active.id
-      );
+      )
       const newIndex = attributeValuesFromForm.findIndex(
         (i) => i.idDnD === over?.id
-      );
+      )
 
       const attributeValuesMoved = arrayMove(
         attributeValuesFromForm,
         oldIndex,
         newIndex
-      );
-      form.setValue("attributeValues", attributeValuesMoved);
+      )
+      form.setValue("attributeValues", attributeValuesMoved)
     }
-  };
+  }
   return (
     <Stack direction={"column"} gap={2}>
       <Controller
@@ -122,7 +122,6 @@ export default function Index(props: TProps) {
       <Controller
         name="slug"
         control={control}
-        rules={{ required: "Slug is required" }}
         render={({ field, fieldState }) => (
           <TextField
             label="Slug"
@@ -148,7 +147,7 @@ export default function Index(props: TProps) {
             select
             required
             error={!!fieldState.error}
-            helperText={fieldState.error?.message || " "}
+            helperText={fieldState.error?.message}
             value={field.value ?? ""}
             onChange={field.onChange}
             onBlur={field.onBlur}
@@ -234,7 +233,6 @@ export default function Index(props: TProps) {
                       <Controller
                         name={`attributeValues.${idx}.slug`}
                         control={control}
-                        rules={{ required: "Slug is required" }}
                         render={({ field, fieldState }) => (
                           <TextField
                             label="Slug"
@@ -263,5 +261,5 @@ export default function Index(props: TProps) {
         </DndContext>
       </TableContainer>
     </Stack>
-  );
+  )
 }
