@@ -11,7 +11,8 @@
     "migrate-reset": "npx prisma migrate reset",
     "prisma-generate": "npx prisma generate",
     "dict-type-generate": "npx quicktype --lang typescript --src ./src/dictionaries/en-US.json -o ./src/types/dictTypeGenerated.ts --just-types --alphabetize-properties",
-    "locales-json-file-generate": "tsx src/generate/locales.ts"
+    "locales-json-file-generate": "tsx src/generate/locales.ts",
+    "prisma-db-seed": "prisma db seed"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
