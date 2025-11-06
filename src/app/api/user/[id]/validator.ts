@@ -14,6 +14,5 @@ export const PatchBodyDTO = z.object({
     roleId: z.uuidv4().optional(),
     isBanned: z.boolean().optional(),
     isBlocked: z.boolean().optional(),
-    accessTokenVersion: z.coerce.number().nonnegative().int().optional(),
   }),
 });

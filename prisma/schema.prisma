@@ -51,7 +51,7 @@ model User {
     account       Account?
     createdAt     DateTime           @default(now())
     updatedAt     DateTime           @default(now()) @updatedAt
-    ProductRating ProductRating[]
+    productRating ProductRating[]
 }
 
 model Account {
@@ -79,9 +79,8 @@ model Role {
     createdAt   DateTime @default(now())
     updatedAt   DateTime @default(now()) @updatedAt
 
-    permissions    Permission[]
-    accounts       Account[]
-    RolePermission RolePermission[]
+    accounts   Account[]
+    permission Permission[]
 }
 
 model Permission {
@@ -91,22 +90,9 @@ model Permission {
     createdAt DateTime            @default(now())
     updatedAt DateTime            @default(now()) @updatedAt
 
-    roles          Role[]
-    RolePermission RolePermission[]
+    role Role[]
 
     @@unique([action, resource], name: "action_resource")
-}
-
-model RolePermission {
-    id           String   @id @default(uuid())
-    roleId       String
-    permissionId String
-    createdAt    DateTime @default(now())
-
-    role       Role       @relation(fields: [roleId], references: [id])
-    permission Permission @relation(fields: [permissionId], references: [id])
-
-    @@unique([roleId, permissionId])
 }
 
 model RefreshToken {

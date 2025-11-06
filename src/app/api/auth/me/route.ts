@@ -1,16 +1,16 @@
-import { AppResponse } from "@/common/server/appResponse";
-import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken";
-import prisma from "@/lib/prisma";
-import { TPostMeResponse } from "@/types/api/auth/meResponse";
-import { EPermissionAction, EPermissionResource } from "@prisma/client";
-import { NextRequest } from "next/server";
+import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken"
+import { AppResponse } from "@/common/server/appResponse"
+import prisma from "@/lib/prisma"
+import { TPostMeResponse } from "@/types/api/auth/meResponse"
+import { EPermissionAction, EPermissionResource } from "@prisma/client"
+import { NextRequest } from "next/server"
 
 export const GET = withVerifyAccessToken(async (_: NextRequest, ctx) => {
   const [user, role] = await Promise.all([
     prisma.user.findUnique({
       where: {
         id: ctx.accessTokenCtx?.account.id,
-      }
+      },
     }),
     prisma.role.findUnique({
       where: {
@@ -19,18 +19,19 @@ export const GET = withVerifyAccessToken(async (_: NextRequest, ctx) => {
       select: {
         id: true,
         name: true,
-        permissions: {
+        permission: {
           select: {
             action: true,
             resource: true,
-          }
+          },
         },
       },
-    })
+    }),
   ])
 
-  const permissionHash: { [key in EPermissionResource]?: EPermissionAction[] } = {}
-  role!.permissions.forEach(i => {
+  const permissionHash: { [key in EPermissionResource]?: EPermissionAction[] } =
+    {}
+  role?.permission.forEach((i) => {
     if (!permissionHash[i.resource as EPermissionResource]) {
       permissionHash[i.resource as EPermissionResource] = []
     }
@@ -46,6 +47,6 @@ export const GET = withVerifyAccessToken(async (_: NextRequest, ctx) => {
         name: role!.name,
         permissions: permissionHash,
       },
-    } as TPostMeResponse
-  });
+    } as TPostMeResponse,
+  })
 })
