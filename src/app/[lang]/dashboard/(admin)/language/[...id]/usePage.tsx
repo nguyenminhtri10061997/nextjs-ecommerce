@@ -1,7 +1,6 @@
 "use client";
 
 import { useAlertContext } from "@/components/hooks/useAlertContext";
-import { useDashboardCtx } from "@/components/hooks/useDashboardCtx";
 import useFormRef from "@/components/hooks/useFormRef";
 import { useLoadingCtx } from "@/components/hooks/useLoadingCtx";
 import useLoadingWhenRoutePush from "@/components/hooks/useLoadingWhenRoutePush";
@@ -24,7 +23,6 @@ export const usePage = () => {
   const queryClient = useQueryClient();
   const { showAlert } = useAlertContext();
   const { setLoading } = useLoadingCtx();
-  const { breadcrumbs, setBreadCrumbs } = useDashboardCtx();
   const { push } = useLoadingWhenRoutePush();
 
   const query = useQuery({
@@ -65,15 +63,10 @@ export const usePage = () => {
 
   useEffect(() => {
     if (query.data?.id) {
-      if (breadcrumbs.length === 3) {
-        setBreadCrumbs(
-          breadcrumbs.slice(0, breadcrumbs.length - 1).concat(query.data.name)
-        );
-      }
       formRef.current?.reset(query.data);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query.data?.id, breadcrumbs.length === 3]);
+  }, [query.data?.id]);
 
   useEffect(() => {
     setLoading(query.isLoading);

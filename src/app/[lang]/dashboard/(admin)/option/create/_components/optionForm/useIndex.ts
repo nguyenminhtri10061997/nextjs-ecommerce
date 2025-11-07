@@ -1,38 +1,35 @@
-import { textToSlug } from "@/common";
-import { Option, OptionItem } from "@prisma/client";
-import { ChangeEvent } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
-import { v4 } from "uuid";
+import { PostCreateBodyDTO } from "@/app/api/option/validator"
+import { textToSlug } from "@/common"
+import useAppUseForm from "@/constants/reactHookForm"
+import { ChangeEvent } from "react"
+import { useFieldArray } from "react-hook-form"
+import { output } from "zod/v4"
 
-export type TForm = Pick<Option, "name" | "slug" | "displayOrder" | "isActive"> & {
-  optionItems: (Pick<OptionItem, "name" | "slug" | "displayOrder" | "isActive"> & { idDnD: string })[];
-};
+export type TForm = output<typeof PostCreateBodyDTO>
 
 export default function useIndex() {
-  const form = useForm<TForm>({
-    mode: "onBlur",
+  const form = useAppUseForm<TForm>({
     defaultValues: {
       isActive: true,
     }
-  });
+  })
   const optionValueArrField = useFieldArray({
     control: form.control,
     name: "optionItems",
-  });
+  })
 
   const handleRemoveOpItemValue = (idx: number) => () => {
-    optionValueArrField.remove(idx);
-  };
+    optionValueArrField.remove(idx)
+  }
 
   const handleAddOpItemValue = () => {
     optionValueArrField.append({
-      idDnD: v4(),
       name: "",
       slug: "",
       displayOrder: null,
       isActive: true,
-    });
-  };
+    })
+  }
 
   const handleChangeOpItemValue =
     (
@@ -42,11 +39,11 @@ export default function useIndex() {
       ) => void
     ) =>
     (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const val = e.target.value;
+      const val = e.target.value
 
-      form.setValue(`optionItems.${idx}.slug`, textToSlug(val));
-      cbOfField(e);
-    };
+      form.setValue(`optionItems.${idx}.slug`, textToSlug(val))
+      cbOfField(e)
+    }
 
   return {
     form,
@@ -54,5 +51,5 @@ export default function useIndex() {
     handleRemoveOpItemValue,
     handleAddOpItemValue,
     handleChangeOpItemValue,
-  };
+  }
 }

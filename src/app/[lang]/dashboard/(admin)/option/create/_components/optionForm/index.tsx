@@ -1,27 +1,24 @@
 "use client"
 
-import { handleNumberChange, textToSlug } from "@/common"
+import { textToSlug } from "@/common"
+import { handleDragEnd } from "@/common/client"
 import AppSortableItem from "@/components/customComponents/AppRowSortable"
 import {
   closestCenter,
   DndContext,
-  DragEndEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable"
+import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 import AddIcon from "@mui/icons-material/Add"
 import DeleteIcon from "@mui/icons-material/Delete"
 import {
   Button,
+  Checkbox,
+  FormControlLabel,
   IconButton,
-  MenuItem,
   Table,
   TableBody,
   TableCell,
@@ -30,7 +27,6 @@ import {
 } from "@mui/material"
 import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
-import { EAttributeType } from "@prisma/client"
 import { useEffect } from "react"
 import { Controller, UseFormReturn } from "react-hook-form"
 import useIndex, { TForm } from "./useIndex"
@@ -41,10 +37,10 @@ type TProps = {
 export default function Index(props: TProps) {
   const {
     form,
-    attributeValueArrField,
-    handleRemoveAttValue,
-    handleAddAttValue,
-    handleChangeAttValue,
+    optionValueArrField,
+    handleRemoveOpItemValue,
+    handleAddOpItemValue,
+    handleChangeOpItemValue,
   } = useIndex()
 
   const sensors = useSensors(
@@ -78,26 +74,6 @@ export default function Index(props: TProps) {
 
   const { control } = form
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-
-    if (active.id !== over?.id) {
-      const attributeValuesFromForm = form.getValues("attributeValues")
-      const oldIndex = attributeValuesFromForm.findIndex(
-        (i) => i.idDnD === active.id
-      )
-      const newIndex = attributeValuesFromForm.findIndex(
-        (i) => i.idDnD === over?.id
-      )
-
-      const attributeValuesMoved = arrayMove(
-        attributeValuesFromForm,
-        oldIndex,
-        newIndex
-      )
-      form.setValue("attributeValues", attributeValuesMoved)
-    }
-  }
   return (
     <Stack direction={"column"} gap={2}>
       <Controller
@@ -122,6 +98,7 @@ export default function Index(props: TProps) {
       <Controller
         name="slug"
         control={control}
+        rules={{ required: "Slug is required" }}
         render={({ field, fieldState }) => (
           <TextField
             label="Slug"
@@ -138,32 +115,6 @@ export default function Index(props: TProps) {
       />
 
       <Controller
-        name={"type"}
-        control={control}
-        rules={{ required: "Type is required" }}
-        render={({ field, fieldState }) => (
-          <TextField
-            label="Type"
-            select
-            required
-            error={!!fieldState.error}
-            helperText={fieldState.error?.message}
-            value={field.value ?? ""}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            inputRef={field.ref}
-          >
-            <MenuItem value={EAttributeType.RADIO}>
-              {EAttributeType.RADIO}
-            </MenuItem>
-            <MenuItem value={EAttributeType.COLOR}>
-              {EAttributeType.COLOR}
-            </MenuItem>
-          </TextField>
-        )}
-      />
-
-      <Controller
         name="displayOrder"
         control={control}
         render={({ field, fieldState }) => (
@@ -174,7 +125,12 @@ export default function Index(props: TProps) {
             error={!!fieldState.error}
             helperText={fieldState.error?.message}
             value={field.value ?? ""}
-            onChange={(e) => handleNumberChange(e, field.onChange)}
+            onChange={(e) => {
+              const val = e.target.value
+              if (/^\d*$/.test(val)) {
+                field.onChange(val === "" ? "" : Number(val))
+              }
+            }}
             onBlur={field.onBlur}
             inputRef={field.ref}
             slotProps={{
@@ -187,31 +143,45 @@ export default function Index(props: TProps) {
         )}
       />
 
+      <Controller
+        name="isActive"
+        control={control}
+        render={({ field }) => (
+          <FormControlLabel
+            label="Is Active"
+            control={
+              <Checkbox
+                checked={field.value ?? false}
+                onChange={field.onChange}
+              />
+            }
+          />
+        )}
+      />
+
       <Toolbar disableGutters>
         <Button
-          onClick={handleAddAttValue}
+          onClick={handleAddOpItemValue}
           variant="contained"
           startIcon={<AddIcon />}
         >
-          Add Attribute
+          Add Option Item
         </Button>
       </Toolbar>
       <TableContainer>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
+          onDragEnd={handleDragEnd(form, "optionItems", optionValueArrField)}
         >
-          <SortableContext
-            items={attributeValueArrField.fields.map((i) => i.idDnD)}
-          >
-            <Table sx={{ minWidth: 650 }}>
+          <SortableContext items={optionValueArrField.fields.map((i) => i.id)}>
+            <Table>
               <TableBody>
-                {attributeValueArrField.fields.map((i, idx) => (
-                  <AppSortableItem key={i.idDnD} id={i.idDnD}>
+                {optionValueArrField.fields.map((i, idx) => (
+                  <AppSortableItem key={i.id} id={i.id}>
                     <TableCell>
                       <Controller
-                        name={`attributeValues.${idx}.name`}
+                        name={`optionItems.${idx}.name`}
                         control={control}
                         rules={{ required: "Name is required" }}
                         render={({ field, fieldState }) => (
@@ -220,9 +190,12 @@ export default function Index(props: TProps) {
                             fullWidth
                             required
                             error={!!fieldState.error}
-                            helperText={fieldState.error?.message || " "}
+                            helperText={fieldState.error?.message}
                             value={field.value ?? ""}
-                            onChange={handleChangeAttValue(idx, field.onChange)}
+                            onChange={handleChangeOpItemValue(
+                              idx,
+                              field.onChange
+                            )}
                             onBlur={field.onBlur}
                             inputRef={field.ref}
                           />
@@ -231,15 +204,16 @@ export default function Index(props: TProps) {
                     </TableCell>
                     <TableCell>
                       <Controller
-                        name={`attributeValues.${idx}.slug`}
+                        name={`optionItems.${idx}.slug`}
                         control={control}
+                        rules={{ required: "Slug is required" }}
                         render={({ field, fieldState }) => (
                           <TextField
                             label="Slug"
                             fullWidth
                             required
                             error={!!fieldState.error}
-                            helperText={fieldState.error?.message || " "}
+                            helperText={fieldState.error?.message}
                             value={field.value ?? ""}
                             onChange={field.onChange}
                             onBlur={field.onBlur}
@@ -249,8 +223,25 @@ export default function Index(props: TProps) {
                       />
                     </TableCell>
                     <TableCell>
-                      <IconButton onClick={handleRemoveAttValue(idx)}>
-                        <DeleteIcon />
+                      <Controller
+                        name={`optionItems.${idx}.isActive`}
+                        control={control}
+                        render={({ field }) => (
+                          <FormControlLabel
+                            label="Is Active"
+                            control={
+                              <Checkbox
+                                checked={field.value ?? false}
+                                onChange={field.onChange}
+                              />
+                            }
+                          />
+                        )}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <IconButton onClick={handleRemoveOpItemValue(idx)}>
+                        <DeleteIcon color="error" />
                       </IconButton>
                     </TableCell>
                   </AppSortableItem>

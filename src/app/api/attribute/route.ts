@@ -1,15 +1,15 @@
-import { AppResponse } from "@/common/server/appResponse";
-import { AppError } from "@/common/server/appError";
-import prisma from "@/lib/prisma";
-import { THofContext } from "@/app/api/_lib/HOF/type";
-import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField";
-import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/app/api/_lib/HOF/withVerifyCanDoAction";
-import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
-import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator";
-import { ESearchType } from "@/lib/zod/paginationDTO";
-import { AppStatusCode } from "@/common/server/statusCode";
-import { getOrderBy } from "@/common/server";
+import { THofContext } from "@/app/api/_lib/HOF/type"
+import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField"
+import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken"
+import { withVerifyCanDoAction } from "@/app/api/_lib/HOF/withVerifyCanDoAction"
+import { getOrderBy } from "@/common/server"
+import { AppError } from "@/common/server/appError"
+import { AppResponse } from "@/common/server/appResponse"
+import { AppStatusCode } from "@/common/server/statusCode"
+import prisma from "@/lib/prisma"
+import { ESearchType } from "@/lib/zod/paginationDTO"
+import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client"
+import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator"
 
 export const GET = withValidateFieldHandler(
   null,
@@ -22,39 +22,32 @@ export const GET = withValidateFieldHandler(
         action: EPermissionAction.READ,
       },
       async (_, ctx: THofContext<never, typeof GetQueryDTO>) => {
-        const { orderQuery, searchQuery } = ctx.queryParse || {};
-        const where: Prisma.AttributeWhereInput = {};
+        const { orderQuery, searchQuery } = ctx.queryParse || {}
+        const where: Prisma.AttributeWhereInput = {}
 
         if (searchQuery?.searchKey && searchQuery?.searchStr) {
-          const key = searchQuery.searchKey as keyof Prisma.AttributeWhereInput;
+          const key = searchQuery.searchKey as keyof Prisma.AttributeWhereInput
           where[key] = {
             [searchQuery.searchType || ESearchType.contains]:
               searchQuery.searchStr,
-          } as never;
+          } as never
         }
 
-        const orderBy = getOrderBy(orderQuery);
+        const orderBy = getOrderBy(orderQuery)
 
         const data = await prisma.attribute.findMany({
           where,
           orderBy,
           include: {
-            attributeValues: {
-              orderBy:
-                orderQuery?.orderKey === "displayOrder"
-                  ? {
-                      displayOrder: orderQuery?.orderType,
-                    }
-                  : {},
-            },
+            attributeValues: true,
           },
-        });
+        })
 
-        return AppResponse.json({ status: 200, data });
+        return AppResponse.json({ status: 200, data })
       }
     )
   )
-);
+)
 
 export const POST = withValidateFieldHandler(
   null,
@@ -67,7 +60,7 @@ export const POST = withValidateFieldHandler(
         action: EPermissionAction.CREATE,
       },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
-        const { name, slug, type, attributeValues } = ctx.bodyParse!;
+        const { name, slug, type, attributeValues } = ctx.bodyParse!
 
         const exists = await prisma.attribute.findFirst({
           where: {
@@ -80,19 +73,19 @@ export const POST = withValidateFieldHandler(
               },
             ],
           },
-        });
+        })
         if (exists) {
           if (exists.name === name) {
             return AppError.json({
               status: AppStatusCode.EXISTING,
               message: "Name already exist",
-            });
+            })
           }
           if (exists.slug === slug) {
             return AppError.json({
               status: AppStatusCode.EXISTING,
               message: "Slug already exist",
-            });
+            })
           }
         }
 
@@ -100,7 +93,7 @@ export const POST = withValidateFieldHandler(
           name,
           slug,
           type,
-        };
+        }
 
         if (attributeValues?.length) {
           objCreate.attributeValues = {
@@ -111,18 +104,18 @@ export const POST = withValidateFieldHandler(
                 displayOrder: atv.displayOrder,
               })),
             },
-          };
+          }
         }
 
         const created = await prisma.attribute.create({
           data: objCreate,
-        });
+        })
 
-        return AppResponse.json({ status: 200, data: created });
+        return AppResponse.json({ status: 200, data: created })
       }
     )
   )
-);
+)
 
 export const DELETE = withValidateFieldHandler(
   null,
@@ -137,9 +130,9 @@ export const DELETE = withValidateFieldHandler(
       async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
         const res = await prisma.attribute.deleteMany({
           where: { id: { in: ctx.bodyParse!.ids } },
-        });
-        return AppResponse.json({ status: 200, data: res.count });
+        })
+        return AppResponse.json({ status: 200, data: res.count })
       }
     )
   )
-);
+)

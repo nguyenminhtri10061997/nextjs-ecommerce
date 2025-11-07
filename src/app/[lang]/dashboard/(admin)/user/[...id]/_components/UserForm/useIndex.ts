@@ -7,6 +7,9 @@ import { output } from "zod/v4"
 
 export type FormInputs = output<typeof PatchBodyDTO> & {
   newPasswordConfirm: string
+  account: {
+    accessTokenVersion: number
+  }
 }
 
 export default function useIndex() {

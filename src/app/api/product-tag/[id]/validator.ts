@@ -8,7 +8,7 @@ export const IdParamsDTO = z.object({
 export const PatchBodyDTO = z.object({
   code: z.string().min(1).optional(),
   name: z.string().min(1).optional(),
-  slug: z.string().min(1).optional(),
+  slug: z.string().min(1).nullable().optional(),
   description: z.string().nullable().optional(),
   expiredAfterDays: z.number().nonnegative().nullable().optional(),
   displayType: z.enum(ETagDisplayType).optional(),

@@ -1,13 +1,13 @@
-import { AppResponse } from "@/common/server/appResponse";
-import { AppError } from "@/common/server/appError";
-import { AppStatusCode } from "@/common/server/statusCode";
-import prisma from "@/lib/prisma";
-import { THofContext } from "@/app/api/_lib/HOF/type";
-import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField";
-import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/app/api/_lib/HOF/withVerifyCanDoAction";
-import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
-import { IdParamsDTO, PatchBodyDTO } from "./validator";
+import { THofContext } from "@/app/api/_lib/HOF/type"
+import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField"
+import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken"
+import { withVerifyCanDoAction } from "@/app/api/_lib/HOF/withVerifyCanDoAction"
+import { AppError } from "@/common/server/appError"
+import { AppResponse } from "@/common/server/appResponse"
+import { AppStatusCode } from "@/common/server/statusCode"
+import prisma from "@/lib/prisma"
+import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client"
+import { IdParamsDTO, PatchBodyDTO } from "./validator"
 
 export const GET = withValidateFieldHandler(
   IdParamsDTO,
@@ -29,17 +29,17 @@ export const GET = withValidateFieldHandler(
               },
             },
           },
-        });
+        })
 
         if (!data) {
-          return AppError.json({ status: 404, message: "Option not found" });
+          return AppError.json({ status: 404, message: "Option not found" })
         }
 
-        return AppResponse.json({ status: 200, data });
+        return AppResponse.json({ status: 200, data })
       }
     )
   )
-);
+)
 
 export const PATCH = withValidateFieldHandler(
   IdParamsDTO,
@@ -55,18 +55,19 @@ export const PATCH = withValidateFieldHandler(
         _,
         ctx: THofContext<typeof IdParamsDTO, never, typeof PatchBodyDTO>
       ) => {
-        const { id } = ctx.paramParse!;
-        const { name, slug, optionItems } = ctx.bodyParse!;
+        const { id } = ctx.paramParse!
+        const { bodyParse } = ctx
+        const { name, slug, optionItems } = bodyParse!
 
         const existing = await prisma.option.findUnique({
           where: { id },
           include: { optionItems: true },
-        });
+        })
         if (!existing) {
           return AppError.json({
             status: AppStatusCode.NOT_FOUND,
             message: "Option not found",
-          });
+          })
         }
 
         if (name || slug) {
@@ -84,19 +85,19 @@ export const PATCH = withValidateFieldHandler(
                 },
               ],
             },
-          });
+          })
           if (exists) {
             if (exists.name === name) {
               return AppError.json({
                 status: AppStatusCode.EXISTING,
                 message: "Name already exist",
-              });
+              })
             }
             if (exists.slug === slug) {
               return AppError.json({
                 status: AppStatusCode.EXISTING,
                 message: "Slug already exist",
-              });
+              })
             }
           }
         }
@@ -104,21 +105,21 @@ export const PATCH = withValidateFieldHandler(
         const objUpdate: Prisma.OptionUpdateInput = {
           name,
           slug,
-        };
+          displayOrder: bodyParse?.displayOrder,
+          isActive: bodyParse?.isActive,
+        }
 
         if (optionItems) {
-          const existingIds = new Set(
-            existing.optionItems.map((v) => v.id)
-          );
+          const existingIds = new Set(existing.optionItems.map((v) => v.id))
           const incomingIds = new Set(
             optionItems.map((v) => v.id).filter(Boolean)
-          );
+          )
 
           const toDelete = Array.from(existingIds).filter(
             (id) => !incomingIds.has(id!)
-          );
-          const toUpdate = optionItems.filter((v) => v.id);
-          const toCreate = optionItems.filter((v) => !v.id);
+          )
+          const toUpdate = optionItems.filter((v) => v.id)
+          const toCreate = optionItems.filter((v) => !v.id)
 
           objUpdate.optionItems = {
             deleteMany: { id: { in: toDelete } },
@@ -130,21 +131,24 @@ export const PATCH = withValidateFieldHandler(
                 displayOrder: v.displayOrder,
               },
             })),
-            create: toCreate.map((v) => ({
-              name: v.name,
-              slug: v.slug,
-              displayOrder: v.displayOrder,
-            })),
-          };
+            create: toCreate.map(
+              (v) =>
+                ({
+                  name: v.name,
+                  slug: v.slug,
+                  displayOrder: v.displayOrder,
+                } as Prisma.OptionItemCreateWithoutOptionInput)
+            ),
+          }
         }
 
         const updated = await prisma.option.update({
           where: { id },
           data: objUpdate,
-        });
+        })
 
-        return AppResponse.json({ status: 200, data: updated });
+        return AppResponse.json({ status: 200, data: updated })
       }
     )
   )
-);
+)

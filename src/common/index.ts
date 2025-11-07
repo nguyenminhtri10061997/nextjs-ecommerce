@@ -1,6 +1,4 @@
 import { AppEnvironment } from "@/constants/environment/appEnvironment";
-import { ChangeEvent } from "react";
-import { ControllerRenderProps } from "react-hook-form";
 
 export const getSegments = (pathname: string) => {
   return pathname.substring(6).split("/").filter(Boolean);
@@ -24,26 +22,6 @@ export const getBaseFileName = (fileName: string) => {
   return baseName;
 };
 
-export function alphaToHex(a?: number) {
-  if (a == null) {
-    return "";
-  }
-  const hex = Math.round(a * 255)
-    .toString(16)
-    .padStart(2, "0");
-  return hex;
-}
-
-export const handleNumberChange = (
-  e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  onChange: ControllerRenderProps["onChange"]
-) => {
-  const val = e.target.value;
-  if (/^\d*$/.test(val)) {
-    onChange(val === "" ? "" : Number(val));
-  }
-};
-
 export function generateCombinations<T>(arrays: Array<T[]>) {
   return arrays.reduce<T[][]>(
     (acc, curr) => {
@@ -57,13 +35,6 @@ export function generateCombinations<T>(arrays: Array<T[]>) {
     },
     [[]]
   );
-}
-
-export function getUrlFromPromiseSettledResult<T>(pr: PromiseSettledResult<T>) {
-  if (pr.status === "fulfilled") {
-    return pr.value;
-  }
-  return null;
 }
 
 export function slugifyFilename(filename: string) {

@@ -6,11 +6,11 @@ export const IdParamsDTO = z.object({
 
 export const PatchBodyDTO = z.object({
   name: z.string().optional(),
-  slug: z.string().optional(),
+  slug: z.string().nullable().optional(),
   seoTitle: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   seoDescription: z.string().nullable().optional(),
   displayOrder: z.number().nonnegative().nullable().optional(),
   productCategoryParentId: z.uuid().nullable().optional(),
-  isActive: z.boolean(),
+  isActive: z.boolean().optional(),
 });

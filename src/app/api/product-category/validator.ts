@@ -9,7 +9,7 @@ export const GetQueryDTO = z.object({
 
 export const PostCreateBodyDTO = z.object({
   name: z.string(),
-  slug: z.string(),
+  slug: z.string().nullable().optional(),
   seoTitle: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
   seoDescription: z.string().nullable().optional(),

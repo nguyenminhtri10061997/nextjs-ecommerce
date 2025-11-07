@@ -19,7 +19,7 @@ export const GET = withVerifyAccessToken(async (_: NextRequest, ctx) => {
       select: {
         id: true,
         name: true,
-        permission: {
+        permissions: {
           select: {
             action: true,
             resource: true,
@@ -31,7 +31,7 @@ export const GET = withVerifyAccessToken(async (_: NextRequest, ctx) => {
 
   const permissionHash: { [key in EPermissionResource]?: EPermissionAction[] } =
     {}
-  role?.permission.forEach((i) => {
+  role?.permissions.forEach((i) => {
     if (!permissionHash[i.resource as EPermissionResource]) {
       permissionHash[i.resource as EPermissionResource] = []
     }

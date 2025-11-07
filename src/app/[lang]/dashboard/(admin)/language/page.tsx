@@ -139,7 +139,7 @@ export default function Page() {
       }}
     >
       <Box sx={{ flexShrink: 0 }}>
-        <Typography variant="h4">Product Category Page</Typography>
+        <Typography variant="h4">Language Page</Typography>
       </Box>
       <Box
         sx={{

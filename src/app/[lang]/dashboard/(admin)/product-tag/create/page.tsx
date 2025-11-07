@@ -16,7 +16,7 @@ export default function Page() {
 
   return (
     <Box>
-      <Typography variant="h4">Create Product Category</Typography>
+      <Typography variant="h4">Create Product Tag</Typography>
 
       <Box
         component="form"

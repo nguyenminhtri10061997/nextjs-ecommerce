@@ -32,8 +32,6 @@ export class AuthService {
     const account = await prisma.account.findUnique({
       where: {
         username: data.username,
-        isBanned: false,
-        isBlocked: false,
         type,
       },
     });

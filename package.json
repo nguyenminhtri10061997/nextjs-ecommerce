@@ -10,6 +10,8 @@
     "migrate": "npx prisma migrate dev --name init",
     "migrate-reset": "npx prisma migrate reset",
     "prisma-generate": "npx prisma generate",
+    "prisma-generate-client": "npx prisma generate --generator client",
+    "prisma-generate-zod": "npx prisma generate --generator zod",
     "dict-type-generate": "npx quicktype --lang typescript --src ./src/dictionaries/en-US.json -o ./src/types/dictTypeGenerated.ts --just-types --alphabetize-properties",
     "locales-json-file-generate": "tsx src/generate/locales.ts",
     "prisma-db-seed": "prisma db seed"
@@ -56,7 +58,8 @@
     "react-hook-form": "^7.57.0",
     "reflect-metadata": "^0.2.2",
     "uuid": "^11.1.0",
-    "zod": "^3.25.61"
+    "zod": "^4.1.12",
+    "zod-prisma-types": "^3.3.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -1,7 +1,7 @@
 "use client";
 
-import { getS3ImgFullUrl, handleNumberChange, textToSlug } from "@/common";
-import { handleDragEnd } from "@/common/client";
+import { getS3ImgFullUrl, textToSlug } from "@/common";
+import { handleDragEnd, handleNumberChange } from "@/common/client";
 import AppImageUpload from "@/components/customComponents/AppImageUpload";
 import {
   closestCenter,

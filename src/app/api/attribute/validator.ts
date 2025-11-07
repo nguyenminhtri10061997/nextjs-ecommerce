@@ -16,7 +16,7 @@ export const GetQueryDTO = z.object({
 
 const AttributeValueDTO = z.object({
   name: z.string().min(1),
-  slug: z.string().min(1),
+  slug: z.string().min(1).nullable().optional(),
   displayOrder: z.number().nonnegative().nullable().optional(),
 });
 

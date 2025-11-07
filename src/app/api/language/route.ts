@@ -30,7 +30,7 @@ export const GET = withValidateFieldHandler(
           const key = searchQuery.searchKey as keyof Prisma.LanguageWhereInput;
           where[key] = {
             [searchQuery.searchType || ESearchType.equals]: searchQuery.searchStr,
-          } as any;
+          } as never;
         }
 
         const [data] = await Promise.all([
@@ -70,7 +70,7 @@ export const POST = withValidateFieldHandler(
         }
 
         const res = await prisma.language.create({
-          data: { name, code, isActive, },
+          data: { name, code, isActive, isDefault },
         });
 
         return AppResponse.json({ status: 200, data: res });

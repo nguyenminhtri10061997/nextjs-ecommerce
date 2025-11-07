@@ -23,11 +23,7 @@ export const GET = withValidateFieldHandler(
         const data = await prisma.attribute.findUnique({
           where: { id: ctx.paramParse!.id },
           include: {
-            attributeValues: {
-              orderBy: {
-                displayOrder: "asc",
-              },
-            },
+            attributeValues: true,
           },
         });
 

@@ -1,14 +1,17 @@
-import { ProductTag } from "@prisma/client";
-import { useForm } from "react-hook-form";
+import { PostCreateBodyDTO } from "@/app/api/product-tag/validator"
+import useAppUseForm from "@/constants/reactHookForm"
+import { output } from "zod/v4"
 
-export type TForm = Omit<ProductTag, "id" | "createdAt" | "updatedAt">;
+export type TForm = output<typeof PostCreateBodyDTO>
 
 export default function useIndex() {
-  const form = useForm<TForm>({
-    mode: "onBlur",
-  });
+  const form = useAppUseForm<TForm>({
+    defaultValues: {
+      isActive: true,
+    }
+  })
 
   return {
     form,
-  };
+  }
 }

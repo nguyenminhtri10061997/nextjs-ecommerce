@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState } from "react"
 
-export default () => {
-    const [isOpenConfirm, setIsOpenConfirm] = useState(false);
-    return {
-        isOpenConfirm, setIsOpenConfirm
-    }
+export default function useAppConfirmDialog() {
+  const [isOpenConfirm, setIsOpenConfirm] = useState(false)
+  return {
+    isOpenConfirm,
+    setIsOpenConfirm,
+  }
 }

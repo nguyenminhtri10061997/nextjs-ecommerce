@@ -10,7 +10,7 @@ export const GetQueryDTO = z.object({
 export const PostCreateBodyDTO = z.object({
   code: z.string().min(1),
   name: z.string().min(1),
-  slug: z.string().min(1),
+  slug: z.string().min(1).nullable().optional(),
   description: z.string().nullable().optional(),
   expiredAfterDays: z.number().nonnegative().optional().nullable(),
   displayType: z.enum(ETagDisplayType),

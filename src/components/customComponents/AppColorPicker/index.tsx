@@ -1,4 +1,4 @@
-import { alphaToHex } from "@/common";
+import { alphaToHex } from "@/common/client";
 import { Button, DialogActions, Popover } from "@mui/material";
 import React, { useState, useTransition } from "react";
 import { ChromePicker, ColorResult } from "react-color";

@@ -1,4 +1,4 @@
-import { handleNumberChange } from "@/common";
+import { handleNumberChange } from "@/common/client";
 import AppSortableItem from "@/components/customComponents/AppSortableItem";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import { IconButton, MenuItem, TextField } from "@mui/material";

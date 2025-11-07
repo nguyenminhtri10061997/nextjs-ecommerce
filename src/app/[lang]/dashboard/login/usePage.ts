@@ -3,7 +3,9 @@ import { useAlertContext } from "@/components/hooks/useAlertContext"
 import useLoadingWhenRoutePush from "@/components/hooks/useLoadingWhenRoutePush"
 import useAppUseForm from "@/constants/reactHookForm"
 import { postLogin } from "@/lib/reactQuery/auth"
+import { TAppResponseBody } from "@/types/api/common"
 import { useMutation } from "@tanstack/react-query"
+import { AxiosError } from "axios"
 import { SubmitHandler } from "react-hook-form"
 
 type Inputs = {
@@ -26,8 +28,12 @@ export const usePage = () => {
     onSuccess: () => {
       replace("/dashboard")
     },
-    onError: () => {
-      showAlert("Tài khoản hoặc mật khẩu bị sai", "error")
+    onError: (err: AxiosError<TAppResponseBody>) => {
+      let message = "Wrong username or password"
+      if (err.status === 402) {
+        message = err.response?.data?.message || message
+      }
+      showAlert(message, "error")
     },
   })
 

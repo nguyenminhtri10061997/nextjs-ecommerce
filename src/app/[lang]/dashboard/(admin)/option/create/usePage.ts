@@ -9,7 +9,7 @@ import { TAppResponseBody } from "@/types/api/common";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/optionForm/useIndex";
+import { TForm } from "./_components/optionForm/useIndex";
 
 export const usePage = () => {
   const { showAlert } = useAlertContext();
@@ -31,7 +31,7 @@ export const usePage = () => {
   const handleFormSubmit: SubmitHandler<TForm> = async (data) => {
     mutation.mutate({
       ...data,
-      optionItems: data.optionItems.map((i, idx) => ({
+      optionItems: data.optionItems?.map((i, idx) => ({
         ...i,
         displayOrder: idx,
       })),

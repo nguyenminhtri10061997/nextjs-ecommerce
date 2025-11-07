@@ -1,4 +1,4 @@
-import { handleNumberChange } from "@/common";
+import { handleNumberChange } from "@/common/client";
 import AppSortableItem from "@/components/customComponents/AppSortableItem";
 import {
   closestCenter,

@@ -1,7 +1,7 @@
-"use client";
+"use client"
 
-import { textToSlug } from "@/common";
-import AppSortableItem from "@/components/customComponents/AppRowSortable";
+import { textToSlug } from "@/common"
+import AppSortableItem from "@/components/customComponents/AppRowSortable"
 import {
   closestCenter,
   DndContext,
@@ -10,42 +10,43 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
+} from "@dnd-kit/core"
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+} from "@dnd-kit/sortable"
+import AddIcon from "@mui/icons-material/Add"
+import DeleteIcon from "@mui/icons-material/Delete"
 import {
   Button,
-  Checkbox,
-  FormControlLabel,
   IconButton,
+  MenuItem,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   Toolbar,
-} from "@mui/material";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import { useEffect } from "react";
-import { Controller, UseFormReturn } from "react-hook-form";
-import useIndex, { TForm } from "./useIndex";
+} from "@mui/material"
+import Stack from "@mui/material/Stack"
+import TextField from "@mui/material/TextField"
+import { EAttributeType } from "@prisma/client"
+import { useEffect } from "react"
+import { Controller, UseFormReturn } from "react-hook-form"
+import useIndex, { TForm } from "./useIndex"
+import { handleNumberChange } from "@/common/client"
 
 type TProps = {
-  onGetForm: (form: UseFormReturn<TForm>) => void;
-};
+  onGetForm: (form: UseFormReturn<TForm>) => void
+}
 export default function Index(props: TProps) {
   const {
     form,
-    optionValueArrField,
-    handleRemoveOpItemValue,
-    handleAddOpItemValue,
-    handleChangeOpItemValue,
-  } = useIndex();
+    attributeValueArrField,
+    handleRemoveAttValue,
+    handleAddAttValue,
+    handleChangeAttValue,
+  } = useIndex()
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -56,11 +57,11 @@ export default function Index(props: TProps) {
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
-  );
+  )
 
   useEffect(() => {
-    props.onGetForm(form);
-  }, [form, props]);
+    props.onGetForm(form)
+  }, [form, props])
 
   useEffect(() => {
     const callback = form.subscribe({
@@ -69,35 +70,35 @@ export default function Index(props: TProps) {
         values: true,
       },
       callback: ({ values }) => {
-        form.setValue("slug", textToSlug(values.name));
+        form.setValue("slug", textToSlug(values.name))
       },
-    });
+    })
 
-    return () => callback();
-  }, [form]);
+    return () => callback()
+  }, [form])
 
-  const { control } = form;
+  const { control } = form
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+    const { active, over } = event
 
     if (active.id !== over?.id) {
-      const optionItemsFromForm = form.getValues("optionItems");
-      const oldIndex = optionItemsFromForm.findIndex(
+      const attributeValuesFromForm = form.getValues("attributeValues")
+      const oldIndex = attributeValuesFromForm.findIndex(
         (i) => i.idDnD === active.id
-      );
-      const newIndex = optionItemsFromForm.findIndex(
+      )
+      const newIndex = attributeValuesFromForm.findIndex(
         (i) => i.idDnD === over?.id
-      );
+      )
 
-      const optionItemsMoved = arrayMove(
-        optionItemsFromForm,
+      const attributeValuesMoved = arrayMove(
+        attributeValuesFromForm,
         oldIndex,
         newIndex
-      );
-      form.setValue("optionItems", optionItemsMoved);
+      )
+      form.setValue("attributeValues", attributeValuesMoved)
     }
-  };
+  }
   return (
     <Stack direction={"column"} gap={2}>
       <Controller
@@ -122,7 +123,6 @@ export default function Index(props: TProps) {
       <Controller
         name="slug"
         control={control}
-        rules={{ required: "Slug is required" }}
         render={({ field, fieldState }) => (
           <TextField
             label="Slug"
@@ -139,6 +139,32 @@ export default function Index(props: TProps) {
       />
 
       <Controller
+        name={"type"}
+        control={control}
+        rules={{ required: "Type is required" }}
+        render={({ field, fieldState }) => (
+          <TextField
+            label="Type"
+            select
+            required
+            error={!!fieldState.error}
+            helperText={fieldState.error?.message}
+            value={field.value ?? ""}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+          >
+            <MenuItem value={EAttributeType.RADIO}>
+              {EAttributeType.RADIO}
+            </MenuItem>
+            <MenuItem value={EAttributeType.COLOR}>
+              {EAttributeType.COLOR}
+            </MenuItem>
+          </TextField>
+        )}
+      />
+
+      <Controller
         name="displayOrder"
         control={control}
         render={({ field, fieldState }) => (
@@ -149,12 +175,7 @@ export default function Index(props: TProps) {
             error={!!fieldState.error}
             helperText={fieldState.error?.message}
             value={field.value ?? ""}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (/^\d*$/.test(val)) {
-                field.onChange(val === "" ? "" : Number(val));
-              }
-            }}
+            onChange={(e) => handleNumberChange(e, field.onChange)}
             onBlur={field.onBlur}
             inputRef={field.ref}
             slotProps={{
@@ -167,29 +188,13 @@ export default function Index(props: TProps) {
         )}
       />
 
-      <Controller
-        name="isActive"
-        control={control}
-        render={({ field }) => (
-          <FormControlLabel
-            label="Is Active"
-            control={
-              <Checkbox
-                checked={field.value ?? false}
-                onChange={field.onChange}
-              />
-            }
-          />
-        )}
-      />
-
       <Toolbar disableGutters>
         <Button
-          onClick={handleAddOpItemValue}
+          onClick={handleAddAttValue}
           variant="contained"
           startIcon={<AddIcon />}
         >
-          Add Option Item
+          Add Attribute
         </Button>
       </Toolbar>
       <TableContainer>
@@ -199,15 +204,15 @@ export default function Index(props: TProps) {
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={optionValueArrField.fields.map((i) => i.idDnD)}
+            items={attributeValueArrField.fields.map((i) => i.idDnD)}
           >
-            <Table>
+            <Table sx={{ minWidth: 650 }}>
               <TableBody>
-                {optionValueArrField.fields.map((i, idx) => (
+                {attributeValueArrField.fields.map((i, idx) => (
                   <AppSortableItem key={i.idDnD} id={i.idDnD}>
                     <TableCell>
                       <Controller
-                        name={`optionItems.${idx}.name`}
+                        name={`attributeValues.${idx}.name`}
                         control={control}
                         rules={{ required: "Name is required" }}
                         render={({ field, fieldState }) => (
@@ -216,9 +221,9 @@ export default function Index(props: TProps) {
                             fullWidth
                             required
                             error={!!fieldState.error}
-                            helperText={fieldState.error?.message}
+                            helperText={fieldState.error?.message || " "}
                             value={field.value ?? ""}
-                            onChange={handleChangeOpItemValue(idx, field.onChange)}
+                            onChange={handleChangeAttValue(idx, field.onChange)}
                             onBlur={field.onBlur}
                             inputRef={field.ref}
                           />
@@ -227,16 +232,15 @@ export default function Index(props: TProps) {
                     </TableCell>
                     <TableCell>
                       <Controller
-                        name={`optionItems.${idx}.slug`}
+                        name={`attributeValues.${idx}.slug`}
                         control={control}
-                        rules={{ required: "Slug is required" }}
                         render={({ field, fieldState }) => (
                           <TextField
                             label="Slug"
                             fullWidth
                             required
                             error={!!fieldState.error}
-                            helperText={fieldState.error?.message}
+                            helperText={fieldState.error?.message || " "}
                             value={field.value ?? ""}
                             onChange={field.onChange}
                             onBlur={field.onBlur}
@@ -246,25 +250,8 @@ export default function Index(props: TProps) {
                       />
                     </TableCell>
                     <TableCell>
-                      <Controller
-                        name={`optionItems.${idx}.isActive`}
-                        control={control}
-                        render={({ field }) => (
-                          <FormControlLabel
-                            label="Is Active"
-                            control={
-                              <Checkbox
-                                checked={field.value ?? false}
-                                onChange={field.onChange}
-                              />
-                            }
-                          />
-                        )}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <IconButton onClick={handleRemoveOpItemValue(idx)}>
-                        <DeleteIcon color="error" />
+                      <IconButton onClick={handleRemoveAttValue(idx)}>
+                        <DeleteIcon />
                       </IconButton>
                     </TableCell>
                   </AppSortableItem>
@@ -275,5 +262,5 @@ export default function Index(props: TProps) {
         </DndContext>
       </TableContainer>
     </Stack>
-  );
+  )
 }

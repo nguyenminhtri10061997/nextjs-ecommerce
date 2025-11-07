@@ -1,10 +1,13 @@
-import { getSignedUrl, uploadFileToS3ByGetSignedUrl } from "@/lib/reactQuery/file";
-import { calculateChecksumSHA256, slugifyFilename } from "@/common";
-import { AppEnvironment } from "@/environment/appEnvironment";
-import { useAlertContext } from "@/components/hooks/useAlertContext";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import { calculateChecksumSHA256, slugifyFilename } from "@/common"
+import { useAlertContext } from "@/components/hooks/useAlertContext"
+import { AppEnvironment } from "@/constants/environment/appEnvironment"
+import {
+  getSignedUrl,
+  uploadFileToS3ByGetSignedUrl,
+} from "@/lib/reactQuery/file"
+import DeleteIcon from "@mui/icons-material/Delete"
+import EditIcon from "@mui/icons-material/Edit"
+import VisibilityIcon from "@mui/icons-material/Visibility"
 import {
   Box,
   CircularProgress,
@@ -13,35 +16,35 @@ import {
   Modal,
   Stack,
   useTheme,
-} from "@mui/material";
-import { AxiosError } from "axios";
-import Image from "next/image";
-import React, { useMemo, useRef, useState } from "react";
-import EmptyImage from "../../../public/empty-img.svg";
+} from "@mui/material"
+import EmptyImage from "@public/empty-img.svg"
+import { AxiosError } from "axios"
+import Image from "next/image"
+import React, { useMemo, useRef, useState } from "react"
 
 type TProps = {
-  onChange?: (file: File, key?: string | null) => void;
-  onDelete?: (file?: File | null, url?: TProps["url"]) => void;
-  file?: File | null;
-  url?: string | null;
+  onChange?: (file: File, key?: string | null) => void
+  onDelete?: (file?: File | null, url?: TProps["url"]) => void
+  file?: File | null
+  url?: string | null
   /**
    * Is show delete button.
    * @default true
    */
-  showDeleteBtn?: boolean;
-  width?: number;
-  height?: number;
-  iconFontSize?: number;
-  isCallUploadWhenOnChange?: boolean;
-  onUploading?: (isUploading: boolean) => void;
-};
+  showDeleteBtn?: boolean
+  width?: number
+  height?: number
+  iconFontSize?: number
+  isCallUploadWhenOnChange?: boolean
+  onUploading?: (isUploading: boolean) => void
+}
 
 export default function AppImageUpload(props: TProps) {
-  const [modalOpen, setModalOpen] = useState(false);
-  const { showAlert } = useAlertContext();
-  const [hover, setHover] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const theme = useTheme();
+  const [modalOpen, setModalOpen] = useState(false)
+  const { showAlert } = useAlertContext()
+  const [hover, setHover] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const theme = useTheme()
   const {
     url,
     file,
@@ -53,78 +56,78 @@ export default function AppImageUpload(props: TProps) {
     iconFontSize = 20,
     isCallUploadWhenOnChange,
     onUploading,
-  } = props;
-  const inputRef = useRef<HTMLInputElement>(null);
+  } = props
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    let key;
+    const file = e.target.files?.[0]
+    let key
     if (file) {
       if (file.size > AppEnvironment.MAX_FILE_SIZE_UPLOAD * 1024 * 1024) {
         showAlert(
           `Max file size is ${AppEnvironment.MAX_FILE_SIZE_UPLOAD}MB`,
           "error"
-        );
-        return;
+        )
+        return
       }
       if (isCallUploadWhenOnChange) {
-        setLoading(true);
-        onUploading?.(true);
+        setLoading(true)
+        onUploading?.(true)
         try {
-          const checksum = await calculateChecksumSHA256(file);
+          const checksum = await calculateChecksumSHA256(file)
           const res = await getSignedUrl({
             fileName: slugifyFilename(file.name),
             contentType: file.type,
             checksumSHA256: checksum,
-          });
+          })
 
-          await uploadFileToS3ByGetSignedUrl(res.signedUrl, file, checksum);
-          key = res.key;
+          await uploadFileToS3ByGetSignedUrl(res.signedUrl, file, checksum)
+          key = res.key
         } catch (err) {
-          console.error(err);
-          let mes = "An error occurred";
+          console.error(err)
+          let mes = "An error occurred"
           if (err instanceof Error) {
-            mes = err.message;
+            mes = err.message
           }
           if (typeof err === "string") {
-            mes = err;
+            mes = err
           }
           if (err instanceof AxiosError) {
-            mes = err.response?.data?.message || "An error occurred";
+            mes = err.response?.data?.message || "An error occurred"
           }
-          showAlert(mes, "error");
+          showAlert(mes, "error")
         }
       }
-      setLoading(false);
-      onUploading?.(false);
-      onChange?.(file, key);
+      setLoading(false)
+      onUploading?.(false)
+      onChange?.(file, key)
     }
-    e.target.value = "";
-  };
+    e.target.value = ""
+  }
 
   const handleClickDelete = () => {
-    onDelete?.(file, url);
-  };
+    onDelete?.(file, url)
+  }
 
   const handleOpenModal = () => {
-    setModalOpen(true);
+    setModalOpen(true)
     setTimeout(() => {
-      setHover(false);
-    }, 200);
-  };
-  const handleCloseModal = () => setModalOpen(false);
+      setHover(false)
+    }, 200)
+  }
+  const handleCloseModal = () => setModalOpen(false)
 
   const imageUrl = useMemo(() => {
     if (file) {
-      return URL.createObjectURL(file);
+      return URL.createObjectURL(file)
     } else if (url) {
-      return url;
+      return url
     }
-  }, [file, url]);
+  }, [file, url])
 
   const handleClickEdit = () => {
-    inputRef.current?.click();
-  };
+    inputRef.current?.click()
+  }
 
   return (
     <Box
@@ -233,5 +236,5 @@ export default function AppImageUpload(props: TProps) {
         </>
       )}
     </Box>
-  );
+  )
 }

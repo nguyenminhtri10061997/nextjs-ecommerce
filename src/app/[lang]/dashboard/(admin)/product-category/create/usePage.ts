@@ -12,7 +12,7 @@ import { TAppResponseBody } from "@/types/api/common";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { SubmitHandler } from "react-hook-form";
-import { TForm } from "../_components/product-category-form/useIndex";
+import { TForm } from "./_components/detail-form/useIndex";
 
 export const usePage = () => {
   const { showAlert } = useAlertContext();

@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import BrandForm from "../_components/product-category-form";
+import DetailForm from "./_components/detail-form";
 import { usePage } from "./usePage";
 
 export default function BrandPage() {
@@ -25,7 +25,7 @@ export default function BrandPage() {
         sx={{ mt: 2 }}
         onSubmit={handleClickSubmitForm}
       >
-        <BrandForm
+        <DetailForm
           onGetForm={handleSetForm}
           editRowId={query.data?.id}
         />

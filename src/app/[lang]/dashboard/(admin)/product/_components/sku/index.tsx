@@ -1,4 +1,4 @@
-import { getS3ImgFullUrl, handleNumberChange } from "@/common";
+import { getS3ImgFullUrl } from "@/common";
 import AppImageUpload from "@/components/customComponents/AppImageUpload";
 import { Delete as DeleteIcon } from "@mui/icons-material";
 import {
@@ -19,6 +19,7 @@ import React from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
 import { TForm } from "../product-form/useIndex";
 import useIndex from "./useIndex";
+import { handleNumberChange } from "@/common/client";
 
 type TProps = {
   idx: number;

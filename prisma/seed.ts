@@ -88,6 +88,13 @@ export async function main() {
     },
   ]
 
+  const languages: Prisma.LanguageCreateManyInput[] = [
+    {
+      code: "en-US",
+      name: "English",
+    },
+  ]
+
   const [adminRoleDb] = await Promise.all([
     prisma.role.upsert({
       where: {
@@ -95,7 +102,7 @@ export async function main() {
       },
       create: {
         name: "admin",
-        permission: {
+        permissions: {
           connectOrCreate: allPer.map((per) => ({
             where: {
               action_resource: {
@@ -111,7 +118,7 @@ export async function main() {
         },
       },
       update: {
-        permission: {
+        permissions: {
           connectOrCreate: allPer.map((per) => ({
             where: {
               action_resource: {
@@ -127,7 +134,7 @@ export async function main() {
         },
       },
       include: {
-        permission: true,
+        permissions: true,
       },
     }),
     prisma.user.createMany({
@@ -136,6 +143,10 @@ export async function main() {
     }),
     prisma.attribute.createMany({
       data: attributes,
+      skipDuplicates: true,
+    }),
+    prisma.language.createMany({
+      data: languages,
       skipDuplicates: true,
     }),
   ])

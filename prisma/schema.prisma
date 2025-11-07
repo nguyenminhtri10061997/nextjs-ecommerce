@@ -9,9 +9,23 @@ generator client {
 
 // for FE if use microservice
 // generator typescriptInterfaces {
-//   provider = "prisma-generator-typescript-interfaces"
-//   output   = "../shared-types/"
+//     provider = "prisma-generator-typescript-interfaces"
+//     output   = "../shared-types/"
 // }
+
+generator zod {
+    provider                 = "zod-prisma-types"
+    output                   = "./generated/zod"
+    writeBarrelFiles         = false // default is true
+    createInputTypes         = false // default is true
+    // createModelTypes                 = false // default is true
+    addInputTypeValidation   = false // default is true
+    addIncludeType           = false // default is true
+    addSelectType            = false // default is true
+    validateWhereUniqueInput = false // default is true
+    useDefaultValidators     = false // default is true
+    coerceDate               = false // default is true
+}
 
 // AUTH SERVICE
 
@@ -49,8 +63,8 @@ model User {
     fullName      String
     type          EUserOrAccountType
     account       Account?
-    createdAt     DateTime           @default(now())
-    updatedAt     DateTime           @default(now()) @updatedAt
+    createdAt     DateTime           @default(now()) /// @zod.custom.omit([model])
+    updatedAt     DateTime           @default(now()) @updatedAt /// @zod.custom.omit([model])
     productRating ProductRating[]
 }
 
@@ -64,8 +78,8 @@ model Account {
     isBlocked          Boolean            @default(false)
     userId             String             @unique
     roleId             String
-    createdAt          DateTime           @default(now())
-    updatedAt          DateTime           @default(now()) @updatedAt
+    createdAt          DateTime           @default(now()) /// @zod.custom.omit([model])
+    updatedAt          DateTime           @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     role         Role           @relation(fields: [roleId], references: [id])
     user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -76,19 +90,19 @@ model Role {
     id          String   @id @default(uuid())
     name        String   @unique
     description String?
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @default(now()) @updatedAt
+    createdAt   DateTime @default(now()) /// @zod.custom.omit([model])
+    updatedAt   DateTime @default(now()) @updatedAt /// @zod.custom.omit([model])
 
-    accounts   Account[]
-    permission Permission[]
+    accounts    Account[]
+    permissions Permission[]
 }
 
 model Permission {
     id        String              @id @default(uuid())
     resource  EPermissionResource
     action    EPermissionAction
-    createdAt DateTime            @default(now())
-    updatedAt DateTime            @default(now()) @updatedAt
+    createdAt DateTime            @default(now()) /// @zod.custom.omit([model])
+    updatedAt DateTime            @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     role Role[]
 
@@ -102,8 +116,8 @@ model RefreshToken {
     ipAddress String
     userAgent String
     accountId String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
+    createdAt DateTime @default(now()) /// @zod.custom.omit([model])
+    updatedAt DateTime @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     account Account @relation(fields: [accountId], references: [id])
 }
@@ -192,7 +206,7 @@ model Product {
     description       String?
     seoDescription    String?
     detail            String?
-    mainImage         String?
+    mainImage         String
     listImages        String[]     @default([])
     viewCount         Int          @default(0)
     soldCount         Int          @default(0)
@@ -200,8 +214,8 @@ model Product {
     avgRateBySystem   Float?
     avgRateByAdmin    Float?
     isActive          Boolean      @default(true)
-    createdAt         DateTime     @default(now())
-    updatedAt         DateTime     @default(now()) @updatedAt
+    createdAt         DateTime     @default(now()) /// @zod.custom.omit([model])
+    updatedAt         DateTime     @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     attributes      ProductAttribute[]
     skus            ProductSku[]
@@ -219,8 +233,8 @@ model Brand {
     slug      String?   @unique
     logoImage String?
     isActive  Boolean   @default(true)
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+    createdAt DateTime  @default(now()) /// @zod.custom.omit([model])
+    updatedAt DateTime  @updatedAt /// @zod.custom.omit([model])
     products  Product[]
 }
 
@@ -230,8 +244,8 @@ model Language {
     name      String   @unique
     isActive  Boolean  @default(true)
     isDefault Boolean? @default(false)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
+    createdAt DateTime @default(now()) /// @zod.custom.omit([model])
+    updatedAt DateTime @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     productCategoryTranslations ProductCategoryTranslation[]
     productTranslations         ProductTranslation[]
@@ -249,8 +263,8 @@ model ProductCategory {
     ProductCategoryParent   ProductCategory?  @relation("ProductCategories", fields: [productCategoryParentId], references: [id])
     ProductCategoryChilds   ProductCategory[] @relation("ProductCategories")
     isActive                Boolean           @default(true)
-    createdAt               DateTime          @default(now())
-    updatedAt               DateTime          @default(now()) @updatedAt
+    createdAt               DateTime          @default(now()) /// @zod.custom.omit([model])
+    updatedAt               DateTime          @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     products     Product[]
     translations ProductCategoryTranslation[]
@@ -264,8 +278,8 @@ model ProductCategoryTranslation {
     seoTitle          String
     description       String
     seoDescription    String
-    createdAt         DateTime @default(now())
-    updatedAt         DateTime @default(now()) @updatedAt
+    createdAt         DateTime @default(now()) /// @zod.custom.omit([model])
+    updatedAt         DateTime @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     productCategory ProductCategory @relation(fields: [productCategoryId], references: [id])
     language        Language        @relation(fields: [languageId], references: [id])
@@ -281,8 +295,8 @@ model ProductTranslation {
     description    String?
     seoDescription String?
     detail         String?
-    createdAt      DateTime @default(now())
-    updatedAt      DateTime @default(now()) @updatedAt
+    createdAt      DateTime @default(now()) /// @zod.custom.omit([model])
+    updatedAt      DateTime @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     product  Product  @relation(fields: [productId], references: [id])
     language Language @relation(fields: [languageId], references: [id])
@@ -292,19 +306,21 @@ model Attribute {
     id               String             @id @default(uuid())
     name             String             @unique
     slug             String?            @unique
+    displayOrder     Int?
     type             EAttributeType
-    createdAt        DateTime           @default(now())
-    updatedAt        DateTime           @default(now()) @updatedAt
+    createdAt        DateTime           @default(now()) /// @zod.custom.omit([model])
+    updatedAt        DateTime           @default(now()) @updatedAt /// @zod.custom.omit([model])
     attributeValues  AttributeValue[]
     ProductAttribute ProductAttribute[]
 }
 
 model AttributeValue {
-    id        String   @id @default(uuid())
-    name      String
-    slug      String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @default(now()) @updatedAt
+    id           String   @id @default(uuid())
+    name         String
+    slug         String?
+    displayOrder Int?
+    createdAt    DateTime @default(now()) /// @zod.custom.omit([model])
+    updatedAt    DateTime @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     attributeId           String
     attribute             Attribute               @relation(fields: [attributeId], references: [id])
@@ -320,8 +336,8 @@ model ProductAttribute {
     status              EAttributeStatus
     isUsedForVariations Boolean?
     displayOrder        Int?
-    createdAt           DateTime         @default(now())
-    updatedAt           DateTime         @default(now()) @updatedAt
+    createdAt           DateTime         @default(now()) /// @zod.custom.omit([model])
+    updatedAt           DateTime         @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     product                  Product                    @relation(fields: [productId], references: [id])
     attribute                Attribute                  @relation(fields: [attributeId], references: [id])
@@ -336,9 +352,8 @@ model ProductAttributeValue {
     image              String?
     displayOrder       Int?
     status             EAttributeValueStatus
-    isDefault          Boolean?
-    createdAt          DateTime              @default(now())
-    updatedAt          DateTime              @default(now()) @updatedAt
+    createdAt          DateTime              @default(now()) /// @zod.custom.omit([model])
+    updatedAt          DateTime              @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     productAttribute         ProductAttribute           @relation(fields: [productAttributeId], references: [id])
     attributeValue           AttributeValue             @relation(fields: [attributeValueId], references: [id])
@@ -364,9 +379,10 @@ model ProductSku {
     height       Float?
     length       Float?
     displayOrder Int?
+    isDefault    Boolean?
     status       ESkuStatus
-    createdAt    DateTime      @default(now())
-    updatedAt    DateTime      @default(now()) @updatedAt
+    createdAt    DateTime      @default(now()) /// @zod.custom.omit([model])
+    updatedAt    DateTime      @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     product            Product                    @relation(fields: [productId], references: [id])
     skuAttributeValues ProductSkuAttributeValue[]
@@ -378,8 +394,8 @@ model ProductSkuAttributeValue {
     productAttributeId      String
     productAttributeValueId String
     label                   String? // for render UI
-    createdAt               DateTime @default(now())
-    updatedAt               DateTime @default(now()) @updatedAt
+    createdAt               DateTime @default(now()) /// @zod.custom.omit([model])
+    updatedAt               DateTime @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     productSku            ProductSku            @relation(fields: [productSkuId], references: [id])
     productAttribute      ProductAttribute      @relation(fields: [productAttributeId], references: [id])
@@ -395,8 +411,8 @@ model Option {
     displayOrder Int?
     isActive     Boolean        @default(true)
     context      EOptionContext
-    createdAt    DateTime       @default(now())
-    updatedAt    DateTime       @default(now()) @updatedAt
+    createdAt    DateTime       @default(now()) /// @zod.custom.omit([model])
+    updatedAt    DateTime       @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     optionItems   OptionItem[]
     ProductOption ProductOption[]
@@ -409,8 +425,8 @@ model OptionItem {
     slug         String?
     displayOrder Int?
     isActive     Boolean  @default(true)
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @default(now()) @updatedAt
+    createdAt    DateTime @default(now()) /// @zod.custom.omit([model])
+    updatedAt    DateTime @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     Option                    Option                      @relation(fields: [optionId], references: [id])
     ProductOptionToOptionItem ProductOptionToOptionItem[]
@@ -423,8 +439,8 @@ model ProductOption {
     displayOrder Int?
     isRequired   Boolean  @default(false)
     maxSelect    Int?
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @default(now()) @updatedAt
+    createdAt    DateTime @default(now()) /// @zod.custom.omit([model])
+    updatedAt    DateTime @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     product                   Product                     @relation(fields: [productId], references: [id])
     option                    Option                      @relation(fields: [optionId], references: [id])
@@ -440,8 +456,8 @@ model ProductOptionToOptionItem {
     displayOrder       Int?
     priceModifierType  EPriceModifierType
     priceModifierValue Float
-    createdAt          DateTime           @default(now())
-    updatedAt          DateTime           @default(now()) @updatedAt
+    createdAt          DateTime           @default(now()) /// @zod.custom.omit([model])
+    updatedAt          DateTime           @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     optionItem    OptionItem    @relation(fields: [optionItemId], references: [id])
     productOption ProductOption @relation(fields: [productOptionId], references: [id])
@@ -462,8 +478,8 @@ model ProductTag {
     textColor        String?
     displayOrder     Int?
     isActive         Boolean         @default(true)
-    createdAt        DateTime        @default(now())
-    updatedAt        DateTime        @default(now()) @updatedAt
+    createdAt        DateTime        @default(now()) /// @zod.custom.omit([model])
+    updatedAt        DateTime        @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     products ProductToProductTag[]
 }
@@ -473,8 +489,8 @@ model ProductToProductTag {
     productId    String
     productTagId String
     expiredAt    DateTime?
-    createdAt    DateTime  @default(now())
-    updatedAt    DateTime  @default(now()) @updatedAt
+    createdAt    DateTime  @default(now()) /// @zod.custom.omit([model])
+    updatedAt    DateTime  @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     product    Product    @relation(fields: [productId], references: [id])
     productTag ProductTag @relation(fields: [productTagId], references: [id])
@@ -493,8 +509,8 @@ model ProductRating {
     images         String[] @default([])
     isVerify       Boolean  @default(false)
     verifyByUserId String?
-    createdAt      DateTime @default(now())
-    updatedAt      DateTime @default(now()) @updatedAt
+    createdAt      DateTime @default(now()) /// @zod.custom.omit([model])
+    updatedAt      DateTime @default(now()) @updatedAt /// @zod.custom.omit([model])
 
     product Product @relation(fields: [productId], references: [id])
     user    User    @relation(fields: [userId], references: [id])
@@ -504,7 +520,7 @@ model ProductRating {
 
 model RetryError {
     id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
+    createdAt DateTime @default(now()) /// @zod.custom.omit([model])
     retryKey  String?
     funcName  String?
     args      Json?

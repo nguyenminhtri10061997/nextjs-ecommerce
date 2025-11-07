@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
-import OptionForm from "../_components/optionForm";
+import OptionForm from "./_components/optionForm";
 import { usePage } from "./usePage";
 
 export default function Page() {

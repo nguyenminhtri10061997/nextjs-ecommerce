@@ -21,7 +21,7 @@ const getPermissionsForRole = cache(async (roleId: string, data: TDataCanDoActio
     return prisma.role.findFirst({
         where: {
             id: roleId,
-            permission: {
+            permissions: {
                 some: {
                     action: data.action,
                     resource: data.resource,
@@ -56,7 +56,7 @@ const getPermissionsForRoles = cache(async (roleId: string, datas: TDataCanDoAct
     return prisma.role.findFirst({
         where: {
             id: roleId,
-            permission: {
+            permissions: {
                 some: {
                     OR: datas.map(i => ({
                         resource: i.resource,

@@ -1,23 +1,23 @@
-"use client";
+"use client"
 
-import { textToSlug } from "@/common";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import { useEffect } from "react";
-import { Controller, UseFormReturn } from "react-hook-form";
-import useIndex, { TForm } from "./useIndex";
-import { MenuItem } from "@mui/material";
+import { textToSlug } from "@/common"
+import { MenuItem } from "@mui/material"
+import Stack from "@mui/material/Stack"
+import TextField from "@mui/material/TextField"
+import { useEffect } from "react"
+import { Controller, UseFormReturn } from "react-hook-form"
+import useIndex, { TForm } from "./useIndex"
 
 type TProps = {
-  editRowId?: string;
-  onGetForm: (form: UseFormReturn<TForm>) => void;
-};
+  editRowId?: string
+  onGetForm: (form: UseFormReturn<TForm>) => void
+}
 export default function Index(props: TProps) {
-  const { form, query } = useIndex();
+  const { form, query } = useIndex()
 
   useEffect(() => {
-    props.onGetForm(form);
-  }, [form, props]);
+    props.onGetForm(form)
+  }, [form, props])
 
   useEffect(() => {
     const callback = form.subscribe({
@@ -27,15 +27,15 @@ export default function Index(props: TProps) {
       },
       callback: ({ values }) => {
         if (values.name) {
-          form.setValue("slug", textToSlug(values.name));
+          form.setValue("slug", textToSlug(values.name))
         }
       },
-    });
+    })
 
-    return () => callback();
-  }, [form]);
+    return () => callback()
+  }, [form])
 
-  const { control } = form;
+  const { control } = form
 
   return (
     <Stack direction={"column"} gap={2}>
@@ -144,9 +144,9 @@ export default function Index(props: TProps) {
             helperText={fieldState.error?.message}
             value={field.value ?? ""}
             onChange={(e) => {
-              const val = e.target.value;
+              const val = e.target.value
               if (/^\d*$/.test(val)) {
-                field.onChange(val === "" ? "" : Number(val));
+                field.onChange(val === "" ? "" : Number(val))
               }
             }}
             onBlur={field.onBlur}
@@ -176,16 +176,16 @@ export default function Index(props: TProps) {
             onBlur={field.onBlur}
             inputRef={field.ref}
           >
-            {query.data?.length ? (
+            {query.isFetched ? (
               query.data?.map((pc) => {
                 if (props.editRowId && pc.id === props.editRowId) {
-                  return null;
+                  return null
                 }
                 return (
                   <MenuItem key={pc.id} value={pc.id}>
                     {pc.name}
                   </MenuItem>
-                );
+                )
               })
             ) : (
               <MenuItem disabled value="">
@@ -196,5 +196,5 @@ export default function Index(props: TProps) {
         )}
       />
     </Stack>
-  );
+  )
 }
