@@ -1,29 +1,15 @@
-import { AppError } from "@/common/server/appError";
-import { AppResponse } from "@/common/server/appResponse";
-import { AppStatusCode } from "@/common/server/statusCode";
-import { THofContext } from "@/app/api/_lib/HOF/type";
-import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField";
-import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/app/api/_lib/HOF/withVerifyCanDoAction";
-import prisma from "@/lib/prisma";
-import {
-  EAttributeValueStatus,
-  EPermissionAction,
-  EPermissionResource,
-  ESkuStatus,
-  Prisma,
-} from "@prisma/client";
-import { v4 } from "uuid";
-import { output } from "zod/v4";
-import {
-  IdParamsDTO,
-  PatchUpdateBodyDTO,
-  ProductAttributeDTO,
-  ProductAttributeValueDTO,
-  ProductSkuDTO,
-  ProductTagDTO,
-  ProductToOptionDTO,
-} from "./validator";
+import { THofContext } from "@/app/api/_lib/HOF/type"
+import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField"
+import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken"
+import { withVerifyCanDoAction } from "@/app/api/_lib/HOF/withVerifyCanDoAction"
+import { AppError } from "@/common/server/appError"
+import { AppResponse } from "@/common/server/appResponse"
+import { AppStatusCode } from "@/common/server/statusCode"
+import prisma from "@/lib/prisma"
+import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client"
+import { v4 } from "uuid"
+import { output } from "zod/v4"
+import { IdParamsDTO, PatchUpdateProductDTO } from "./validator"
 
 export const GET = withValidateFieldHandler(
   IdParamsDTO,
@@ -38,71 +24,148 @@ export const GET = withValidateFieldHandler(
       async (_, ctx: THofContext<typeof IdParamsDTO>) => {
         const entity = await prisma.productTag.findUnique({
           where: { id: ctx.paramParse!.id },
-        });
+        })
 
         if (!entity) {
           return AppError.json({
             status: 404,
             message: "Product not found",
-          });
+          })
         }
 
-        return AppResponse.json({ status: 200, data: entity });
+        return AppResponse.json({ status: 200, data: entity })
       }
     )
   )
-);
+)
 
-async function updateProduct(
-  productId: string,
-  data: Prisma.ProductUpdateInput
-) {
-  return prisma.product.update({ where: { id: productId }, data });
+const syncAttributeValue = async (
+  product: Prisma.ProductGetPayload<{
+    include: {
+      productAttributes: {
+        include: {
+          productAttributeValues: true
+        }
+      }
+    }
+  }>,
+  body: output<typeof PatchUpdateProductDTO>
+) => {
+  const { attributes, skus } = body
+  const incomingAttVals = attributes.flatMap((att) => att.productAttValues)
+
+  const incomingAttValIdSet = new Set(incomingAttVals.map((i) => i.id))
+  const curAttValIds = product.productAttributes.flatMap((att) =>
+    att.productAttributeValues.map((i) => i.id)
+  )
+  const curAttValIdSet = new Set(curAttValIds)
+
+  const incomingAttValIdsInSku = skus.map((sku) => {
+    return sku.productSkuAttVal.id
+  })
+
+  const toDeleteValIds = curAttValIds.filter(
+    (attValId) => !incomingAttValIdSet.has(attValId)
+  )
+
+  if (toDeleteValIds.length) {
+    if (toDeleteValIds.some((id) => incomingAttValIdsInSku.includes(id))) {
+      return AppError.json({
+        message: "Cannot delete Attribute Value",
+      })
+    }
+    await prisma.productAttributeValue.deleteMany({
+      where: { id: { in: toDeleteValIds } },
+    })
+  }
+
+  const toUpdateVals = incomingAttVals.filter((val) =>
+    curAttValIdSet.has(val.id)
+  )
+  await Promise.all(
+    toUpdateVals.map((val) =>
+      prisma.productAttributeValue.update({
+        where: { id: val.id },
+        data: {
+          displayOrder: val.displayOrder,
+          status: val.status,
+          image: val.image,
+        },
+      })
+    )
+  )
+
+  const toCreateVals = incomingAttVals.filter(
+    (val) => !curAttValIdSet.has(val.id)
+  )
+
+  if (toCreateVals.length) {
+    await prisma.productAttributeValue.createMany({
+      data: toCreateVals.map(
+        (val) =>
+          ({
+            productAttributeId: val.id,
+            displayOrder: val.displayOrder,
+            status: val.status,
+            image: val.image,
+            attributeValueId: val.attributeValueId,
+            id: val.id,
+          }) as Prisma.ProductAttributeValueCreateManyInput
+      ),
+    })
+  }
 }
 
 const syncAttribute = async (data: {
   product: Prisma.ProductGetPayload<{
-    include: { attributes: { include: { attributeValues: true } } };
-  }>;
-  attributes: output<typeof ProductAttributeDTO>[];
+    include: {
+      productAttributes: { include: { productAttributeValues: true } }
+    }
+  }>
+  body: output<typeof PatchUpdateProductDTO>
 }) => {
-  const { product, attributes } = data;
+  const { product, body } = data
+  const { attributes, skus } = body
 
-  const currentAttributes = product.attributes;
-  const incomingAttrIds = new Set(
-    attributes.map((attr) => attr.id).filter(Boolean)
-  );
+  await syncAttributeValue(product, body)
+
+  const currentAttributes = product.productAttributes
+  const curAttIdSet = new Set(product.productAttributes.map((i) => i.id))
+  const incomingAttrIds = new Set(attributes.map((attr) => attr.id))
 
   const toDeleteAttrIds = currentAttributes
     .filter((attr) => !incomingAttrIds.has(attr.id))
-    .map((attr) => attr.id);
+    .map((attr) => attr.id)
 
   if (toDeleteAttrIds.length) {
-    await prisma.productAttribute.updateMany({
+    if (
+      toDeleteAttrIds.some((id) =>
+        skus.some((i) => i.productSkuAttVal.productAttributeId === id)
+      )
+    ) {
+      return AppError.json({
+        message: "Attribute Cannot Deleted",
+      })
+    }
+    await prisma.productAttribute.deleteMany({
       where: { id: { in: toDeleteAttrIds }, productId: product.id },
-      data: { status: ESkuStatus.DELETED },
-    });
+    })
   }
 
-  const toUpdateAttrs = attributes.filter((attr) => attr.id);
+  const toUpdateAttrs = attributes.filter((attr) => curAttIdSet.has(attr.id))
   await Promise.all(
     toUpdateAttrs.map((attr) =>
       prisma.productAttribute.update({
         where: { id: attr.id },
         data: {
-          name: attr.name,
-          slug: attr.slug,
-          type: attr.type,
           status: attr.status,
           displayOrder: attr.displayOrder,
         },
       })
     )
-  );
+  )
 
-  const toCreateAttrs = attributes
-    .filter((attr) => !attr.id)
-    .map((att) => ({ ...att, id: v4() }));
+  const toCreateAttrs = attributes.filter((attr) => !curAttIdSet.has(attr.id))
   if (toCreateAttrs.length) {
     await prisma.productAttribute.createMany({
       data: toCreateAttrs.map(
@@ -110,105 +173,65 @@ const syncAttribute = async (data: {
           ({
             id: attr.id,
             productId: product.id,
-            name: attr.name,
-            slug: attr.slug,
+            attributeId: attr.attributeId,
             displayOrder: attr.displayOrder,
             status: attr.status,
-            type: attr.type,
-          } as Prisma.ProductAttributeCreateManyInput)
+            isUsedForVariations: attr.isUsedForVariations,
+          }) as Prisma.ProductAttributeCreateManyInput
       ),
-    });
+    })
   }
-
-  const incomingAttValues = attributes.flatMap((attr) => attr.attributeValues);
-
-  const currentAttrValues = currentAttributes.flatMap(
-    (attr) => attr.attributeValues
-  );
-  const incomingAttValIds = new Set(
-    incomingAttValues.map((val) => val.id).filter(Boolean)
-  );
-  const toDeleteValIds = currentAttrValues
-    .filter((val) => !incomingAttValIds.has(val.id))
-    .map((val) => val.id);
-
-  if (toDeleteValIds.length) {
-    await prisma.productAttributeValue.updateMany({
-      where: { id: { in: toDeleteValIds } },
-      data: { status: EAttributeValueStatus.DELETED },
-    });
-  }
-
-  const toUpdateVals = incomingAttValues.filter((val) => val.id);
-  await Promise.all(
-    toUpdateVals.map((val) =>
-      prisma.productAttributeValue.update({
-        where: { id: val.id },
-        data: {
-          name: val.name,
-          slug: val.slug,
-          displayOrder: val.displayOrder,
-          status: val.status,
-          image: val.image,
-        },
-      })
-    )
-  );
-
-  let toCreateVals: output<typeof ProductAttributeValueDTO>[] =
-    toCreateAttrs.flatMap((att) => att.attributeValues);
-  attributes.forEach((att) => {
-    if (att.id) {
-      toCreateVals = toCreateVals.concat(
-        att.attributeValues.filter((attV) => !attV.id)
-      );
-    }
-  });
-  if (toCreateVals.length) {
-    await prisma.productAttributeValue.createMany({
-      data: toCreateVals.map(
-        (val) =>
-          ({
-            productAttributeId: val.id,
-            name: val.name,
-            slug: val.slug,
-            displayOrder: val.displayOrder,
-            status: val.status,
-            image: val.image,
-          } as Prisma.ProductAttributeValueCreateManyInput)
-      ),
-    });
-  }
-};
+}
 
 async function syncSkus(data: {
   product: Prisma.ProductGetPayload<{
-    include: { skus: true };
-  }>;
-  incomingSkus: output<typeof ProductSkuDTO>[];
+    include: {
+      productSkus: {
+        include: {
+          skuAttributeValues: true
+        }
+      }
+    }
+  }>
+  incomingSkus: output<typeof PatchUpdateProductDTO>["skus"]
 }) {
-  const { incomingSkus, product } = data;
-  const currentSkus = product.skus;
-  const incomingSkuIds = new Set(
-    incomingSkus.map((sku) => sku.id).filter(Boolean)
-  );
+  const { incomingSkus, product } = data
+  const curSkus = product.productSkus
+  const curSkusIdSet = new Set(
+    product.productSkus.flatMap((sku) =>
+      sku.skuAttributeValues.map((skuAtt) => {
+        return `${skuAtt.productAttributeId}_${skuAtt.productAttributeValueId}`
+      })
+    )
+  )
 
-  const toDeleteSkuIds = currentSkus
-    .filter((sku) => !incomingSkuIds.has(sku.id))
-    .map((sku) => sku.id);
+  const incomingSkuSet = new Set(
+    incomingSkus.map((sku) => {
+      const { productSkuAttVal } = sku
+      return `${productSkuAttVal.productAttributeId}_${productSkuAttVal.productAttributeValueId}`
+    })
+  )
+
+  const toDeleteSkuIds = curSkus
+    .filter((sku) => !incomingSkuSet.has(sku.id))
+    .map((sku) => sku.id)
 
   if (toDeleteSkuIds.length) {
-    await prisma.productSku.updateMany({
-      where: { id: { in: toDeleteSkuIds } },
-      data: { status: ESkuStatus.DELETED },
-    });
+    await prisma.productSku.deleteMany({
+      where: { id: { in: toDeleteSkuIds }, productId: product.id },
+    })
   }
 
-  const toUpdateSkus = incomingSkus.filter((sku) => sku.id);
+  const toUpdateSkus = incomingSkus.filter((sku) => {
+    const { productSkuAttVal } = sku
+    return curSkusIdSet.has(
+      `${productSkuAttVal.productAttributeId}_${productSkuAttVal.productAttributeValueId}`
+    )
+  })
   await Promise.all(
     toUpdateSkus.map((sku) =>
       prisma.productSku.update({
-        where: { id: sku.id },
+        where: { productId: product.id,  },
         data: {
           sellerSku: sku.sellerSku,
           stockStatus: sku.stockStatus,
@@ -231,70 +254,83 @@ async function syncSkus(data: {
         },
       })
     )
-  );
+  )
 
-  const toCreateSkus = incomingSkus.filter((sku) => !sku.id);
+  const toCreateSkus = incomingSkus.filter(
+    (sku) => !sku.id || (sku.id && currentSkuIds.includes(sku.id))
+  )
   if (toCreateSkus.length) {
     await prisma.productSku.createMany({
-      data: toCreateSkus.map((sku) => ({
-        productId: product.id,
-        sellerSku: sku.sellerSku,
-        stockStatus: sku.stockStatus,
-        stockType: sku.stockType,
-        image: sku.image,
-        salePrice: sku.salePrice,
-        price: sku.price,
-        costPrice: sku.costPrice,
-        stock: sku.stock,
-        barcode: sku.barcode,
-        weight: sku.weight,
-        width: sku.width,
-        height: sku.height,
-        length: sku.length,
-        note: sku.note,
-        displayOrder: sku.displayOrder,
-        status: sku.status,
-        downloadUrl: sku.downloadUrl,
-        isDefault: sku.isDefault,
-      })),
-    });
+      data: toCreateSkus.map(
+        (sku) =>
+          ({
+            productId: product.id,
+            sellerSku: sku.sellerSku,
+            stockStatus: sku.stockStatus,
+            stockType: sku.stockType,
+            image: sku.image,
+            salePrice: sku.salePrice,
+            price: sku.price,
+            costPrice: sku.costPrice,
+            stock: sku.stock,
+            barcode: sku.barcode,
+            weight: sku.weight,
+            width: sku.width,
+            height: sku.height,
+            length: sku.length,
+            note: sku.note,
+            displayOrder: sku.displayOrder,
+            status: sku.status,
+            downloadUrl: sku.downloadUrl,
+            isDefault: sku.isDefault,
+          }) as Prisma.ProductSkuCreateManyInput
+      ),
+    })
+    await prisma.productSkuAttributeValue.createMany({
+      data: toCreateSkus.map(
+        (i) =>
+          ({
+            ...i.productSkuAttVal,
+          }) as Prisma.ProductSkuAttributeValueCreateManyInput
+      ),
+    })
   }
 }
 
 const syncProductTags = async (data: {
-  productId: string;
-  productTags: output<typeof ProductTagDTO>[];
+  product: Prisma.ProductGetPayload<{
+    include: { productToProductTags: true }
+  }>
+  productTags: output<typeof PatchUpdateProductDTO>["productToProductTags"]
 }) => {
-  const { productId, productTags } = data;
-  const oldProductToProductTag = await prisma.productToProductTag.findMany({
-    where: {
-      productId,
-    },
-  });
+  const {
+    product: { id: productId, productToProductTags: oldProductToProductTag },
+    productTags,
+  } = data
 
   const incomingProductTagIdsMap = new Set(
     productTags.map((tran) => tran.productTagId)
-  );
+  )
   const curProductTagIdsMap = new Set(
     oldProductToProductTag.map((tran) => tran.productTagId)
-  );
+  )
   const tagToBeDeletes = oldProductToProductTag.filter(
     (tag) => !incomingProductTagIdsMap.has(tag.productTagId)
-  );
+  )
 
   const tagToBeUpdates = productTags.filter((tag) =>
-    curProductTagIdsMap.has(tag.productTagId)
-  );
+    curProductTagIdsMap.has(tag.productTagId!)
+  )
   const tagToBeCreates = productTags.filter(
     (tag) => !curProductTagIdsMap.has(tag.productTagId)
-  );
+  )
 
   if (tagToBeDeletes.length) {
     await prisma.productTag.deleteMany({
       where: {
         id: { in: tagToBeDeletes.map((i) => i.id) },
       },
-    });
+    })
   }
 
   await Promise.all(
@@ -311,7 +347,7 @@ const syncProductTags = async (data: {
         },
       })
     )
-  );
+  )
 
   if (tagToBeCreates.length) {
     prisma.productToProductTag.createMany({
@@ -321,78 +357,69 @@ const syncProductTags = async (data: {
             productId,
             productTagId: tag.productTagId,
             expiredAt: tag.expiredAt,
-          } as Prisma.ProductToProductTagCreateManyInput)
+          }) as Prisma.ProductToProductTagCreateManyInput
       ),
-    });
+    })
   }
-};
+}
 
 const syncProductOptions = async (data: {
-  productId: string;
-  productOptions: output<typeof ProductToOptionDTO>[];
+  product: Prisma.ProductGetPayload<{
+    include: {
+      productOptions: true
+    }
+  }>
+  productOptions: output<typeof PatchUpdateProductDTO>["productOpts"]
 }) => {
-  const { productId, productOptions } = data;
-  const oldProductToOption = await prisma.productToOption.findMany({
-    where: {
-      productId,
-    },
-    select: {
-      id: true,
-      optionId: true,
-      productToOptionToOptionItem: {
-        select: {
-          id: true,
-          optionItemId: true,
-        },
-      },
-    },
-  });
+  const {
+    product: { productOptions: oldProductToOption },
+    productOptions,
+  } = data
 
-  const incomingProductToOptionIdSet = new Set<string>();
-  const incomingPTOToOptionIdSet = new Set<string>();
+  const incomingProductToOptionIdSet = new Set<string>()
+  const incomingPTOToOptionIdSet = new Set<string>()
 
   const curProductToOptionIdMap = new Map<
     string,
     (typeof oldProductToOption)[number]
-  >();
-  const curPTOToOptionItemIdSet = new Set<string>();
+  >()
+  const curPTOToOptionItemIdSet = new Set<string>()
 
   productOptions.forEach((po) => {
-    incomingProductToOptionIdSet.add(po.optionId);
+    incomingProductToOptionIdSet.add(po.pro)
 
-    po.optionItems?.forEach((poi) => {
-      incomingPTOToOptionIdSet.add(poi.optionItemId);
-    });
-  });
-  const productToOptionIdToBeDeletes: string[] = [];
-  let productToOptionToOptionItemToBeDeletes: string[] = [];
+    po.productOptItems?.forEach((poi) => {
+      incomingPTOToOptionIdSet.add(poi.optionItemId)
+    })
+  })
+  const productToOptionIdToBeDeletes: string[] = []
+  let productToOptionToOptionItemToBeDeletes: string[] = []
 
   oldProductToOption.forEach((pto) => {
-    curProductToOptionIdMap.set(pto.optionId, pto);
+    curProductToOptionIdMap.set(pto.optionId, pto)
     pto.productToOptionToOptionItem.forEach((ptoTOI) => {
-      curPTOToOptionItemIdSet.add(ptoTOI.optionItemId);
-    });
+      curPTOToOptionItemIdSet.add(ptoTOI.optionItemId)
+    })
 
     if (!incomingProductToOptionIdSet.has(pto.optionId)) {
-      productToOptionIdToBeDeletes.push(pto.id);
+      productToOptionIdToBeDeletes.push(pto.id)
       productToOptionToOptionItemToBeDeletes =
         productToOptionToOptionItemToBeDeletes.concat(
           pto.productToOptionToOptionItem.map((i) => i.id)
-        );
+        )
     }
-  });
+  })
 
-  const productToOptionToBeUpdates: Prisma.ProductToOptionUpdateArgs[] = [];
-  const productToOptionToBeCreates: Prisma.ProductToOptionCreateManyInput[] =
-    [];
+  const productToOptionToBeUpdates: Prisma.ProductToOptionUpdateArgs[] = []
+  const productToOptionToBeCreates: Prisma.ProductToOptionCreateManyInput[] = []
 
   const productToOptionToOptionItemToBeUpdates: Prisma.ProductToOptionToOptionItemUpdateArgs[] =
-    [];
+    []
   let productToOptionToOptionItemToBeCreates: Prisma.ProductToOptionToOptionItemCreateManyInput[] =
-    [];
+    []
 
   productOptions.forEach((po) => {
-    const existPO = curProductToOptionIdMap.get(po.optionId);
+    const existPO = curProductToOptionIdMap.get(po.optionId)
     if (existPO) {
       productToOptionToBeUpdates.push({
         where: {
@@ -406,9 +433,9 @@ const syncProductOptions = async (data: {
           isRequired: po.isRequired,
           maxSelect: po.maxSelect,
         },
-      });
+      })
       po.optionItems?.forEach((oi) => {
-        const existsTOI = curPTOToOptionItemIdSet.has(oi.optionItemId);
+        const existsTOI = curPTOToOptionItemIdSet.has(oi.optionItemId)
         if (existsTOI) {
           productToOptionToOptionItemToBeUpdates.push({
             where: {
@@ -422,7 +449,7 @@ const syncProductOptions = async (data: {
               priceModifierType: oi.priceModifierType,
               priceModifierValue: oi.priceModifierValue,
             },
-          });
+          })
         } else {
           productToOptionToOptionItemToBeCreates.push({
             optionItemId: oi.optionItemId,
@@ -430,9 +457,9 @@ const syncProductOptions = async (data: {
             displayOrder: oi.displayOrder,
             priceModifierType: oi.priceModifierType,
             priceModifierValue: oi.priceModifierValue,
-          });
+          })
         }
-      });
+      })
     } else {
       const newPto: Prisma.ProductToOptionCreateManyInput = {
         id: v4(),
@@ -441,8 +468,8 @@ const syncProductOptions = async (data: {
         displayOrder: po.displayOrder,
         isRequired: po.isRequired,
         maxSelect: po.maxSelect,
-      };
-      productToOptionToBeCreates.push(newPto);
+      }
+      productToOptionToBeCreates.push(newPto)
       if (po.optionItems.length) {
         productToOptionToOptionItemToBeCreates =
           productToOptionToOptionItemToBeCreates.concat(
@@ -454,12 +481,12 @@ const syncProductOptions = async (data: {
                   displayOrder: oi.displayOrder,
                   priceModifierType: oi.priceModifierType,
                   priceModifierValue: oi.priceModifierValue,
-                } as Prisma.ProductToOptionToOptionItemCreateManyInput)
+                }) as Prisma.ProductToOptionToOptionItemCreateManyInput
             )
-          );
+          )
       }
     }
-  });
+  })
 
   await Promise.all(
     [
@@ -486,19 +513,19 @@ const syncProductOptions = async (data: {
           },
         }),
     ].filter(Boolean)
-  );
+  )
 
   if (productToOptionToOptionItemToBeCreates.length) {
     await prisma.productToOptionToOptionItem.createMany({
       data: productToOptionToOptionItemToBeCreates,
-    });
+    })
   }
-};
+}
 
 export const PATCH = withValidateFieldHandler(
   IdParamsDTO,
   null,
-  PatchUpdateBodyDTO,
+  PatchUpdateProductDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
       {
@@ -507,34 +534,41 @@ export const PATCH = withValidateFieldHandler(
       },
       async (
         _,
-        ctx: THofContext<typeof IdParamsDTO, never, typeof PatchUpdateBodyDTO>
+        ctx: THofContext<
+          typeof IdParamsDTO,
+          never,
+          typeof PatchUpdateProductDTO
+        >
       ) => {
         return prisma.$transaction(async () => {
-          const { id } = ctx.paramParse!;
+          const { id } = ctx.paramParse!
+          const { bodyParse } = ctx
           const {
             code,
             name,
             slug,
             skus,
             attributes,
-            productTags,
-            productOptions,
+            productOpts,
+            productToProductTags,
             ...omit
-          } = ctx.bodyParse!;
+          } = bodyParse!
 
           const productFound = await prisma.product.findUnique({
             where: { id },
             include: {
-              attributes: { include: { attributeValues: true } },
-              skus: { include: { skuAttributeValues: true } },
+              productAttributes: { include: { productAttributeValues: true } },
+              productSkus: { include: { skuAttributeValues: true } },
+              productToProductTags: true,
+              brand: true,
             },
-          });
+          })
 
           if (!productFound) {
             return AppError.json({
               status: AppStatusCode.NOT_FOUND,
               message: "Product tag not found",
-            });
+            })
           }
 
           if (code || name || slug) {
@@ -543,19 +577,19 @@ export const PATCH = withValidateFieldHandler(
                 id: { not: id },
                 OR: [{ name }, { slug }, { code }],
               },
-            });
+            })
 
             if (existed) {
-              let mes = "Code";
+              let mes = "Code"
               if (existed.name === name) {
-                mes = "Name";
+                mes = "Name"
               } else if (existed.slug === slug) {
-                mes = "Slug";
+                mes = "Slug"
               }
               return AppError.json({
                 status: AppStatusCode.EXISTING,
                 message: `${mes} already exist`,
-              });
+              })
             }
           }
 
@@ -564,34 +598,36 @@ export const PATCH = withValidateFieldHandler(
             name,
             slug,
             ...omit,
-          };
-
-          await updateProduct(id, objUpdate);
+          }
+          // await prisma.product.update({
+          //   where: { id: productFound.id },
+          //   data: objUpdate,
+          // })
 
           await syncAttribute({
             product: productFound,
-            attributes,
-          });
+            body: bodyParse!,
+          })
 
           await syncSkus({
             product: productFound,
             incomingSkus: skus,
-          });
+          })
 
           if (productTags) {
-            await syncProductTags({ productId: productFound.id, productTags });
+            await syncProductTags({ product, productTags })
           }
 
           if (productOptions) {
             await syncProductOptions({
               productId: productFound.id,
               productOptions,
-            });
+            })
           }
 
-          return AppResponse.json({ status: 200 });
-        });
+          return AppResponse.json({ status: 200 })
+        })
       }
     )
   )
-);
+)

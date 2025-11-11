@@ -5,27 +5,20 @@ import {
   SearchQueryDTO,
 } from "@/lib/zod/paginationDTO"
 import { Product } from "@prisma/client"
-import {
-  ProductAttributeSchema,
-  ProductAttributeValueSchema,
-  ProductOptionSchema,
-  ProductOptionToOptionItemSchema,
-  ProductSchema,
-  ProductSkuAttributeValueSchema,
-  ProductSkuSchema,
-  ProductToProductTagSchema,
-} from "@prisma/generated/zod"
+import { ProductUncheckedUpdateInputObjectZodSchema } from "@prisma/generated/schemas"
 import { z } from "zod/v4"
 
-const ProductAttributeValueDTO = ProductAttributeValueSchema
+const ProductAttributeValueDTO = ProductAttributeValue
 
 const ProductAttributeDTO = ProductAttributeSchema.omit({
   productId: true,
-}).partial({
-  id: true,
-}).extend({
-  productAttValues: z.array(ProductAttributeValueDTO),
 })
+  .partial({
+    id: true,
+  })
+  .extend({
+    productAttValues: z.array(ProductAttributeValueDTO),
+  })
 
 const ProductSkuAttributeValue = ProductSkuAttributeValueSchema.omit({
   id: true,
@@ -76,7 +69,8 @@ const ProductSkuDTO = ProductSkuSchema.omit({
             code: "custom",
             input: ctx.value.productSkuAttValues,
             path: ["productSkuAttValues"],
-            message: "productSkuAttValues is required if stockType is ATTRIBUTE",
+            message:
+              "productSkuAttValues is required if stockType is ATTRIBUTE",
           })
         }
         break
@@ -116,40 +110,41 @@ export const GetQueryDTO = z.object({
   dateRangeQuery: DateRangeQueryDTO.shape.dateRangeQuery.optional(),
 })
 
-export const PostCreateBodyDTO = ProductSchema.omit({
-  id: true,
-}).extend({
-  productOptions: z
-    .array(ProductToOptionDTO)
-    .check((ctx) => {
-      const ids = ctx.value.map((i) => i.optionId)
-      if (new Set(ids).size !== ids.length) {
-        ctx.issues.push({
-          code: "custom",
-          input: ctx.value,
-          path: ["productOptions"],
-          message: "Array must contain unique optionId",
-        })
-      }
-    })
-    .optional(),
-  attributes: z.array(ProductAttributeDTO).optional(),
-  skus: z.array(ProductSkuDTO),
-  productTags: z
-    .array(ProductTagDTO)
-    .check((ctx) => {
-      const ids = ctx.value.map((i) => i.productTagId)
-      if (new Set(ids).size !== ids.length) {
-        ctx.issues.push({
-          code: "custom",
-          input: ctx.value,
-          path: ["productTags"],
-          message: "Array must contain unique productTagId",
-        })
-      }
-    })
-    .optional(),
-})
+export const PostCreateBodyDTO =
+  ProductUncheckedUpdateInputObjectZodSchema.omit({
+    id: true,
+  }).extend({
+    productOptions: z
+      .array(ProductToOptionDTO)
+      .check((ctx) => {
+        const ids = ctx.value.map((i) => i.optionId)
+        if (new Set(ids).size !== ids.length) {
+          ctx.issues.push({
+            code: "custom",
+            input: ctx.value,
+            path: ["productOptions"],
+            message: "Array must contain unique optionId",
+          })
+        }
+      })
+      .optional(),
+    attributes: z.array(ProductAttributeDTO).optional(),
+    skus: z.array(ProductSkuDTO),
+    productTags: z
+      .array(ProductTagDTO)
+      .check((ctx) => {
+        const ids = ctx.value.map((i) => i.productTagId)
+        if (new Set(ids).size !== ids.length) {
+          ctx.issues.push({
+            code: "custom",
+            input: ctx.value,
+            path: ["productTags"],
+            message: "Array must contain unique productTagId",
+          })
+        }
+      })
+      .optional(),
+  })
 
 export const DeleteBodyDTO = z.object({
   ids: z.array(z.uuid()),

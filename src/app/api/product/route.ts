@@ -24,7 +24,9 @@ export const GET = withValidateFieldHandler(
       async (_, ctx: THofContext<never, typeof GetQueryDTO>) => {
         const { orderQuery, searchQuery, pagination, dateRangeQuery } =
           ctx.queryParse || {}
-        const where: Prisma.ProductWhereInput = {}
+        const where: Prisma.ProductWhereInput = {
+          isDeleted: false,
+        }
 
         if (searchQuery?.searchKey && searchQuery?.searchStr) {
           const key = searchQuery.searchKey as keyof Prisma.ProductWhereInput
@@ -89,14 +91,14 @@ const getAttributeValueImgFinal = async (
   atts: output<typeof PostCreateBodyDTO>["attributes"]
 ) => {
   return await Promise.all(
-    atts.map(
+    atts?.map(
       async (at) =>
         await Promise.all(
           at.productAttValues.map((attv) => {
             return AppS3Client.moveFromTempToFinalS3File(attv.image, false)
           })
         )
-    )
+    ) || []
   )
 }
 
@@ -150,27 +152,30 @@ const handleCreate = async (
 
   if (attributes?.length) {
     objCreate.attributes = {
-      create: attributes.map((at, idxAt) => ({
-        id: at.id,
-        displayOrder: at.displayOrder,
-        status: at.status,
-        attributeId: at.attributeId,
-        isUsedForVariations: at.isUsedForVariations,
+      create: attributes.map(
+        (at, idxAt) =>
+          ({
+            id: at.id,
+            displayOrder: at.displayOrder,
+            status: at.status,
+            attributeId: at.attributeId,
+            isUsedForVariations: at.isUsedForVariations,
 
-        attributeValues: {
-          create: at.productAttValues.map(
-            (atv, idxAtv) =>
-              ({
-                id: atv.id,
-                attributeValueId: atv.attributeValueId,
-                productAttributeId: at.id,
-                image: attributeValuesImgFinal[idxAt][idxAtv],
-                displayOrder: atv.displayOrder,
-                status: atv.status,
-              } as Prisma.ProductAttributeValueUncheckedCreateInput)
-          ),
-        },
-      })),
+            attributeValues: {
+              create: at.productAttValues.map(
+                (atv, idxAtv) =>
+                  ({
+                    id: atv.id,
+                    attributeValueId: atv.attributeValueId,
+                    productAttributeId: at.id,
+                    image: attributeValuesImgFinal[idxAt][idxAtv],
+                    displayOrder: atv.displayOrder,
+                    status: atv.status,
+                  } as Prisma.ProductAttributeValueUncheckedCreateInput)
+              ),
+            },
+          } as Prisma.ProductAttributeUncheckedCreateWithoutProductInput)
+      ),
     }
   }
 
@@ -216,28 +221,29 @@ const handleCreate = async (
 
   if (productOptions?.length) {
     objCreate.productOptions = {
-      // create: productOptions.map(
-      //   (op) =>
-      //     ({
-      //       optionId: op.optionId,
-      //       displayOrder: op.displayOrder,
-      //       isRequired: op.isRequired,
-      //       maxSelect: op.maxSelect,
-      //       productToOptionToOptionItem: {
-      //         createMany: {
-      //           data: op.productOptionItems?.map(
-      //             (opI) =>
-      //               ({
-      //                 optionItemId: opI.optionItemId,
-      //                 displayOrder: opI.displayOrder,
-      //                 priceModifierType: opI.priceModifierType,
-      //                 priceModifierValue: opI.priceModifierValue,
-      //               } as Prisma.ProductOptionToOptionItemUncheckedCreateInput)
-      //           ),
-      //         },
-      //       },
-      //     } as Prisma.ProductToOptionUncheckedCreateWithoutProductInput)
-      // ),
+      create: productOptions.map(
+        (op) =>
+          ({
+            optionId: op.optionId,
+            displayOrder: op.displayOrder,
+            isRequired: op.isRequired,
+            maxSelect: op.maxSelect,
+            productToOptionToOptionItem: {
+              createMany: {
+                data: op.productOptionItems?.map(
+                  (opI) =>
+                    ({
+                      productOptionId: opI.productOptionId,
+                      optionItemId: opI.optionItemId,
+                      displayOrder: opI.displayOrder,
+                      priceModifierType: opI.priceModifierType,
+                      priceModifierValue: opI.priceModifierValue,
+                    } as Prisma.ProductOptionToOptionItemUncheckedCreateInput)
+                ),
+              },
+            },
+          } as Prisma.ProductOptionUncheckedCreateWithoutProductInput)
+      ),
     }
   }
 
@@ -251,8 +257,8 @@ const handleCreate = async (
         .concat(listImages)
         .concat(
           attributes
-            .flatMap((i) => i.attributeValues.map((j) => j.image))
-            .filter((i): i is string => i != null)
+            ?.flatMap((i) => (i.productAttValues || []).map((j) => j.image))
+            .filter((i): i is string => i != null) || []
         )
         .concat(skus.map((i) => i.image).filter((i): i is string => i != null)),
       functionName
@@ -326,8 +332,12 @@ export const DELETE = withValidateFieldHandler(
         action: EPermissionAction.DELETE,
       },
       async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
-        const res = await prisma.product.deleteMany({
-          where: { id: { in: ctx.bodyParse!.ids } },
+        const bodyParse = ctx.bodyParse!
+        const res = await prisma.product.updateMany({
+          where: { id: { in: bodyParse.ids } },
+          data: {
+            isDeleted: true,
+          },
         })
         return AppResponse.json({ status: 200, data: res.count })
       }
