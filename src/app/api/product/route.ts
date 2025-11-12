@@ -74,16 +74,13 @@ export const GET = withValidateFieldHandler(
   )
 )
 
-const functionName = "product-create"
 const getMainImageFinal = async (key: string) => {
-  return AppS3Client.moveFromTempToFinalS3File(key, false, functionName)
+  return AppS3Client.copyFromTempToFinalS3File(key)
 }
 
 const getListImageFinal = async (keys: string[]) => {
   return await Promise.all(
-    keys.map((key) =>
-      AppS3Client.moveFromTempToFinalS3File(key, false, functionName)
-    )
+    keys.map((key) => AppS3Client.copyFromTempToFinalS3File(key))
   )
 }
 
@@ -95,7 +92,7 @@ const getAttributeValueImgFinal = async (
       async (at) =>
         await Promise.all(
           at.productAttValues.map((attv) => {
-            return AppS3Client.moveFromTempToFinalS3File(attv.image, false)
+            return AppS3Client.copyFromTempToFinalS3File(attv.image, false)
           })
         )
     ) || []
@@ -104,9 +101,7 @@ const getAttributeValueImgFinal = async (
 
 const getSkuFinal = async (skus: output<typeof PostCreateBodyDTO>["skus"]) => {
   return await Promise.all(
-    skus.map((sku) =>
-      AppS3Client.moveFromTempToFinalS3File(sku.image, false, functionName)
-    )
+    skus.map((sku) => AppS3Client.copyFromTempToFinalS3File(sku.image))
   )
 }
 
@@ -120,7 +115,7 @@ const handleCreate = async (
     slug,
     attributes,
     skus,
-    productTags,
+    productToProductTags,
     productOptions,
     mainImage,
     listImages,
@@ -151,7 +146,7 @@ const handleCreate = async (
   }
 
   if (attributes?.length) {
-    objCreate.attributes = {
+    objCreate.productAttributes = {
       create: attributes.map(
         (at, idxAt) =>
           ({
@@ -171,48 +166,46 @@ const handleCreate = async (
                     image: attributeValuesImgFinal[idxAt][idxAtv],
                     displayOrder: atv.displayOrder,
                     status: atv.status,
-                  } as Prisma.ProductAttributeValueUncheckedCreateInput)
+                  }) as Prisma.ProductAttributeValueUncheckedCreateInput
               ),
             },
-          } as Prisma.ProductAttributeUncheckedCreateWithoutProductInput)
+          }) as Prisma.ProductAttributeUncheckedCreateWithoutProductInput
       ),
     }
   }
 
-  if (skus?.length) {
-    objCreate.skus = {
-      create: skus.map(
-        (sku, idxSku) =>
-          ({
-            sellerSku: sku.sellerSku,
-            stockStatus: sku.stockStatus,
-            stockType: sku.stockType,
-            salePrice: sku.salePrice,
-            price: sku.price,
-            costPrice: sku.costPrice,
-            stock: sku.stock,
-            barcode: sku.barcode,
-            weight: sku.weight,
-            width: sku.width,
-            height: sku.height,
-            length: sku.length,
-            note: sku.note,
-            image: skusImgFinal[idxSku],
-            status: sku.status,
-            isDefault: sku.isDefault,
-            displayOrder: sku.displayOrder,
-            downloadUrl: sku.downloadUrl,
-            skuAttributeValues: {
-              create: sku.productSkuAttValues,
-            },
-          } as Prisma.ProductSkuCreateWithoutProductInput)
-      ),
-    }
+  objCreate.productSkus = {
+    create: skus.map(
+      (sku, idxSku) =>
+        ({
+          sellerSku: sku.sellerSku,
+          stockStatus: sku.stockStatus,
+          stockType: sku.stockType,
+          salePrice: sku.salePrice,
+          price: sku.price,
+          costPrice: sku.costPrice,
+          stock: sku.stock,
+          barcode: sku.barcode,
+          weight: sku.weight,
+          width: sku.width,
+          height: sku.height,
+          length: sku.length,
+          note: sku.note,
+          image: skusImgFinal[idxSku],
+          status: sku.status,
+          isDefault: sku.isDefault,
+          displayOrder: sku.displayOrder,
+          downloadUrl: sku.downloadUrl,
+          skuAttributeValues: {
+            create: sku.productSkuAttVals,
+          },
+        }) as Prisma.ProductSkuCreateWithoutProductInput
+    ),
   }
 
-  if (productTags?.length) {
-    objCreate.productTags = {
-      create: productTags.map((pt) => ({
+  if (productToProductTags?.length) {
+    objCreate.productToProductTags = {
+      create: productToProductTags.map((pt) => ({
         expiredAt: pt.expiredAt,
         productTagId: pt.productTagId,
       })),
@@ -230,19 +223,19 @@ const handleCreate = async (
             maxSelect: op.maxSelect,
             productToOptionToOptionItem: {
               createMany: {
-                data: op.productOptionItems?.map(
+                data: op.productOptItems?.map(
                   (opI) =>
                     ({
-                      productOptionId: opI.productOptionId,
+                      productOptionId: opI.optionItemId,
                       optionItemId: opI.optionItemId,
                       displayOrder: opI.displayOrder,
                       priceModifierType: opI.priceModifierType,
                       priceModifierValue: opI.priceModifierValue,
-                    } as Prisma.ProductOptionToOptionItemUncheckedCreateInput)
+                    }) as Prisma.ProductOptionToOptionItemUncheckedCreateInput
                 ),
               },
             },
-          } as Prisma.ProductOptionUncheckedCreateWithoutProductInput)
+          }) as Prisma.ProductOptionUncheckedCreateWithoutProductInput
       ),
     }
   }
@@ -251,21 +244,16 @@ const handleCreate = async (
     data: objCreate,
   })
 
-  try {
-    await AppS3Client.s3DeleteFiles(
-      [mainImage]
-        .concat(listImages)
-        .concat(
-          attributes
-            ?.flatMap((i) => (i.productAttValues || []).map((j) => j.image))
-            .filter((i): i is string => i != null) || []
-        )
-        .concat(skus.map((i) => i.image).filter((i): i is string => i != null)),
-      functionName
-    )
-  } catch (err) {
-    console.error("Failed to cleanup temp S3 files", err)
-  }
+  await AppS3Client.s3DeleteFiles(
+    [mainImage]
+      .concat(listImages)
+      .concat(
+        attributes
+          ?.flatMap((i) => (i.productAttValues || []).map((j) => j.image))
+          .filter((i): i is string => i != null) || []
+      )
+      .concat(skus.map((i) => i.image).filter((i): i is string => i != null))
+  )
 
   return AppResponse.json({ status: 200, data: res })
 }
@@ -333,11 +321,8 @@ export const DELETE = withValidateFieldHandler(
       },
       async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
         const bodyParse = ctx.bodyParse!
-        const res = await prisma.product.updateMany({
+        const res = await prisma.product.deleteMany({
           where: { id: { in: bodyParse.ids } },
-          data: {
-            isDeleted: true,
-          },
         })
         return AppResponse.json({ status: 200, data: res.count })
       }

@@ -507,7 +507,7 @@ model ProductRating {
 model RetryError {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
-    retryKey  String?
+    retryKey  String? // for group 1 api retry => support onFinalRetry
     funcName  String?
     args      Json?
     message   String?

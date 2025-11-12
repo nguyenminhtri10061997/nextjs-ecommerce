@@ -5,98 +5,17 @@ import {
   SearchQueryDTO,
 } from "@/lib/zod/paginationDTO"
 import { Product } from "@prisma/client"
-import { ProductUncheckedUpdateInputObjectZodSchema } from "@prisma/generated/schemas"
+import {
+  ProductAttributeSchema,
+  ProductAttributeValueSchema,
+  ProductOptionSchema,
+  ProductOptionToOptionItemSchema,
+  ProductSchema,
+  ProductSkuAttributeValueSchema,
+  ProductSkuSchema,
+  ProductToProductTagSchema,
+} from "@prisma/generated/schemas/models"
 import { z } from "zod/v4"
-
-const ProductAttributeValueDTO = ProductAttributeValue
-
-const ProductAttributeDTO = ProductAttributeSchema.omit({
-  productId: true,
-})
-  .partial({
-    id: true,
-  })
-  .extend({
-    productAttValues: z.array(ProductAttributeValueDTO),
-  })
-
-const ProductSkuAttributeValue = ProductSkuAttributeValueSchema.omit({
-  id: true,
-})
-
-const ProductSkuDTO = ProductSkuSchema.omit({
-  id: true,
-  productId: true,
-})
-  .extend({
-    productSkuAttValues: z.array(ProductSkuAttributeValue),
-  })
-  .check((ctx) => {
-    switch (ctx.value.stockType) {
-      case "MANUAL":
-        if (!ctx.value.stockStatus) {
-          ctx.issues.push({
-            code: "custom",
-            input: ctx.value.stockStatus,
-            path: ["stockStatus"],
-            message: "stockStatus is required if stockType is EXTERNAL",
-          })
-        }
-        break
-      case "INVENTORY":
-        if (!ctx.value.stock) {
-          ctx.issues.push({
-            code: "custom",
-            input: ctx.value.stock,
-            path: ["stock"],
-            message: "stock is required if stockType is EXTERNAL",
-          })
-        }
-        break
-      case "DIGITAL":
-        if (!ctx.value.downloadUrl) {
-          ctx.issues.push({
-            code: "custom",
-            input: ctx.value.downloadUrl,
-            path: ["downloadUrl"],
-            message: "downloadUrl is required if stockType is DIGITAL",
-          })
-        }
-        break
-      case "ATTRIBUTE":
-        if (!ctx.value.productSkuAttValues.length) {
-          ctx.issues.push({
-            code: "custom",
-            input: ctx.value.productSkuAttValues,
-            path: ["productSkuAttValues"],
-            message:
-              "productSkuAttValues is required if stockType is ATTRIBUTE",
-          })
-        }
-        break
-      default:
-        break
-    }
-  })
-
-const ProductOptionItemDTO = ProductOptionToOptionItemSchema.omit({
-  id: true,
-  productId: true,
-})
-
-const ProductToOptionDTO = ProductOptionSchema.omit({
-  id: true,
-  productId: true,
-}).extend({
-  productOptionItems: z.array(ProductOptionItemDTO),
-})
-
-const ProductTagDTO = ProductToProductTagSchema.omit({
-  id: true,
-  productId: true,
-})
-
-// API
 
 export const GetQueryDTO = z.object({
   pagination: PagingQueryDTO.shape.pagination.optional(),
@@ -110,41 +29,148 @@ export const GetQueryDTO = z.object({
   dateRangeQuery: DateRangeQueryDTO.shape.dateRangeQuery.optional(),
 })
 
-export const PostCreateBodyDTO =
-  ProductUncheckedUpdateInputObjectZodSchema.omit({
-    id: true,
-  }).extend({
-    productOptions: z
-      .array(ProductToOptionDTO)
-      .check((ctx) => {
-        const ids = ctx.value.map((i) => i.optionId)
-        if (new Set(ids).size !== ids.length) {
-          ctx.issues.push({
-            code: "custom",
-            input: ctx.value,
-            path: ["productOptions"],
-            message: "Array must contain unique optionId",
+export const PostCreateBodyDTO = ProductSchema.omit({
+  id: true,
+}).extend({
+  productOptions: z
+    .array(
+      ProductOptionSchema.omit({
+        id: true,
+        productId: true,
+      }).extend({
+        productOptItems: z.array(
+          ProductOptionToOptionItemSchema.omit({
+            id: true,
+            productOptionId: true,
           })
+        ),
+      })
+    )
+    .check((ctx) => {
+      const ids = ctx.value.map((i) => i.optionId)
+      if (new Set(ids).size !== ids.length) {
+        ctx.issues.push({
+          code: "custom",
+          input: ctx.value,
+          path: ["productOptions"],
+          message: "Array must contain unique optionId",
+        })
+      }
+    })
+    .optional(),
+  attributes: z
+    .array(
+      ProductAttributeSchema.omit({
+        productId: true,
+      }).extend({
+        productAttValues: z
+          .array(
+            ProductAttributeValueSchema.omit({
+              productAttributeId: true,
+            })
+          )
+          .refine(
+            (arr) => {
+              const seen = new Set()
+              for (const item of arr) {
+                const key = item.attributeValueId
+                if (seen.has(key)) return false
+                seen.add(key)
+              }
+              return true
+            },
+            {
+              message: "Duplicate attributeValueId found",
+            }
+          ),
+      })
+    )
+    .refine(
+      (arr) => {
+        const seen = new Set()
+        for (const item of arr) {
+          const key = item.attributeId
+          if (seen.has(key)) return false
+          seen.add(key)
+        }
+        return true
+      },
+      {
+        message: "Duplicate attributeId found",
+      }
+    )
+    .optional(),
+  skus: z.array(
+    ProductSkuSchema.omit({
+      id: true,
+      productId: true,
+    })
+      .extend({
+        productSkuAttVals: z.array(
+          ProductSkuAttributeValueSchema.omit({
+            productSkuId: true,
+            id: true,
+          })
+        ),
+      })
+      .check((ctx) => {
+        switch (ctx.value.stockType) {
+          case "MANUAL":
+            if (!ctx.value.stockStatus) {
+              ctx.issues.push({
+                code: "custom",
+                input: ctx.value.stockStatus,
+                path: ["stockStatus"],
+                message: "stockStatus is required if stockType is EXTERNAL",
+              })
+            }
+            break
+          case "INVENTORY":
+            if (!ctx.value.stock) {
+              ctx.issues.push({
+                code: "custom",
+                input: ctx.value.stock,
+                path: ["stock"],
+                message: "stock is required if stockType is EXTERNAL",
+              })
+            }
+            break
+          case "DIGITAL":
+            if (!ctx.value.downloadUrl) {
+              ctx.issues.push({
+                code: "custom",
+                input: ctx.value.downloadUrl,
+                path: ["downloadUrl"],
+                message: "downloadUrl is required if stockType is DIGITAL",
+              })
+            }
+            break
+          case "ATTRIBUTE":
+            if (!ctx.value.productSkuAttVals.length) {
+              ctx.issues.push({
+                code: "custom",
+                input: ctx.value.productSkuAttVals,
+                path: ["productSkuAttVals"],
+                message:
+                  "productSkuAttVals is required if stockType is ATTRIBUTE",
+              })
+            }
+            break
+          default:
+            break
         }
       })
-      .optional(),
-    attributes: z.array(ProductAttributeDTO).optional(),
-    skus: z.array(ProductSkuDTO),
-    productTags: z
-      .array(ProductTagDTO)
-      .check((ctx) => {
-        const ids = ctx.value.map((i) => i.productTagId)
-        if (new Set(ids).size !== ids.length) {
-          ctx.issues.push({
-            code: "custom",
-            input: ctx.value,
-            path: ["productTags"],
-            message: "Array must contain unique productTagId",
-          })
-        }
+  ),
+
+  productToProductTags: z
+    .array(
+      ProductToProductTagSchema.omit({
+        id: true,
+        productId: true,
       })
-      .optional(),
-  })
+    )
+    .optional(),
+})
 
 export const DeleteBodyDTO = z.object({
   ids: z.array(z.uuid()),

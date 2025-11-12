@@ -1,23 +1,32 @@
-import { handleNumberChange } from "@/common/client";
-import AppSortableItem from "@/components/customComponents/AppSortableItem";
-import { Delete as DeleteIcon } from "@mui/icons-material";
-import { IconButton, MenuItem, TextField } from "@mui/material";
-import { EPriceModifierType, OptionItem } from "@prisma/client";
-import React, { useMemo } from "react";
-import { Control, Controller, FieldArrayWithId } from "react-hook-form";
-import { TForm } from "../product-form/useIndex";
+import { handleNumberChange } from "@/common/client"
+import AppSortableItem from "@/components/customComponents/AppSortableItem"
+import { Delete as DeleteIcon } from "@mui/icons-material"
+import { IconButton, MenuItem, TextField } from "@mui/material"
+import { EPriceModifierType, OptionItem } from "@prisma/client"
+import React, { useMemo } from "react"
+import {
+  Control,
+  Controller,
+  FieldArrayWithId,
+  useWatch,
+} from "react-hook-form"
+import { TForm } from "../product-form/useIndex"
 
 type TProps = {
-  idxPO: number;
-  idxPOI: number;
-  field: FieldArrayWithId<TForm, `productOptions.${number}.optionItems`, "id">;
-  optionItemsOpt: OptionItem[];
-  isLoading: boolean;
-  productOIIdSelected: (string | null)[];
-  remove: (index?: number | number[]) => void;
-  isRenderDeleteBtn: boolean;
-  control: Control<TForm>;
-};
+  idxPO: number
+  idxPOI: number
+  field: FieldArrayWithId<
+    TForm,
+    `productOptions.${number}.productOptItems`,
+    "id"
+  >
+  optionItemsOpt: OptionItem[]
+  isLoading: boolean
+  productOIIdSelected: (string | null)[]
+  remove: (index?: number | number[]) => void
+  isRenderDeleteBtn: boolean
+  control: Control<TForm>
+}
 
 export default React.memo(function Index(props: TProps) {
   const {
@@ -30,27 +39,35 @@ export default React.memo(function Index(props: TProps) {
     isRenderDeleteBtn,
     control,
     remove,
-  } = props;
+  } = props
+
+  console.log(optionItemsOpt)
 
   const ops = useMemo(() => {
     return optionItemsOpt?.filter((op) => {
-      const found = productOIIdSelected.findIndex((oi) => op.id === oi);
+      const found = productOIIdSelected.findIndex((oi) => op.id === oi)
       if (found < 0) {
-        return true;
+        return true
       } else if (idxPOI === found) {
-        return true;
+        return true
       }
-      return false;
-    });
-  }, [optionItemsOpt, productOIIdSelected, idxPOI]);
+      return false
+    })
+  }, [optionItemsOpt, productOIIdSelected, idxPOI])
+
   const idOpt = useMemo(() => {
-    return ops.map((i) => i.id);
-  }, [ops]);
+    return ops.map((i) => i.id)
+  }, [ops])
+
+  const priceModifierTypeWatch = useWatch({
+    control,
+    name: `productOptions.${idxPO}.productOptItems.${idxPOI}.priceModifierType`,
+  })
 
   return (
     <AppSortableItem id={fieldProps.id}>
       <Controller
-        name={`productOptions.${idxPO}.optionItems.${idxPOI}.optionItemId`}
+        name={`productOptions.${idxPO}.productOptItems.${idxPOI}.optionItemId`}
         control={control}
         rules={{ required: "Option Item is required" }}
         render={({ field, fieldState }) => (
@@ -76,7 +93,7 @@ export default React.memo(function Index(props: TProps) {
                   <MenuItem key={i.id} value={i.id}>
                     {i.name}
                   </MenuItem>
-                );
+                )
               })
             )}
           </TextField>
@@ -84,7 +101,7 @@ export default React.memo(function Index(props: TProps) {
       />
 
       <Controller
-        name={`productOptions.${idxPO}.optionItems.${idxPOI}.priceModifierType`}
+        name={`productOptions.${idxPO}.productOptItems.${idxPOI}.priceModifierType`}
         control={control}
         rules={{ required: "Price Type is required" }}
         render={({ field, fieldState }) => (
@@ -104,41 +121,47 @@ export default React.memo(function Index(props: TProps) {
                 <MenuItem key={i} value={i}>
                   {i}
                 </MenuItem>
-              );
+              )
             })}
           </TextField>
         )}
       />
 
-      <Controller
-        name={`productOptions.${idxPO}.optionItems.${idxPOI}.priceModifierValue`}
-        control={control}
-        render={({ field, fieldState }) => (
-          <TextField
-            label="Price Value"
-            type="number"
-            error={!!fieldState.error}
-            helperText={fieldState.error?.message || " "}
-            value={field.value ?? ""}
-            onChange={(e) => {
-              handleNumberChange(e, field.onChange);
-            }}
-            onBlur={field.onBlur}
-            inputRef={field.ref}
-            slotProps={{
-              input: {
-                inputMode: "numeric",
-              },
-            }}
-            onWheel={(e) => e.target instanceof HTMLElement && e.target.blur()}
-          />
-        )}
-      />
+      {priceModifierTypeWatch}
+
+      {priceModifierTypeWatch !== "FREE" && (
+        <Controller
+          name={`productOptions.${idxPO}.productOptItems.${idxPOI}.priceModifierValue`}
+          control={control}
+          render={({ field, fieldState }) => (
+            <TextField
+              label="Price Value"
+              type="number"
+              error={!!fieldState.error}
+              helperText={fieldState.error?.message || " "}
+              value={field.value ?? ""}
+              onChange={(e) => {
+                handleNumberChange(e, field.onChange)
+              }}
+              onBlur={field.onBlur}
+              inputRef={field.ref}
+              slotProps={{
+                input: {
+                  inputMode: "numeric",
+                },
+              }}
+              onWheel={(e) =>
+                e.target instanceof HTMLElement && e.target.blur()
+              }
+            />
+          )}
+        />
+      )}
 
       {isRenderDeleteBtn && (
         <IconButton
           onClick={() => {
-            remove(idxPOI);
+            remove(idxPOI)
           }}
           color="error"
         >
@@ -146,5 +169,5 @@ export default React.memo(function Index(props: TProps) {
         </IconButton>
       )}
     </AppSortableItem>
-  );
-});
+  )
+})

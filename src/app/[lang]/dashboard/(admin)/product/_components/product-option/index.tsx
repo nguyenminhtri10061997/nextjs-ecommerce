@@ -1,5 +1,5 @@
-import { handleNumberChange } from "@/common/client";
-import AppSortableItem from "@/components/customComponents/AppSortableItem";
+import { handleDragEnd, handleNumberChange } from "@/common/client"
+import AppSortableItem from "@/components/customComponents/AppSortableItem"
 import {
   closestCenter,
   DndContext,
@@ -7,12 +7,9 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
-import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
+} from "@dnd-kit/core"
+import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material"
 import {
   Box,
   Checkbox,
@@ -20,34 +17,34 @@ import {
   IconButton,
   MenuItem,
   TextField,
-} from "@mui/material";
-import { Prisma } from "@prisma/client";
-import { UseQueryResult } from "@tanstack/react-query";
-import React from "react";
+} from "@mui/material"
+import { Prisma } from "@prisma/client"
+import { UseQueryResult } from "@tanstack/react-query"
+import React from "react"
 import {
   Controller,
   FieldArrayWithId,
   UseFieldArrayReturn,
   UseFormReturn,
-} from "react-hook-form";
-import { TForm } from "../product-form/useIndex";
-import ProductOptionItem from "../product-option-item";
-import useIndex from "./useIndex";
+} from "react-hook-form"
+import { TForm } from "../product-form/useIndex"
+import ProductOptionItem from "../product-option-item"
+import useIndex from "./useIndex"
 
 type TProps = {
-  idx: number;
-  field: FieldArrayWithId<TForm, "productOptions", "id">;
+  idx: number
+  field: FieldArrayWithId<TForm, "productOptions", "id">
   queryOption: UseQueryResult<
     Prisma.OptionGetPayload<{ include: { optionItems: true } }>[],
     Error
-  >;
-  form: UseFormReturn<TForm>;
-  productOptionArrField: UseFieldArrayReturn<TForm, "productOptions">;
+  >
+  form: UseFormReturn<TForm>
+  productOptionArrField: UseFieldArrayReturn<TForm, "productOptions">
   productOptionIdSelected: {
-    idx: number;
-    optionId: string;
-  }[];
-};
+    idx: number
+    optionId: string
+  }[]
+}
 
 export default React.memo(function Index(props: TProps) {
   const {
@@ -57,18 +54,17 @@ export default React.memo(function Index(props: TProps) {
     form,
     productOptionArrField,
     productOptionIdSelected,
-  } = props;
-  const { control } = form;
+  } = props
+  const { control } = form
   const {
     productOptionItemArrField,
     productOIIdSelectedDeferred,
-    handleDragEnd,
     handleFillDefaultOption,
   } = useIndex({
     form,
     idx: idxProps,
     queryOption,
-  });
+  })
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -79,7 +75,7 @@ export default React.memo(function Index(props: TProps) {
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
-  );
+  )
 
   return (
     <Box>
@@ -96,8 +92,8 @@ export default React.memo(function Index(props: TProps) {
               helperText={fieldState.error?.message || " "}
               value={field.value ?? ""}
               onChange={(e) => {
-                field.onChange(e.target.value);
-                handleFillDefaultOption(e.target.value, idxProps);
+                field.onChange(e.target.value)
+                handleFillDefaultOption(e.target.value, idxProps)
               }}
               onBlur={field.onBlur}
               inputRef={field.ref}
@@ -109,21 +105,18 @@ export default React.memo(function Index(props: TProps) {
                 </MenuItem>
               ) : (
                 queryOption.data
-                  ?.filter((op) => {
-                    const found = productOptionIdSelected.find(
-                      (i) => i.optionId === op.id
-                    );
-                    if (!found) {
-                      return true;
-                    }
-                    return idxProps === found.idx;
-                  })
+                  ?.filter(
+                    (op) =>
+                      !!productOptionIdSelected.find(
+                        (i) => idxProps !== i.idx && i.optionId === op.id
+                      )
+                  )
                   ?.map((i) => {
                     return (
                       <MenuItem key={i.id} value={i.id}>
                         {i.name}
                       </MenuItem>
-                    );
+                    )
                   })
               )}
             </TextField>
@@ -140,7 +133,7 @@ export default React.memo(function Index(props: TProps) {
               helperText={fieldState.error?.message || " "}
               value={field.value ?? ""}
               onChange={(e) => {
-                handleNumberChange(e, field.onChange);
+                handleNumberChange(e, field.onChange)
               }}
               onBlur={field.onBlur}
               inputRef={field.ref}
@@ -184,8 +177,8 @@ export default React.memo(function Index(props: TProps) {
         </IconButton>
         <IconButton
           onClick={() => {
-            form.resetField(`productOptions.${idxProps}.optionId`);
-            productOptionArrField.remove(idxProps);
+            form.resetField(`productOptions.${idxProps}.optionId`)
+            productOptionArrField.remove(idxProps)
           }}
           color="error"
         >
@@ -196,7 +189,11 @@ export default React.memo(function Index(props: TProps) {
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
+          onDragEnd={handleDragEnd(
+            form,
+            "productOptions",
+            productOptionArrField
+          )}
         >
           <SortableContext
             items={productOptionItemArrField.fields.map((i) => i.id)}
@@ -225,5 +222,5 @@ export default React.memo(function Index(props: TProps) {
         </DndContext>
       </Box>
     </Box>
-  );
-});
+  )
+})

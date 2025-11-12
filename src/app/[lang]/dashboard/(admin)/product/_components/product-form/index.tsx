@@ -1,8 +1,8 @@
-"use client";
+"use client"
 
-import { getS3ImgFullUrl, textToSlug } from "@/common";
-import { handleDragEnd, handleNumberChange } from "@/common/client";
-import AppImageUpload from "@/components/customComponents/AppImageUpload";
+import { getS3ImgFullUrl, textToSlug } from "@/common"
+import { handleDragEnd, handleNumberChange } from "@/common/client"
+import AppImageUpload from "@/components/customComponents/AppImageUpload"
 import {
   closestCenter,
   DndContext,
@@ -10,13 +10,10 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+} from "@dnd-kit/core"
+import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
+import AddIcon from "@mui/icons-material/Add"
+import DeleteIcon from "@mui/icons-material/Delete"
 import {
   Box,
   Button,
@@ -29,24 +26,24 @@ import {
   IconButton,
   MenuItem,
   Toolbar,
-} from "@mui/material";
-import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
-import { EProductType } from "@prisma/client";
-import { useEffect } from "react";
-import { Controller, UseFormReturn } from "react-hook-form";
-import DigitalFrom from "../digital-form";
-import ProductOption from "../product-option";
-import Service from "../service-form";
-import SimpleForm from "../simple-form";
-import VariableForm from "../variable-form";
-import useIndex, { TForm } from "./useIndex";
+} from "@mui/material"
+import Stack from "@mui/material/Stack"
+import TextField from "@mui/material/TextField"
+import { EProductType } from "@prisma/client"
+import { useEffect } from "react"
+import { Controller, UseFormReturn } from "react-hook-form"
+import DigitalFrom from "../digital-form"
+import ProductOption from "../product-option"
+import Service from "../service-form"
+import SimpleForm from "../simple-form"
+import VariableForm from "../variable-form"
+import useIndex, { TForm } from "./useIndex"
 
 type TProps = {
-  onGetForm: (form: UseFormReturn<TForm>) => void;
-};
+  onGetForm: (form: UseFormReturn<TForm>) => void
+}
 export default function Index(props: TProps) {
-  const { onGetForm } = props;
+  const { onGetForm } = props
   const {
     form,
     queryBrand,
@@ -59,7 +56,7 @@ export default function Index(props: TProps) {
     productTagIdSelected,
     productOptionIdSelected,
     productTypeWatch,
-  } = useIndex();
+  } = useIndex()
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -70,11 +67,11 @@ export default function Index(props: TProps) {
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
-  );
+  )
 
   useEffect(() => {
-    onGetForm(form);
-  }, [form, onGetForm]);
+    onGetForm(form)
+  }, [form, onGetForm])
 
   useEffect(() => {
     const callbacks = [
@@ -84,7 +81,7 @@ export default function Index(props: TProps) {
           values: true,
         },
         callback: ({ values }) => {
-          form.setValue("slug", textToSlug(values.name));
+          form.setValue("slug", textToSlug(values.name))
         },
       }),
       form.subscribe({
@@ -93,59 +90,59 @@ export default function Index(props: TProps) {
           values: true,
         },
         callback: ({ values }) => {
-          form.setValue("attributes", []);
-          form.setValue("skus", []);
+          form.setValue("attributes", [])
+          form.setValue("skus", [])
           const commonValSku = {
             price: 0,
             sellerSku: "",
             skuAttributeValues: [],
             status: "ACTIVE",
-          };
-          let setSku: Partial<TForm["skus"][number]> = {};
+          }
+          let setSku: Partial<TForm["skus"][number]> = {}
           switch (values.type) {
             case "SIMPLE":
               setSku = {
                 stockType: "MANUAL",
                 stockStatus: "STOCKING",
-              };
-              break;
+              }
+              break
             case "DIGITAL":
               setSku = {
                 stockType: "DIGITAL",
-              };
-              break;
+              }
+              break
             case "VARIABLE":
-              return;
+              return
 
             case "SERVICE":
               setSku = {
                 stockType: "MANUAL",
-              };
-              break;
+              }
+              break
           }
           form.setValue("skus", [
             {
               ...commonValSku,
               ...setSku,
             },
-          ] as TForm["skus"]);
+          ] as TForm["skus"])
         },
       }),
-    ];
+    ]
 
     return () => {
-      callbacks.forEach((sub) => sub());
-    };
-  }, [form]);
+      callbacks.forEach((sub) => sub())
+    }
+  }, [form])
 
   const renderProductTypeMap = {
     [EProductType.SIMPLE]: <SimpleForm form={form} />,
     [EProductType.VARIABLE]: <VariableForm form={form} />,
     [EProductType.DIGITAL]: <DigitalFrom form={form} />,
     [EProductType.SERVICE]: <Service form={form} />,
-  };
+  }
 
-  const { control } = form;
+  const { control } = form
 
   return (
     <Box>
@@ -300,7 +297,7 @@ export default function Index(props: TProps) {
                       <MenuItem key={pc.id} value={pc.id}>
                         {pc.name}
                       </MenuItem>
-                    );
+                    )
                   })
                 )}
               </TextField>
@@ -334,7 +331,7 @@ export default function Index(props: TProps) {
                       <MenuItem key={pc.id} value={pc.id}>
                         {pc.name}
                       </MenuItem>
-                    );
+                    )
                   })
                 )}
               </TextField>
@@ -372,7 +369,7 @@ export default function Index(props: TProps) {
                 <AppImageUpload
                   url={getS3ImgFullUrl(field.value)}
                   onChange={(file: File, key?: string | null) => {
-                    field.onChange(key);
+                    field.onChange(key)
                   }}
                   showDeleteBtn={false}
                   width={100}
@@ -402,7 +399,7 @@ export default function Index(props: TProps) {
                     <AppImageUpload
                       url={getS3ImgFullUrl(field.value)}
                       onChange={(file: File, key?: string | null) => {
-                        field.onChange(key);
+                        field.onChange(key)
                       }}
                       onDelete={() => listImageArrField.remove(idx)}
                       width={100}
@@ -416,7 +413,7 @@ export default function Index(props: TProps) {
                 onChange={(file: File, key?: string | null) => {
                   listImageArrField.append({
                     name: key,
-                  });
+                  })
                 }}
                 showDeleteBtn={false}
                 width={100}
@@ -440,7 +437,7 @@ export default function Index(props: TProps) {
                 helperText={fieldState.error?.message || " "}
                 value={field.value ?? ""}
                 onChange={(e) => {
-                  handleNumberChange(e, field.onChange);
+                  handleNumberChange(e, field.onChange)
                 }}
                 onBlur={field.onBlur}
                 inputRef={field.ref}
@@ -469,7 +466,7 @@ export default function Index(props: TProps) {
                 helperText={fieldState.error?.message || " "}
                 value={field.value ?? ""}
                 onChange={(e) => {
-                  handleNumberChange(e, field.onChange);
+                  handleNumberChange(e, field.onChange)
                 }}
                 onBlur={field.onBlur}
                 inputRef={field.ref}
@@ -495,7 +492,7 @@ export default function Index(props: TProps) {
             <Grid key={item.id} container spacing={3} mt={1}>
               <Grid size="grow">
                 <Controller
-                  name={`productTags.${idx}.productTagId`}
+                  name={`productToProductTags.${idx}.productTagId`}
                   control={control}
                   rules={{ required: "Tag is required" }}
                   render={({ field, fieldState }) => (
@@ -520,18 +517,18 @@ export default function Index(props: TProps) {
                           ?.filter((op) => {
                             const found = productTagIdSelected.find(
                               (i) => i.productTagId === op.id
-                            );
+                            )
                             if (!found) {
-                              return true;
+                              return true
                             }
-                            return idx === found.idx;
+                            return idx === found.idx
                           })
                           ?.map((i) => {
                             return (
                               <MenuItem key={i.id} value={i.id}>
                                 {i.name}
                               </MenuItem>
-                            );
+                            )
                           })
                       )}
                     </TextField>
@@ -540,7 +537,7 @@ export default function Index(props: TProps) {
               </Grid>
               <Grid>
                 <Controller
-                  name={`productTags.${idx}.expiredAt`}
+                  name={`productToProductTags.${idx}.expiredAt`}
                   control={control}
                   render={({ field, fieldState }) => (
                     <TextField
@@ -617,13 +614,14 @@ export default function Index(props: TProps) {
                 productOptionArrField.append({
                   optionId: "",
                   maxSelect: null,
-                  optionItems: [
+                  productOptItems: [
                     {
                       optionItemId: "",
                       priceModifierType: "FREE",
                       priceModifierValue: 0,
                     },
                   ],
+                  isRequired: false,
                 })
               }
               variant="contained"
@@ -678,5 +676,5 @@ export default function Index(props: TProps) {
         />
       </Stack>
     </Box>
-  );
+  )
 }

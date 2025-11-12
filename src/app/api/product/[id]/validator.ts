@@ -19,32 +19,55 @@ export const PatchUpdateProductDTO = ProductSchema.omit({
 })
   .partial()
   .extend({
-    attributes: z.array(
-      ProductAttributeSchema.omit({
-        productId: true,
-      }).extend({
-        productAttValues: z.array(ProductAttributeValueSchema).refine(
-          (arr) => {
-            const seen = new Set()
-            for (const item of arr) {
-              const key = `${item.productAttributeId}-${item.attributeValueId}`
-              if (seen.has(key)) return false
-              seen.add(key)
-            }
-            return true
-          },
-          {
-            message: "Duplicate productAttributeId + attributeValueId found",
+    attributes: z
+      .array(
+        ProductAttributeSchema.omit({
+          productId: true,
+        }).extend({
+          productAttValues: z
+            .array(
+              ProductAttributeValueSchema.omit({
+                productAttributeId: true,
+              })
+            )
+            .refine(
+              (arr) => {
+                const seen = new Set()
+                for (const item of arr) {
+                  const key = item.attributeValueId
+                  if (seen.has(key)) return false
+                  seen.add(key)
+                }
+                return true
+              },
+              {
+                message: "Duplicate attributeValueId found",
+              }
+            ),
+        })
+      )
+      .refine(
+        (arr) => {
+          const seen = new Set()
+          for (const item of arr) {
+            const key = item.attributeId
+            if (seen.has(key)) return false
+            seen.add(key)
           }
-        ),
-      })
-    ),
+          return true
+        },
+        {
+          message: "Duplicate attributeId found",
+        }
+      ),
     skus: z.array(
       ProductSkuSchema.partial().extend({
-        productSkuAttVal: ProductSkuAttributeValueSchema.omit({
-          productSkuId: true,
-          id: true,
-        }),
+        productSkuAttVals: z.array(
+          ProductSkuAttributeValueSchema.omit({
+            productSkuId: true,
+            id: true,
+          })
+        ),
       })
     ),
     productToProductTags: z.array(
@@ -54,8 +77,25 @@ export const PatchUpdateProductDTO = ProductSchema.omit({
       })
     ),
     productOpts: z.array(
-      ProductOptionSchema.partial().extend({
-        productOptItems: z.array(ProductOptionToOptionItemSchema.partial()),
+      ProductOptionSchema.omit({
+        id: true,
+        productId: true,
       })
+        .partial()
+        .required({
+          optionId: true,
+        })
+        .extend({
+          productOptItems: z.array(
+            ProductOptionToOptionItemSchema.omit({
+              id: true,
+              productOptionId: true,
+            })
+              .partial()
+              .required({
+                optionItemId: true,
+              })
+          ),
+        })
     ),
   })
