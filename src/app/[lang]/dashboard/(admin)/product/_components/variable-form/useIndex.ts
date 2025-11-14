@@ -1,83 +1,75 @@
-import { generateCombinations } from "@/common";
-import { useAlertContext } from "@/components/hooks/useAlertContext";
-import { useGetAttributeListQuery } from "@/lib/reactQuery/attribute";
-import { startTransition, useDeferredValue, useState } from "react";
-import { useFieldArray, UseFormReturn } from "react-hook-form";
-import { TForm } from "../product-form/useIndex";
-
-export type TAttValHash = {
-  attHash: { [key: string]: TForm["attributes"][number] };
-  attValHash: {
-    [key: string]: TForm["attributes"][number]["attributeValues"][number];
-  };
-};
+import { generateCombinations } from "@/common"
+import { useAlertContext } from "@/components/hooks/useAlertContext"
+import { useGetAttributeListQuery } from "@/lib/reactQuery/attribute"
+import { startTransition, useMemo } from "react"
+import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form"
+import { TForm } from "../product-form/useIndex"
+import { TAttAndAttValHash } from "./constants"
 
 type TProps = {
-  form: UseFormReturn<TForm>;
-};
+  form: UseFormReturn<TForm>
+}
 export default function useIndex(props: TProps) {
-  const { form } = props;
+  const { form } = props
 
   const queryAtt = useGetAttributeListQuery({
     orderQuery: {
       orderKey: "displayOrder",
       orderType: "asc",
     },
-  });
-  const { showAlert } = useAlertContext();
-  const [attAndAttValHash, setAttAndAttValHash] = useState<TAttValHash>({
-    attHash: {},
-    attValHash: {},
-  });
-
-  const attAndAttValHashDeferred = useDeferredValue(attAndAttValHash);
+  })
+  const { showAlert } = useAlertContext()
+  const attAndAttValHash: TAttAndAttValHash = useMemo(() => {
+    const attHash: TAttAndAttValHash["attHash"] = {}
+    const attVHash: TAttAndAttValHash["attVHash"] = {}
+    queryAtt.data?.forEach((att) => {
+      attHash[att.id] = att
+      att.attributeValues.forEach((attV) => {
+        attVHash[attV.id] = attV
+      })
+    })
+    return {
+      attHash,
+      attVHash,
+    }
+  }, [queryAtt.data])
 
   const productAttArrField = useFieldArray({
     control: form.control,
     name: "attributes",
-  });
+  })
 
   const skuArrField = useFieldArray({
     control: form.control,
     name: "skus",
-  });
+  })
 
   const handleClickGenSku = async () => {
-    const att = form.getValues("attributes");
-    if (!att.length) {
-      showAlert("Please add at least one Attribute", "error");
-      return;
+    const att = form.getValues("attributes")
+    if (!att?.length) {
+      showAlert("Please add at least one Attribute", "error")
+      return
     }
-    const isValid = await form.trigger(
-      form
-        .getValues("attributes")
-        .flatMap((at, idx) => [
-          `attributes.${idx}.name`,
-          `attributes.${idx}.slug`,
-          `attributes.${idx}.status`,
-          ...at.attributeValues.flatMap((_, idxV) => [
-            `attributes.${idx}.attributeValues.${idxV}.name`,
-            `attributes.${idx}.attributeValues.${idxV}.slug`,
-          ]),
-        ]) as Parameters<typeof form.trigger>[0]
-    );
+    const isValid = await form.trigger("attributes")
     if (!isValid) {
-      return;
+      return
     }
-    startTransition(() => {
-      const resCombination = generateCombinations(
-        att
-          .filter((i) => i.name)
-          .map((i) => {
-            return i.attributeValues
-              .filter((v) => v.name)
-              .map((v) => ({
-                attributeId: i.id,
-                ...v,
-              }));
-          })
-      );
 
+    const resCombination = generateCombinations(
+      att
+        .filter((i) => i.attributeId && i.isUsedForVariations)
+        .map((pa) => {
+          return pa.productAttValues
+            .filter((v) => v.attributeValueId)
+            .map((pav) => ({
+              attributeId: pa.attributeId,
+              attributeValueId: pav.attributeValueId,
+              pavId: pav.id,
+              paId: pa.id,
+            }))
+        })
+    )
+    startTransition(() => {
       form.setValue(
         "skus",
         resCombination.map(
@@ -85,29 +77,39 @@ export default function useIndex(props: TProps) {
             ({
               price: 0,
               stockType: "MANUAL",
-              stockStatus: 'STOCKING',
+              stockStatus: "STOCKING",
               status: "ACTIVE",
-              skuAttributeValues: attVs.map((v) => ({
-                productAttributeId: v.attributeId,
-                productAttributeValueId: v.id,
+              productSkuAttVals: attVs.map((v) => ({
+                productAttributeId: v.paId,
+                productAttributeValueId: v.pavId,
               })),
-            } as TForm["skus"][number])
+            }) as TForm["skus"][number]
         )
-      );
-    });
-  };
+      )
+    })
+  }
 
   const handleClickDeleteSku = (idx: number) => {
-    skuArrField.remove(idx);
-  };
+    skuArrField.remove(idx)
+  }
+
+  const attributeWatch = useWatch({
+    control: form.control,
+    name: "attributes",
+  })
+
+  const paHashMemo = useMemo(
+    () => Object.fromEntries(attributeWatch?.map((i) => [i.id, i]) || []) || {},
+    [attributeWatch]
+  )
 
   return {
     queryAtt,
     productAttArrField,
     skuArrField,
-    attAndAttValHashDeferred,
-    setAttAndAttValHash,
+    attAndAttValHash,
+    paHashMemo,
     handleClickGenSku,
     handleClickDeleteSku,
-  };
+  }
 }

@@ -31,6 +31,10 @@ export const GetQueryDTO = z.object({
 
 export const PostCreateBodyDTO = ProductSchema.omit({
   id: true,
+}).partial({
+  viewCount: true,
+  soldCount: true,
+  isDeleted: true,
 }).extend({
   productOptions: z
     .array(

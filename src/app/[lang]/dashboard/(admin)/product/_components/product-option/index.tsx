@@ -25,7 +25,7 @@ import {
   Controller,
   FieldArrayWithId,
   UseFieldArrayReturn,
-  UseFormReturn,
+  useFormContext,
 } from "react-hook-form"
 import { TForm } from "../product-form/useIndex"
 import ProductOptionItem from "../product-option-item"
@@ -38,12 +38,7 @@ type TProps = {
     Prisma.OptionGetPayload<{ include: { optionItems: true } }>[],
     Error
   >
-  form: UseFormReturn<TForm>
   productOptionArrField: UseFieldArrayReturn<TForm, "productOptions">
-  productOptionIdSelected: {
-    idx: number
-    optionId: string
-  }[]
 }
 
 export default React.memo(function Index(props: TProps) {
@@ -51,14 +46,15 @@ export default React.memo(function Index(props: TProps) {
     idx: idxProps,
     field: fieldProps,
     queryOption,
-    form,
     productOptionArrField,
-    productOptionIdSelected,
   } = props
+  const form = useFormContext<TForm>()
   const { control } = form
   const {
     productOptionItemArrField,
-    productOIIdSelectedDeferred,
+    poHash,
+    poSelectedMemo,
+    poiSelectedMemo,
     handleFillDefaultOption,
   } = useIndex({
     form,
@@ -104,20 +100,16 @@ export default React.memo(function Index(props: TProps) {
                   Loading...
                 </MenuItem>
               ) : (
-                queryOption.data
-                  ?.filter(
-                    (op) =>
-                      !!productOptionIdSelected.find(
-                        (i) => idxProps !== i.idx && i.optionId === op.id
-                      )
+                queryOption.data?.map((po) => {
+                  const disabled = poSelectedMemo?.some(
+                    (i) => i.idx !== idxProps && i.optionId === po.id
                   )
-                  ?.map((i) => {
-                    return (
-                      <MenuItem key={i.id} value={i.id}>
-                        {i.name}
-                      </MenuItem>
-                    )
-                  })
+                  return (
+                    <MenuItem key={po.id} value={po.id} disabled={disabled}>
+                      {po.name}
+                    </MenuItem>
+                  )
+                })
               )}
             </TextField>
           )}
@@ -201,20 +193,16 @@ export default React.memo(function Index(props: TProps) {
             {productOptionItemArrField.fields.map((field, idx) => (
               <ProductOptionItem
                 key={field.id}
-                control={form.control}
+                poiSelectedMemo={poiSelectedMemo}
                 field={field}
                 idxPO={idxProps}
                 idxPOI={idx}
                 isLoading={queryOption.isLoading}
                 isRenderDeleteBtn={productOptionItemArrField.fields.length > 1}
                 optionItemsOpt={
-                  queryOption.data?.find(
-                    (i) =>
-                      i.id ===
-                      form.getValues("productOptions")?.[idxProps].optionId
-                  )?.optionItems || []
+                  poHash[form.getValues(`productOptions.${idxProps}.optionId`)]
+                    ?.optionItems || []
                 }
-                productOIIdSelected={productOIIdSelectedDeferred}
                 remove={productOptionItemArrField.remove}
               />
             ))}

@@ -3,15 +3,9 @@
 import { getS3ImgFullUrl, textToSlug } from "@/common"
 import { handleDragEnd, handleNumberChange } from "@/common/client"
 import AppImageUpload from "@/components/customComponents/AppImageUpload"
-import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core"
-import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
+import useAppUseSensors from "@/components/hooks/useSensors"
+import { closestCenter, DndContext } from "@dnd-kit/core"
+import { SortableContext } from "@dnd-kit/sortable"
 import AddIcon from "@mui/icons-material/Add"
 import DeleteIcon from "@mui/icons-material/Delete"
 import {
@@ -31,7 +25,7 @@ import Stack from "@mui/material/Stack"
 import TextField from "@mui/material/TextField"
 import { EProductType } from "@prisma/client"
 import { useEffect } from "react"
-import { Controller, UseFormReturn } from "react-hook-form"
+import { Controller, FormProvider, UseFormReturn } from "react-hook-form"
 import DigitalFrom from "../digital-form"
 import ProductOption from "../product-option"
 import Service from "../service-form"
@@ -54,20 +48,10 @@ export default function Index(props: TProps) {
     productTagArrField,
     productOptionArrField,
     productTagIdSelected,
-    productOptionIdSelected,
     productTypeWatch,
   } = useIndex()
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
+  const sensors = useAppUseSensors()
 
   useEffect(() => {
     onGetForm(form)
@@ -137,7 +121,7 @@ export default function Index(props: TProps) {
 
   const renderProductTypeMap = {
     [EProductType.SIMPLE]: <SimpleForm form={form} />,
-    [EProductType.VARIABLE]: <VariableForm form={form} />,
+    [EProductType.VARIABLE]: <VariableForm />,
     [EProductType.DIGITAL]: <DigitalFrom form={form} />,
     [EProductType.SERVICE]: <Service form={form} />,
   }
@@ -146,535 +130,526 @@ export default function Index(props: TProps) {
 
   return (
     <Box>
-      <Grid container spacing={1}>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Controller
-            name="code"
-            control={control}
-            rules={{ required: "Code is required" }}
-            render={({ field, fieldState }) => (
-              <TextField
-                label="Code"
-                fullWidth
-                required
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-              />
-            )}
-          />
-        </Grid>
+      <FormProvider {...form}>
+        <Grid container spacing={1}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Controller
+              name="code"
+              control={control}
+              rules={{ required: "Code is required" }}
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Code"
+                  fullWidth
+                  required
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || " "}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                />
+              )}
+            />
+          </Grid>
 
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Controller
-            name="name"
-            control={control}
-            rules={{ required: "Name is required" }}
-            render={({ field, fieldState }) => (
-              <TextField
-                label="Name"
-                fullWidth
-                required
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-              />
-            )}
-          />
-        </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Controller
+              name="name"
+              control={control}
+              rules={{ required: "Name is required" }}
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Name"
+                  fullWidth
+                  required
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || " "}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                />
+              )}
+            />
+          </Grid>
 
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Controller
-            name="slug"
-            control={control}
-            rules={{ required: "Slug is required" }}
-            render={({ field, fieldState }) => (
-              <TextField
-                label="Slug"
-                fullWidth
-                required
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-              />
-            )}
-          />
-        </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Controller
+              name="slug"
+              control={control}
+              rules={{ required: "Slug is required" }}
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Slug"
+                  fullWidth
+                  required
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || " "}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                />
+              )}
+            />
+          </Grid>
 
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Controller
-            name="seoTitle"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                label="Seo Title"
-                fullWidth
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-              />
-            )}
-          />
-        </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Controller
+              name="seoTitle"
+              control={control}
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Seo Title"
+                  fullWidth
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || " "}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                />
+              )}
+            />
+          </Grid>
 
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Controller
-            name="description"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                label="Description"
-                multiline
-                minRows={3}
-                fullWidth
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-              />
-            )}
-          />
-        </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Controller
+              name="description"
+              control={control}
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Description"
+                  multiline
+                  minRows={3}
+                  fullWidth
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || " "}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                />
+              )}
+            />
+          </Grid>
 
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Controller
-            name="seoDescription"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                label="Seo Description"
-                multiline
-                minRows={3}
-                fullWidth
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-              />
-            )}
-          />
-        </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Controller
+              name="seoDescription"
+              control={control}
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Seo Description"
+                  multiline
+                  minRows={3}
+                  fullWidth
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || " "}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                />
+              )}
+            />
+          </Grid>
 
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Controller
-            name="productCategoryId"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                label="Category"
-                select
-                fullWidth
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-              >
-                {queryCategory.isLoading ? (
-                  <MenuItem disabled value="">
-                    Loading...
-                  </MenuItem>
-                ) : (
-                  queryCategory.data?.map((pc) => {
-                    return (
-                      <MenuItem key={pc.id} value={pc.id}>
-                        {pc.name}
-                      </MenuItem>
-                    )
-                  })
-                )}
-              </TextField>
-            )}
-          />
-        </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Controller
+              name="productCategoryId"
+              control={control}
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Category"
+                  select
+                  fullWidth
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || " "}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                >
+                  {queryCategory.isLoading ? (
+                    <MenuItem disabled value="">
+                      Loading...
+                    </MenuItem>
+                  ) : (
+                    queryCategory.data?.map((pc) => {
+                      return (
+                        <MenuItem key={pc.id} value={pc.id}>
+                          {pc.name}
+                        </MenuItem>
+                      )
+                    })
+                  )}
+                </TextField>
+              )}
+            />
+          </Grid>
 
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Controller
-            name="brandId"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                label="Brand"
-                select
-                fullWidth
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-              >
-                {queryBrand.isLoading ? (
-                  <MenuItem disabled value="">
-                    Loading...
-                  </MenuItem>
-                ) : (
-                  queryBrand.data?.map((pc) => {
-                    return (
-                      <MenuItem key={pc.id} value={pc.id}>
-                        {pc.name}
-                      </MenuItem>
-                    )
-                  })
-                )}
-              </TextField>
-            )}
-          />
-        </Grid>
-        <Grid size={12}>
-          <Controller
-            name="detail"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                label="Detail"
-                multiline
-                minRows={3}
-                fullWidth
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-              />
-            )}
-          />
-        </Grid>
-        <Grid size={{ sm: 12, md: 2 }}>
-          <Controller
-            name="mainImage"
-            control={control}
-            rules={{ required: "Main image is required" }}
-            render={({ field, fieldState }) => (
-              <FormControl required>
-                <FormLabel>Main Image</FormLabel>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Controller
+              name="brandId"
+              control={control}
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Brand"
+                  select
+                  fullWidth
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || " "}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                >
+                  {queryBrand.isLoading ? (
+                    <MenuItem disabled value="">
+                      Loading...
+                    </MenuItem>
+                  ) : (
+                    queryBrand.data?.map((pc) => {
+                      return (
+                        <MenuItem key={pc.id} value={pc.id}>
+                          {pc.name}
+                        </MenuItem>
+                      )
+                    })
+                  )}
+                </TextField>
+              )}
+            />
+          </Grid>
+          <Grid size={12}>
+            <Controller
+              name="detail"
+              control={control}
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Detail"
+                  multiline
+                  minRows={3}
+                  fullWidth
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || " "}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                />
+              )}
+            />
+          </Grid>
+          <Grid size={{ sm: 12, md: 2 }}>
+            <Controller
+              name="mainImage"
+              control={control}
+              rules={{ required: "Main image is required" }}
+              render={({ field, fieldState }) => (
+                <FormControl required>
+                  <FormLabel>Main Image</FormLabel>
+                  <AppImageUpload
+                    url={getS3ImgFullUrl(field.value)}
+                    onChange={(file: File, key?: string | null) => {
+                      field.onChange(key)
+                    }}
+                    showDeleteBtn={false}
+                    width={100}
+                    height={100}
+                    isCallUploadWhenOnChange
+                  />
+                  {fieldState.error && (
+                    <FormHelperText error>
+                      {fieldState.error.message}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              )}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 9 }}>
+            <FormControl>
+              <FormLabel>List Images</FormLabel>
+
+              <Stack direction={"row"} gap={2} overflow={"auto"}>
+                {listImageArrField.fields.map((item, idx) => (
+                  <Controller
+                    key={item.id}
+                    name={`listImages.${idx}.name`}
+                    control={control}
+                    render={({ field }) => (
+                      <AppImageUpload
+                        url={getS3ImgFullUrl(field.value)}
+                        onChange={(file: File, key?: string | null) => {
+                          field.onChange(key)
+                        }}
+                        onDelete={() => listImageArrField.remove(idx)}
+                        width={100}
+                        height={100}
+                        isCallUploadWhenOnChange
+                      />
+                    )}
+                  />
+                ))}
                 <AppImageUpload
-                  url={getS3ImgFullUrl(field.value)}
                   onChange={(file: File, key?: string | null) => {
-                    field.onChange(key)
+                    listImageArrField.append({
+                      name: key,
+                    })
                   }}
                   showDeleteBtn={false}
                   width={100}
                   height={100}
                   isCallUploadWhenOnChange
                 />
-                {fieldState.error && (
-                  <FormHelperText error>
-                    {fieldState.error.message}
-                  </FormHelperText>
-                )}
-              </FormControl>
-            )}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 9 }}>
-          <FormControl>
-            <FormLabel>List Images</FormLabel>
+              </Stack>
+            </FormControl>
+          </Grid>
 
-            <Stack direction={"row"} gap={2} overflow={"auto"}>
-              {listImageArrField.fields.map((item, idx) => (
-                <Controller
-                  key={item.id}
-                  name={`listImages.${idx}.name`}
-                  control={control}
-                  render={({ field }) => (
-                    <AppImageUpload
-                      url={getS3ImgFullUrl(field.value)}
-                      onChange={(file: File, key?: string | null) => {
-                        field.onChange(key)
-                      }}
-                      onDelete={() => listImageArrField.remove(idx)}
-                      width={100}
-                      height={100}
-                      isCallUploadWhenOnChange
-                    />
-                  )}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Controller
+              name="viewCount"
+              control={control}
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="View Count"
+                  type="number"
+                  fullWidth
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || " "}
+                  value={field.value ?? ""}
+                  onChange={(e) => {
+                    handleNumberChange(e, field.onChange)
+                  }}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                  slotProps={{
+                    input: {
+                      inputMode: "numeric",
+                    },
+                  }}
+                  onWheel={(e) =>
+                    e.target instanceof HTMLElement && e.target.blur()
+                  }
                 />
-              ))}
-              <AppImageUpload
-                onChange={(file: File, key?: string | null) => {
-                  listImageArrField.append({
-                    name: key,
-                  })
-                }}
-                showDeleteBtn={false}
-                width={100}
-                height={100}
-                isCallUploadWhenOnChange
-              />
-            </Stack>
-          </FormControl>
+              )}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Controller
+              name="soldCount"
+              control={control}
+              render={({ field, fieldState }) => (
+                <TextField
+                  label="Sold Count"
+                  type="number"
+                  fullWidth
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || " "}
+                  value={field.value ?? ""}
+                  onChange={(e) => {
+                    handleNumberChange(e, field.onChange)
+                  }}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                  slotProps={{
+                    input: {
+                      inputMode: "numeric",
+                    },
+                  }}
+                  onWheel={(e) =>
+                    e.target instanceof HTMLElement && e.target.blur()
+                  }
+                />
+              )}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}></Grid>
         </Grid>
 
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Controller
-            name="viewCount"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                label="View Count"
-                type="number"
-                fullWidth
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                value={field.value ?? ""}
-                onChange={(e) => {
-                  handleNumberChange(e, field.onChange)
-                }}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-                slotProps={{
-                  input: {
-                    inputMode: "numeric",
-                  },
-                }}
-                onWheel={(e) =>
-                  e.target instanceof HTMLElement && e.target.blur()
-                }
-              />
-            )}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Controller
-            name="soldCount"
-            control={control}
-            render={({ field, fieldState }) => (
-              <TextField
-                label="Sold Count"
-                type="number"
-                fullWidth
-                error={!!fieldState.error}
-                helperText={fieldState.error?.message || " "}
-                value={field.value ?? ""}
-                onChange={(e) => {
-                  handleNumberChange(e, field.onChange)
-                }}
-                onBlur={field.onBlur}
-                inputRef={field.ref}
-                slotProps={{
-                  input: {
-                    inputMode: "numeric",
-                  },
-                }}
-                onWheel={(e) =>
-                  e.target instanceof HTMLElement && e.target.blur()
-                }
-              />
-            )}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, md: 6 }}></Grid>
-      </Grid>
-
-      <Stack gap={1}>
-        <FormControl>
-          <FormLabel>Product Tag</FormLabel>
-          {productTagArrField.fields.map((item, idx) => (
-            <Grid key={item.id} container spacing={3} mt={1}>
-              <Grid size="grow">
-                <Controller
-                  name={`productToProductTags.${idx}.productTagId`}
-                  control={control}
-                  rules={{ required: "Tag is required" }}
-                  render={({ field, fieldState }) => (
-                    <TextField
-                      label="Tag"
-                      select
-                      required
-                      fullWidth
-                      error={!!fieldState.error}
-                      helperText={fieldState.error?.message || " "}
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      inputRef={field.ref}
-                    >
-                      {queryProductTag.isLoading ? (
-                        <MenuItem disabled value="">
-                          Loading...
-                        </MenuItem>
-                      ) : (
-                        queryProductTag.data
-                          ?.filter((op) => {
-                            const found = productTagIdSelected.find(
-                              (i) => i.productTagId === op.id
+        <Stack gap={1}>
+          <FormControl>
+            <FormLabel>Product Tag</FormLabel>
+            {productTagArrField.fields.map((item, idx) => (
+              <Grid key={item.id} container spacing={3} mt={1}>
+                <Grid size="grow">
+                  <Controller
+                    name={`productToProductTags.${idx}.productTagId`}
+                    control={control}
+                    rules={{ required: "Tag is required" }}
+                    render={({ field, fieldState }) => (
+                      <TextField
+                        label="Tag"
+                        select
+                        required
+                        fullWidth
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.message || " "}
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        inputRef={field.ref}
+                      >
+                        {queryProductTag.isLoading ? (
+                          <MenuItem disabled value="">
+                            Loading...
+                          </MenuItem>
+                        ) : (
+                          queryProductTag.data?.map((pt) => {
+                            const disabled = productTagIdSelected?.some(
+                              (i) => i.idx !== idx && i.productTagId === pt.id
                             )
-                            if (!found) {
-                              return true
-                            }
-                            return idx === found.idx
-                          })
-                          ?.map((i) => {
                             return (
-                              <MenuItem key={i.id} value={i.id}>
-                                {i.name}
+                              <MenuItem
+                                key={pt.id}
+                                value={pt.id}
+                                disabled={disabled}
+                              >
+                                {pt.name}
                               </MenuItem>
                             )
                           })
-                      )}
-                    </TextField>
-                  )}
-                />
+                        )}
+                      </TextField>
+                    )}
+                  />
+                </Grid>
+                <Grid>
+                  <Controller
+                    name={`productToProductTags.${idx}.expiredAt`}
+                    control={control}
+                    render={({ field, fieldState }) => (
+                      <TextField
+                        label="Expired At"
+                        type="datetime-local"
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.message || " "}
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        inputRef={field.ref}
+                        slotProps={{
+                          inputLabel: {
+                            shrink: true,
+                          },
+                        }}
+                      />
+                    )}
+                  />
+                </Grid>
+                <Grid>
+                  <IconButton onClick={() => productTagArrField.remove(idx)}>
+                    <DeleteIcon color="error" />
+                  </IconButton>
+                </Grid>
               </Grid>
-              <Grid>
-                <Controller
-                  name={`productToProductTags.${idx}.expiredAt`}
-                  control={control}
-                  render={({ field, fieldState }) => (
-                    <TextField
-                      label="Expired At"
-                      type="datetime-local"
-                      error={!!fieldState.error}
-                      helperText={fieldState.error?.message || " "}
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      inputRef={field.ref}
-                      slotProps={{
-                        inputLabel: {
-                          shrink: true,
-                        },
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
-              <Grid>
-                <IconButton onClick={() => productTagArrField.remove(idx)}>
-                  <DeleteIcon color="error" />
-                </IconButton>
-              </Grid>
-            </Grid>
-          ))}
-          <Box mt={1}>
-            <Button
-              onClick={() =>
-                productTagArrField.append({
-                  productTagId: "",
-                })
-              }
-              variant="contained"
-              startIcon={<AddIcon />}
-            >
-              Add Tag
-            </Button>
-          </Box>
-        </FormControl>
+            ))}
+            <Box mt={1}>
+              <Button
+                onClick={() =>
+                  productTagArrField.append({
+                    productTagId: "",
+                  })
+                }
+                variant="contained"
+                startIcon={<AddIcon />}
+              >
+                Add Tag
+              </Button>
+            </Box>
+          </FormControl>
 
-        <FormControl>
-          <FormLabel>Option</FormLabel>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd(
-              form,
-              "productOptions",
-              productOptionArrField
+          <FormControl>
+            <FormLabel>Option</FormLabel>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd(
+                form,
+                "productOptions",
+                productOptionArrField
+              )}
+            >
+              <SortableContext
+                items={productOptionArrField.fields.map((i) => i.id)}
+              >
+                {productOptionArrField.fields.map((field, idx) => (
+                  <ProductOption
+                    key={field.id}
+                    idx={idx}
+                    field={field}
+                    queryOption={queryOption}
+                    productOptionArrField={productOptionArrField}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
+
+            <Toolbar disableGutters>
+              <Button
+                onClick={() =>
+                  productOptionArrField.append({
+                    optionId: "",
+                    maxSelect: null,
+                    productOptItems: [],
+                    isRequired: false,
+                  })
+                }
+                variant="contained"
+                startIcon={<AddIcon />}
+              >
+                Add Option
+              </Button>
+            </Toolbar>
+          </FormControl>
+
+          <Controller
+            name="type"
+            control={control}
+            rules={{ required: "Type is required" }}
+            render={({ field, fieldState }) => (
+              <TextField
+                required
+                label="Type"
+                select
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message || " "}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                inputRef={field.ref}
+              >
+                {Object.values(EProductType).map((e) => (
+                  <MenuItem key={e} value={e}>
+                    {e}
+                  </MenuItem>
+                ))}
+              </TextField>
             )}
-          >
-            <SortableContext
-              items={productOptionArrField.fields.map((i) => i.id)}
-            >
-              {productOptionArrField.fields.map((field, idx) => (
-                <ProductOption
-                  productOptionIdSelected={productOptionIdSelected}
-                  key={field.id}
-                  idx={idx}
-                  field={field}
-                  queryOption={queryOption}
-                  form={form}
-                  productOptionArrField={productOptionArrField}
-                />
-              ))}
-            </SortableContext>
-          </DndContext>
+          />
 
-          <Toolbar disableGutters>
-            <Button
-              onClick={() =>
-                productOptionArrField.append({
-                  optionId: "",
-                  maxSelect: null,
-                  productOptItems: [
-                    {
-                      optionItemId: "",
-                      priceModifierType: "FREE",
-                      priceModifierValue: 0,
-                    },
-                  ],
-                  isRequired: false,
-                })
-              }
-              variant="contained"
-              startIcon={<AddIcon />}
-            >
-              Add Option
-            </Button>
-          </Toolbar>
-        </FormControl>
+          {renderProductTypeMap[productTypeWatch]}
 
-        <Controller
-          name="type"
-          control={control}
-          rules={{ required: "Type is required" }}
-          render={({ field, fieldState }) => (
-            <TextField
-              required
-              label="Type"
-              select
-              error={!!fieldState.error}
-              helperText={fieldState.error?.message || " "}
-              value={field.value ?? ""}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              inputRef={field.ref}
-            >
-              {Object.values(EProductType).map((e) => (
-                <MenuItem key={e} value={e}>
-                  {e}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-        />
-
-        {renderProductTypeMap[productTypeWatch]}
-
-        <Controller
-          name="isActive"
-          control={control}
-          render={({ field }) => (
-            <FormControlLabel
-              label="Is Active"
-              control={
-                <Checkbox
-                  checked={field.value ?? false}
-                  onChange={field.onChange}
-                />
-              }
-            />
-          )}
-        />
-      </Stack>
+          <Controller
+            name="isActive"
+            control={control}
+            render={({ field }) => (
+              <FormControlLabel
+                label="Is Active"
+                control={
+                  <Checkbox
+                    checked={field.value ?? false}
+                    onChange={field.onChange}
+                  />
+                }
+              />
+            )}
+          />
+        </Stack>
+      </FormProvider>
     </Box>
   )
 }

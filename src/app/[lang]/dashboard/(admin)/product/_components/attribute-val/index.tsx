@@ -1,69 +1,55 @@
-import { getS3ImgFullUrl, textToSlug } from "@/common";
-import AppImageUpload from "@/components/customComponents/AppImageUpload";
-import AppSortableItem from "@/components/customComponents/AppSortableItem";
-import { Delete as DeleteIcon } from "@mui/icons-material";
-import { FormControl, IconButton, MenuItem, TextField } from "@mui/material";
-import { EAttributeValueStatus } from "@prisma/client";
-import React, { useEffect } from "react";
+import { getS3ImgFullUrl } from "@/common"
+import AppImageUpload from "@/components/customComponents/AppImageUpload"
+import AppSortableItem from "@/components/customComponents/AppSortableItem"
+import { Delete as DeleteIcon } from "@mui/icons-material"
+import { FormControl, IconButton, MenuItem, TextField } from "@mui/material"
+import { AttributeValue, EAttributeValueStatus } from "@prisma/client"
+import React from "react"
 import {
   Controller,
   UseFieldArrayReturn,
-  UseFormReturn,
-} from "react-hook-form";
-import { TForm } from "../product-form/useIndex";
+  useFormContext,
+} from "react-hook-form"
+import { TForm } from "../product-form/useIndex"
 
 type TProps = {
-  idxAtt: number;
-  idxAttVal: number;
-  form: UseFormReturn<TForm>;
+  idxAtt: number
+  idxAttVal: number
   productAttValArrField: UseFieldArrayReturn<
     TForm,
-    `attributes.${number}.attributeValues`,
+    `attributes.${number}.productAttValues`,
     "id"
-  >;
-  isRenderDeleteBtn?: boolean;
-};
+  >
+  isRenderDeleteBtn?: boolean
+  attributeValues: AttributeValue[]
+  attVIdsSelectedMemo: {
+    attVId: string
+    idx: number
+  }[]
+}
 
 export default React.memo(function Index(props: TProps) {
   const {
     idxAtt,
     idxAttVal,
-    form,
     productAttValArrField,
     isRenderDeleteBtn = true,
-  } = props;
-  const { control } = form;
-
-  useEffect(() => {
-    const callback = form.subscribe({
-      name: `attributes.${idxAtt}.attributeValues.${idxAttVal}.name`,
-      formState: {
-        values: true,
-      },
-      callback: ({ values }) => {
-        const name =
-          values.attributes?.[idxAtt]?.attributeValues?.[idxAttVal].name || "";
-        form.setValue(
-          `attributes.${idxAtt}.attributeValues.${idxAttVal}.slug`,
-          textToSlug(name)
-        );
-      },
-    });
-
-    return () => callback();
-  }, [form, idxAtt, idxAttVal]);
+    attributeValues,
+    attVIdsSelectedMemo,
+  } = props
+  const { control } = useFormContext<TForm>()
 
   return (
     <AppSortableItem id={idxAttVal}>
       <Controller
-        name={`attributes.${idxAtt}.attributeValues.${idxAttVal}.image`}
+        name={`attributes.${idxAtt}.productAttValues.${idxAttVal}.image`}
         control={control}
         render={({ field }) => (
           <FormControl>
             <AppImageUpload
               url={getS3ImgFullUrl(field.value)}
               onChange={(file: File, key?: string | null) => {
-                field.onChange(key);
+                field.onChange(key)
               }}
               isCallUploadWhenOnChange
               width={75}
@@ -75,44 +61,37 @@ export default React.memo(function Index(props: TProps) {
       />
 
       <Controller
-        name={`attributes.${idxAtt}.attributeValues.${idxAttVal}.name`}
+        name={`attributes.${idxAtt}.productAttValues.${idxAttVal}.attributeValueId`}
         control={control}
-        rules={{ required: "Name is required" }}
+        rules={{ required: "Attribute Value is required" }}
         render={({ field, fieldState }) => (
           <TextField
-            sx={{ width: "20%" }}
-            label="Name"
-            required
-            error={!!fieldState.error}
-            helperText={fieldState.error?.message || " "}
-            inputRef={field.ref}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            value={field.value ?? ""}
-          />
-        )}
-      />
-      <Controller
-        name={`attributes.${idxAtt}.attributeValues.${idxAttVal}.slug`}
-        control={control}
-        rules={{ required: "Slug is required" }}
-        render={({ field, fieldState }) => (
-          <TextField
-            label="Slug"
-            sx={{ width: "20%" }}
-            required
+            label="Attribute Value"
+            select
             error={!!fieldState.error}
             helperText={fieldState.error?.message || " "}
             value={field.value ?? ""}
-            onChange={field.onChange}
             onBlur={field.onBlur}
             inputRef={field.ref}
-          />
+            sx={{ width: "30%" }}
+            onChange={field.onChange}
+          >
+            {attributeValues?.map((atv) => {
+              const disabled = attVIdsSelectedMemo?.some(
+                (i) => i.idx !== idxAttVal && i.attVId === atv.id
+              )
+              return (
+                <MenuItem key={atv.id} value={atv.id} disabled={disabled}>
+                  {atv.name}
+                </MenuItem>
+              )
+            })}
+          </TextField>
         )}
       />
 
       <Controller
-        name={`attributes.${idxAtt}.attributeValues.${idxAttVal}.status`}
+        name={`attributes.${idxAtt}.productAttValues.${idxAttVal}.status`}
         control={control}
         rules={{ required: "Status is required" }}
         render={({ field, fieldState }) => (
@@ -140,7 +119,7 @@ export default React.memo(function Index(props: TProps) {
       {isRenderDeleteBtn && (
         <IconButton
           onClick={() => {
-            productAttValArrField.remove(idxAttVal);
+            productAttValArrField.remove(idxAttVal)
           }}
           color="error"
         >
@@ -148,5 +127,5 @@ export default React.memo(function Index(props: TProps) {
         </IconButton>
       )}
     </AppSortableItem>
-  );
-});
+  )
+})

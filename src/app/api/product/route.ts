@@ -156,13 +156,12 @@ const handleCreate = async (
             attributeId: at.attributeId,
             isUsedForVariations: at.isUsedForVariations,
 
-            attributeValues: {
+            productAttributeValues: {
               create: at.productAttValues.map(
                 (atv, idxAtv) =>
                   ({
                     id: atv.id,
                     attributeValueId: atv.attributeValueId,
-                    productAttributeId: at.id,
                     image: attributeValuesImgFinal[idxAt][idxAtv],
                     displayOrder: atv.displayOrder,
                     status: atv.status,
@@ -239,6 +238,10 @@ const handleCreate = async (
       ),
     }
   }
+
+  console.log({
+    objCreate: JSON.stringify(objCreate, null, 2),
+  })
 
   const res = await prisma.product.create({
     data: objCreate,

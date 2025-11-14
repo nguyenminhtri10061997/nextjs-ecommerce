@@ -53,7 +53,8 @@ export const usePage = () => {
       body: {
         ...data,
         optionItems: data.optionItems?.map((i, idx) => ({
-          ...i,
+          name: i.name || undefined,
+          slug: i.slug || undefined,
           displayOrder: idx,
         })),
       },

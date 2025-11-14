@@ -1,36 +1,32 @@
-import { UseFormReturn } from "react-hook-form";
-import { TForm } from "../product-form/useIndex";
-import { Card, CardContent } from "@mui/material";
-import SkuItem from "../sku";
-import React, { useMemo } from "react";
-import { TAttValHash } from "../variable-form/useIndex";
+import { Card, CardContent } from "@mui/material"
+import React, { useMemo } from "react"
+import { UseFormReturn } from "react-hook-form"
+import { TForm } from "../product-form/useIndex"
+import SkuItem from "../sku"
+import { TAttAndAttValHash } from "../variable-form/constants"
 
 type TProps = {
-  form: UseFormReturn<TForm>;
-  idx: number;
-  attAndAttValHashDeferred: TAttValHash;
-  handleClickDeleteSku?: (idx: number) => void;
-};
+  form: UseFormReturn<TForm>
+  idx: number
+  attAndAttValHash: TAttAndAttValHash
+  paHashMemo: { [key: string]: NonNullable<TForm["attributes"]>[number] }
+  handleClickDeleteSku?: (idx: number) => void
+}
 export default React.memo(function Index(props: TProps) {
-  const { form, idx, attAndAttValHashDeferred, handleClickDeleteSku } = props;
+  const { form, idx, attAndAttValHash, handleClickDeleteSku, paHashMemo } =
+    props
 
   const attInfo = useMemo(() => {
-    const curSku = form.getValues("skus")[idx];
-    return curSku.skuAttributeValues
-      .map(
-        (av) =>
-          `${attAndAttValHashDeferred.attHash[av.productAttributeId]?.name}: ${
-            attAndAttValHashDeferred.attValHash[av.productAttributeValueId]
-              ?.name
-          }`
-      )
-      .join(" - ");
-  }, [
-    attAndAttValHashDeferred.attHash,
-    attAndAttValHashDeferred.attValHash,
-    form,
-    idx,
-  ]);
+    const curSku = form.getValues("skus")[idx]
+
+    return curSku.productSkuAttVals
+      .map((av) => {
+        return `${attAndAttValHash.attHash[paHashMemo[av.productAttributeId].attributeId]?.name}: ${
+          attAndAttValHash.attVHash[av.productAttributeValueId]?.name
+        }`
+      })
+      .join(" - ")
+  }, [attAndAttValHash, form, idx])
 
   return (
     <Card variant="outlined" sx={{ marginTop: 1 }}>
@@ -43,5 +39,5 @@ export default React.memo(function Index(props: TProps) {
         />
       </CardContent>
     </Card>
-  );
+  )
 })

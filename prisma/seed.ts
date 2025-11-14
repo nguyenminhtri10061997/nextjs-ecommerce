@@ -6,6 +6,7 @@ import {
   Prisma,
   PrismaClient,
 } from "@prisma/client"
+import { v4 } from "uuid"
 
 const prisma = new PrismaClient()
 export async function main() {
@@ -95,6 +96,43 @@ export async function main() {
     },
   ]
 
+  const opSugarId = v4()
+  const opIceId = v4()
+
+  const options: Prisma.OptionCreateManyInput[] = [
+    {
+      id: opSugarId,
+      name: "Sugar",
+      context: "PRODUCT",
+    },
+    {
+      id: opIceId,
+      name: "Ice",
+      context: "PRODUCT",
+    },
+  ]
+  const optionItems = options.flatMap(
+    (o) =>
+      [
+        {
+          name: "25%",
+          optionId: o.id,
+        },
+        {
+          name: "50%",
+          optionId: o.id,
+        },
+        {
+          name: "75%",
+          optionId: o.id,
+        },
+        {
+          name: "100%",
+          optionId: o.id,
+        },
+      ] as Prisma.OptionItemCreateManyInput[]
+  )
+
   const [adminRoleDb] = await Promise.all([
     prisma.role.upsert({
       where: {
@@ -149,6 +187,10 @@ export async function main() {
       data: languages,
       skipDuplicates: true,
     }),
+    prisma.option.createMany({
+      data: options,
+      skipDuplicates: true,
+    }),
   ])
 
   const accounts: Prisma.AccountCreateManyInput[] = [
@@ -175,6 +217,10 @@ export async function main() {
     }),
     prisma.attributeValue.createMany({
       data: attributeValues,
+      skipDuplicates: true,
+    }),
+    prisma.optionItem.createMany({
+      data: optionItems,
       skipDuplicates: true,
     }),
   ])

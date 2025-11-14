@@ -97,12 +97,10 @@ export default function Index(props: TProps) {
       <Controller
         name="slug"
         control={control}
-        rules={{ required: "Slug is required" }}
         render={({ field, fieldState }) => (
           <TextField
             label="Slug"
             fullWidth
-            required
             error={!!fieldState.error}
             helperText={fieldState.error?.message}
             value={field.value ?? ""}
@@ -205,12 +203,10 @@ export default function Index(props: TProps) {
                       <Controller
                         name={`optionItems.${idx}.slug`}
                         control={control}
-                        rules={{ required: "Slug is required" }}
                         render={({ field, fieldState }) => (
                           <TextField
                             label="Slug"
                             fullWidth
-                            required
                             error={!!fieldState.error}
                             helperText={fieldState.error?.message}
                             value={field.value ?? ""}

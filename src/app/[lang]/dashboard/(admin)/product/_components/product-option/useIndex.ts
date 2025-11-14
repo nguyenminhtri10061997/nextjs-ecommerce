@@ -1,7 +1,7 @@
 import { EPriceModifierType, Prisma } from "@prisma/client"
 import { UseQueryResult } from "@tanstack/react-query"
-import { startTransition, useDeferredValue, useEffect, useState } from "react"
-import { useFieldArray, UseFormReturn } from "react-hook-form"
+import { startTransition, useMemo } from "react"
+import { useFieldArray, UseFormReturn, useWatch } from "react-hook-form"
 import { TForm } from "../product-form/useIndex"
 
 type TProps = {
@@ -21,28 +21,6 @@ export default function useIndex(props: TProps) {
     name: `productOptions.${idx}.productOptItems`,
   })
 
-  const [productOIIdSelected, setProductOIIdSelected] = useState<
-    (string | null)[]
-  >([])
-  const productOIIdSelectedDeferred = useDeferredValue(productOIIdSelected)
-
-  useEffect(() => {
-    const callbackSub = form.subscribe({
-      name: `productOptions.${idx}.productOptItems`,
-      formState: {
-        values: true,
-      },
-      callback: (ctx) => {
-        setProductOIIdSelected(
-          ctx.values.productOptions?.[idx].productOptItems?.map(
-            (i) => i.optionItemId
-          ) || []
-        )
-      },
-    })
-    return () => callbackSub()
-  }, [form, idx])
-
   const handleFillDefaultOption = (id: string, idxOpt: number) => {
     const found = queryOption.data?.find((i) => i.id === id)
     if (found) {
@@ -59,9 +37,38 @@ export default function useIndex(props: TProps) {
     }
   }
 
+  const poWatch = useWatch({
+    control: form.control,
+    name: "productOptions",
+  })
+
+  const poSelectedMemo = useMemo(
+    () =>
+      poWatch?.map((i, idx) => ({
+        optionId: i.optionId,
+        idx,
+      })) || [],
+    [poWatch]
+  )
+
+  const poiSelectedMemo = useMemo(
+    () =>
+      poWatch?.[idx].productOptItems.map((poi, poiIdx) => ({
+        idx: poiIdx,
+        optionItemId: poi.optionItemId,
+      })) || [],
+    [poWatch, idx]
+  )
+
+  const poHash = useMemo(() => {
+    return Object.fromEntries(queryOption.data?.map((i) => [i.id, i]) || [])
+  }, [queryOption])
+
   return {
     productOptionItemArrField,
-    productOIIdSelectedDeferred,
+    poSelectedMemo,
+    poHash,
+    poiSelectedMemo,
     handleFillDefaultOption,
   }
 }

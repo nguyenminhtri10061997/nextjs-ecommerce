@@ -1,19 +1,19 @@
 import { PostCreateBodyDTO } from "@/app/api/product/validator"
+import useAppUseForm from "@/constants/reactHookForm"
 import { useGetBrandListQuery } from "@/lib/reactQuery/brand"
 import { useGetOptionListQuery } from "@/lib/reactQuery/option"
 import { useGetProductCategoryListQuery } from "@/lib/reactQuery/product-category"
 import { useGetProductTagListQuery } from "@/lib/reactQuery/product-tag"
 import { useMemo } from "react"
-import { useFieldArray, useForm, useWatch } from "react-hook-form"
+import { useFieldArray, useWatch } from "react-hook-form"
 import { output } from "zod/v4"
 
-export type TForm = output<typeof PostCreateBodyDTO> & {
+export type TForm = Omit<output<typeof PostCreateBodyDTO>, 'listImages'> & {
   listImages: { name?: string | null }[]
 }
 
 export default function useIndex() {
-  const form = useForm<TForm>({
-    mode: "onBlur",
+  const form = useAppUseForm<TForm>({
     defaultValues: {
       isActive: true,
     },
@@ -38,24 +38,10 @@ export default function useIndex() {
   const queryProductTag = useGetProductTagListQuery({})
   const queryOption = useGetOptionListQuery({})
 
-  const productOptionsWatch = useWatch({
-    control: form.control,
-    name: "productOptions",
-  })
-
   const productTypeWatch = useWatch({
     control: form.control,
     name: "type",
   })
-
-  const productOptionIdSelected = useMemo(
-    () =>
-      (productOptionsWatch || []).map((i, idx) => ({
-        idx,
-        optionId: i.optionId,
-      })),
-    [productOptionsWatch]
-  )
 
   const productTagsWatch = useWatch({
     control: form.control,
@@ -80,7 +66,6 @@ export default function useIndex() {
     productTagArrField,
     listImageArrField,
     productOptionArrField,
-    productOptionIdSelected,
     productTagIdSelected,
     productTypeWatch,
   }

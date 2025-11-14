@@ -416,6 +416,9 @@ model OptionItem {
 
     Option                    Option                      @relation(fields: [optionId], references: [id])
     ProductOptionToOptionItem ProductOptionToOptionItem[]
+
+    @@unique([optionId, name], name: "optionId_name")
+    @@unique([optionId, slug], name: "optionId_slug")
 }
 
 model ProductOption {

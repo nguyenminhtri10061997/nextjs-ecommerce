@@ -3,11 +3,11 @@ import AppSortableItem from "@/components/customComponents/AppSortableItem"
 import { Delete as DeleteIcon } from "@mui/icons-material"
 import { IconButton, MenuItem, TextField } from "@mui/material"
 import { EPriceModifierType, OptionItem } from "@prisma/client"
-import React, { useMemo } from "react"
+import React from "react"
 import {
-  Control,
   Controller,
   FieldArrayWithId,
+  useFormContext,
   useWatch,
 } from "react-hook-form"
 import { TForm } from "../product-form/useIndex"
@@ -22,10 +22,12 @@ type TProps = {
   >
   optionItemsOpt: OptionItem[]
   isLoading: boolean
-  productOIIdSelected: (string | null)[]
   remove: (index?: number | number[]) => void
   isRenderDeleteBtn: boolean
-  control: Control<TForm>
+  poiSelectedMemo: {
+    idx: number
+    optionItemId: string
+  }[]
 }
 
 export default React.memo(function Index(props: TProps) {
@@ -35,29 +37,12 @@ export default React.memo(function Index(props: TProps) {
     field: fieldProps,
     optionItemsOpt = [],
     isLoading,
-    productOIIdSelected,
     isRenderDeleteBtn,
-    control,
+    poiSelectedMemo,
     remove,
   } = props
-
-  console.log(optionItemsOpt)
-
-  const ops = useMemo(() => {
-    return optionItemsOpt?.filter((op) => {
-      const found = productOIIdSelected.findIndex((oi) => op.id === oi)
-      if (found < 0) {
-        return true
-      } else if (idxPOI === found) {
-        return true
-      }
-      return false
-    })
-  }, [optionItemsOpt, productOIIdSelected, idxPOI])
-
-  const idOpt = useMemo(() => {
-    return ops.map((i) => i.id)
-  }, [ops])
+  const form = useFormContext<TForm>()
+  const { control } = form
 
   const priceModifierTypeWatch = useWatch({
     control,
@@ -77,7 +62,7 @@ export default React.memo(function Index(props: TProps) {
             select
             error={!!fieldState.error}
             helperText={fieldState.error?.message || " "}
-            value={idOpt.includes(field.value) ? field.value : ""}
+            value={field.value}
             onChange={field.onChange}
             onBlur={field.onBlur}
             inputRef={field.ref}
@@ -88,10 +73,13 @@ export default React.memo(function Index(props: TProps) {
                 Loading...
               </MenuItem>
             ) : (
-              ops?.map((i) => {
+              optionItemsOpt?.map((poi) => {
+                const disabled = poiSelectedMemo?.some(
+                  (i) => i.idx !== idxPOI && i.optionItemId === poi.id
+                )
                 return (
-                  <MenuItem key={i.id} value={i.id}>
-                    {i.name}
+                  <MenuItem key={poi.id} value={poi.id} disabled={disabled}>
+                    {poi.name}
                   </MenuItem>
                 )
               })
@@ -126,8 +114,6 @@ export default React.memo(function Index(props: TProps) {
           </TextField>
         )}
       />
-
-      {priceModifierTypeWatch}
 
       {priceModifierTypeWatch !== "FREE" && (
         <Controller

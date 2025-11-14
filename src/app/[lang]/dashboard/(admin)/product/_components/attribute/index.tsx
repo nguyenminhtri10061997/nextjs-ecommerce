@@ -1,173 +1,109 @@
-import { textToSlug } from "@/common";
-import { handleDragEnd } from "@/common/client";
-import AppSortableItem from "@/components/customComponents/AppSortableItem";
+import { handleDragEnd } from "@/common/client"
+import AppSortableItem from "@/components/customComponents/AppSortableItem"
+import useAppUseSensors from "@/components/hooks/useSensors"
+import { closestCenter, DndContext } from "@dnd-kit/core"
+import { SortableContext } from "@dnd-kit/sortable"
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material"
 import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
-import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
-import {
-  Autocomplete,
   Box,
   Button,
+  Checkbox,
+  FormControlLabel,
   IconButton,
   MenuItem,
   TextField,
-} from "@mui/material";
-import { EAttributeStatus, EAttributeType, Prisma } from "@prisma/client";
-import { UseQueryResult } from "@tanstack/react-query";
-import React, { useEffect } from "react";
+} from "@mui/material"
+import { EAttributeStatus, Prisma } from "@prisma/client"
+import { UseQueryResult } from "@tanstack/react-query"
+import React from "react"
 import {
   Controller,
   FieldArrayWithId,
   UseFieldArrayReturn,
-  UseFormReturn,
-} from "react-hook-form";
-import { v4 } from "uuid";
-import AttributeAttValItem from "../attribute-val";
-import { TForm } from "../product-form/useIndex";
-import useIndex from "./useIndex";
+  useFormContext,
+} from "react-hook-form"
+import { v4 } from "uuid"
+import AttributeAttValItem from "../attribute-val"
+import { TForm } from "../product-form/useIndex"
+import { TAttAndAttValHash } from "../variable-form/constants"
+import useIndex from "./useIndex"
 
 type TProps = {
-  idx: number;
-  field: FieldArrayWithId<TForm, "attributes", "id">;
+  idx: number
+  field: FieldArrayWithId<TForm, "attributes", "id">
   queryAtt: UseQueryResult<
     Prisma.AttributeGetPayload<{ include: { attributeValues: true } }>[]
-  >;
-  form: UseFormReturn<TForm>;
-  productAttArrField: UseFieldArrayReturn<TForm, "attributes">;
-};
+  >
+  productAttArrField: UseFieldArrayReturn<TForm, "attributes">
+  attAndAttValHash: TAttAndAttValHash
+}
 
 export default React.memo(function Index(props: TProps) {
   const {
     idx: idxProps,
     field: fieldProps,
     queryAtt,
-    form,
     productAttArrField,
-  } = props;
-  const { control } = form;
-  const { productAttValArrField, optMemo, handleFillAttValsByExistAtt } =
-    useIndex({
-      form,
-      idx: idxProps,
-      queryAtt,
-    });
+    attAndAttValHash,
+  } = props
+  const form = useFormContext<TForm>()
+  const { control } = form
+  const {
+    productAttValArrField,
+    attributeIdsSelectedMemo,
+    attVsMemo,
+    attVIdsSelectedMemo,
+    handleFillAttValsByExistAtt,
+  } = useIndex({
+    form,
+    idx: idxProps,
+    queryAtt,
+    attAndAttValHash,
+  })
 
-  useEffect(() => {
-    const callback = form.subscribe({
-      name: `attributes.${idxProps}.name`,
-      formState: {
-        values: true,
-      },
-      callback: ({ values }) => {
-        const name = values.attributes?.[idxProps]?.name || "";
-        form.setValue(`attributes.${idxProps}.slug`, textToSlug(name));
-      },
-    });
-
-    return () => callback();
-  }, [form, idxProps]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 5,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+  const sensors = useAppUseSensors()
 
   return (
     <Box>
       <AppSortableItem id={fieldProps.id}>
         <Controller
-          name={`attributes.${idxProps}.name`}
+          name={`attributes.${idxProps}.attributeId`}
           control={control}
-          rules={{ required: "Name is required" }}
+          rules={{ required: "Attribute is required" }}
           render={({ field, fieldState }) => (
-            <Autocomplete
-              freeSolo
-              options={optMemo}
+            <TextField
+              label="Attribute"
+              select
+              error={!!fieldState.error}
+              helperText={fieldState.error?.message || " "}
               value={field.value ?? ""}
-              onChange={(_, option) => {
-                field.onChange(option);
-                if (option) {
-                  handleFillAttValsByExistAtt(option);
-                }
+              onChange={(e) => {
+                field.onChange(e.target.value)
+                handleFillAttValsByExistAtt(e.target.value)
               }}
               onBlur={field.onBlur}
-              sx={{ width: "20%" }}
-              ref={field.ref}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Name"
-                  required
-                  onChange={field.onChange}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message || " "}
-                />
-              )}
-            />
-          )}
-        />
-        <Controller
-          name={`attributes.${idxProps}.slug`}
-          control={control}
-          rules={{ required: "Slug is required" }}
-          render={({ field, fieldState }) => (
-            <TextField
-              label="Slug"
-              sx={{ width: "20%" }}
-              required
-              error={!!fieldState.error}
-              helperText={fieldState.error?.message || " "}
-              value={field.value ?? ""}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
               inputRef={field.ref}
-            />
-          )}
-        />
-
-        <Controller
-          name={`attributes.${idxProps}.type`}
-          control={control}
-          rules={{ required: "Type is required" }}
-          render={({ field, fieldState }) => (
-            <TextField
-              label="Type"
-              select
-              required
-              error={!!fieldState.error}
-              helperText={fieldState.error?.message || " "}
-              value={field.value ?? ""}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              inputRef={field.ref}
-              sx={{ width: "10%" }}
+              sx={{ width: "30%" }}
             >
-              <MenuItem value={EAttributeType.RADIO}>
-                {EAttributeType.RADIO}
-              </MenuItem>
-              <MenuItem value={EAttributeType.COLOR}>
-                {EAttributeType.COLOR}
-              </MenuItem>
+              {queryAtt.isLoading ? (
+                <MenuItem disabled value="">
+                  Loading...
+                </MenuItem>
+              ) : (
+                queryAtt.data?.map((at) => {
+                  const disabled = attributeIdsSelectedMemo?.some(
+                    (i) => i.idx !== idxProps && i.attributeId === at.id
+                  )
+                  return (
+                    <MenuItem key={at.id} value={at.id} disabled={disabled}>
+                      {at.name}
+                    </MenuItem>
+                  )
+                })
+              )}
             </TextField>
           )}
         />
-
         <Controller
           name={`attributes.${idxProps}.status`}
           control={control}
@@ -193,14 +129,28 @@ export default React.memo(function Index(props: TProps) {
             </TextField>
           )}
         />
+        <Controller
+          name={`attributes.${idxProps}.isUsedForVariations`}
+          control={control}
+          render={({ field }) => (
+            <FormControlLabel
+              label="Is Used For Variations"
+              control={
+                <Checkbox
+                  checked={field.value ?? false}
+                  onChange={field.onChange}
+                />
+              }
+            />
+          )}
+        />
         <Button
           startIcon={<AddIcon />}
           onClick={() =>
             productAttValArrField.append({
               id: v4(),
-              name: "",
-              slug: "",
               status: "ACTIVE",
+              attributeValueId: "",
             })
           }
           color="info"
@@ -209,7 +159,7 @@ export default React.memo(function Index(props: TProps) {
         </Button>
         <IconButton
           onClick={() => {
-            productAttArrField.remove(idxProps);
+            productAttArrField.remove(idxProps)
           }}
           color="error"
         >
@@ -222,7 +172,7 @@ export default React.memo(function Index(props: TProps) {
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd(
             form,
-            `attributes.${idxProps}.attributeValues`,
+            `attributes.${idxProps}.productAttValues`,
             productAttValArrField
           )}
         >
@@ -232,16 +182,17 @@ export default React.memo(function Index(props: TProps) {
             {productAttValArrField.fields.map((field, idx) => (
               <AttributeAttValItem
                 key={field.id}
-                form={form}
                 idxAtt={idxProps}
                 idxAttVal={idx}
+                attributeValues={attVsMemo}
                 productAttValArrField={productAttValArrField}
                 isRenderDeleteBtn={productAttValArrField.fields.length > 1}
+                attVIdsSelectedMemo={attVIdsSelectedMemo}
               />
             ))}
           </SortableContext>
         </DndContext>
       </Box>
     </Box>
-  );
-});
+  )
+})

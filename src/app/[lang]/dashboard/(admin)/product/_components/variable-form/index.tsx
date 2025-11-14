@@ -1,5 +1,5 @@
-import { handleDragEnd } from "@/common/client";
-import AppButtonConfirm from "@/components/customComponents/AppButtonConfirm";
+import { handleDragEnd } from "@/common/client"
+import AppButtonConfirm from "@/components/customComponents/AppButtonConfirm"
 import {
   closestCenter,
   DndContext,
@@ -7,39 +7,31 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
-import AddIcon from "@mui/icons-material/Add";
-import { Button, FormControl, FormLabel, Toolbar } from "@mui/material";
-import { startTransition, useEffect } from "react";
-import { UseFormReturn } from "react-hook-form";
-import { v4 } from "uuid";
-import AttributeItem from "../attribute";
-import { TForm } from "../product-form/useIndex";
-import SkuVariableForm from "../sku-variable-form";
-import useIndex, { TAttValHash } from "./useIndex";
+} from "@dnd-kit/core"
+import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
+import AddIcon from "@mui/icons-material/Add"
+import { Button, FormControl, FormLabel, Toolbar } from "@mui/material"
+import { useFormContext } from "react-hook-form"
+import { v4 } from "uuid"
+import AttributeItem from "../attribute"
+import { TForm } from "../product-form/useIndex"
+import SkuVariableForm from "../sku-variable-form"
+import useIndex from "./useIndex"
 
-type TProps = {
-  form: UseFormReturn<TForm>;
-};
-export default function Index(props: TProps) {
-  const { form } = props;
+export default function Index() {
+  const form = useFormContext<TForm>()
 
   const {
     queryAtt,
     productAttArrField,
     skuArrField,
-    // attAndAttValHash,
-    attAndAttValHashDeferred,
-    setAttAndAttValHash,
+    paHashMemo,
+    attAndAttValHash,
     handleClickGenSku,
     handleClickDeleteSku,
   } = useIndex({
     form,
-  });
+  })
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -50,33 +42,7 @@ export default function Index(props: TProps) {
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
-  );
-
-  useEffect(() => {
-    const callback = form.subscribe({
-      name: "attributes",
-      formState: {
-        values: true,
-      },
-      callback: ({ values }) => {
-        startTransition(() => {
-          const res: TAttValHash = {
-            attHash: {},
-            attValHash: {},
-          };
-          values.attributes.forEach((att) => {
-            res.attHash[att.id!] = att;
-            att.attributeValues?.forEach((attV) => {
-              res.attValHash[attV.id!] = attV;
-            });
-          });
-          setAttAndAttValHash(res);
-        });
-      },
-    });
-
-    return () => callback();
-  }, [form, setAttAndAttValHash]);
+  )
 
   return (
     <>
@@ -92,10 +58,10 @@ export default function Index(props: TProps) {
               <AttributeItem
                 key={field.id}
                 field={field}
-                form={form}
                 idx={idx}
                 productAttArrField={productAttArrField}
                 queryAtt={queryAtt}
+                attAndAttValHash={attAndAttValHash}
               />
             ))}
           </SortableContext>
@@ -106,18 +72,10 @@ export default function Index(props: TProps) {
             onClick={() =>
               productAttArrField.append({
                 id: v4(),
-                name: "",
-                slug: "",
                 status: "ACTIVE",
-                type: "RADIO",
-                attributeValues: [
-                  {
-                    id: v4(),
-                    name: "",
-                    slug: "",
-                    status: "ACTIVE",
-                  },
-                ],
+                attributeId: "",
+                isUsedForVariations: true,
+                productAttValues: [],
               })
             }
             variant="contained"
@@ -130,26 +88,6 @@ export default function Index(props: TProps) {
 
       <FormControl>
         <FormLabel>Sku</FormLabel>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd(form, "skus", skuArrField)}
-        >
-          <SortableContext items={skuArrField.fields.map((i) => i.id)}>
-            {skuArrField.fields.map((field, idx) => {
-              return (
-                <SkuVariableForm
-                  key={field.id}
-                  attAndAttValHashDeferred={attAndAttValHashDeferred}
-                  form={form}
-                  idx={idx}
-                  handleClickDeleteSku={handleClickDeleteSku}
-                />
-              );
-            })}
-          </SortableContext>
-        </DndContext>
-
         <Toolbar disableGutters>
           <AppButtonConfirm
             onOk={handleClickGenSku}
@@ -162,7 +100,27 @@ export default function Index(props: TProps) {
             Generate sku combination
           </AppButtonConfirm>
         </Toolbar>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd(form, "skus", skuArrField)}
+        >
+          <SortableContext items={skuArrField.fields.map((i) => i.id)}>
+            {skuArrField.fields.map((field, idx) => {
+              return (
+                <SkuVariableForm
+                paHashMemo={paHashMemo}
+                  attAndAttValHash={attAndAttValHash}
+                  key={field.id}
+                  form={form}
+                  idx={idx}
+                  handleClickDeleteSku={handleClickDeleteSku}
+                />
+              )
+            })}
+          </SortableContext>
+        </DndContext>
       </FormControl>
     </>
-  );
+  )
 }
