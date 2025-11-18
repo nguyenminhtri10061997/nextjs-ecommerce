@@ -10,11 +10,22 @@ type TProps = {
   idx: number
   attAndAttValHash: TAttAndAttValHash
   paHashMemo: { [key: string]: NonNullable<TForm["attributes"]>[number] }
+  pavHashMemo: {
+    [key: string]: NonNullable<
+      TForm["attributes"]
+    >[number]["productAttValues"][number]
+  }
   handleClickDeleteSku?: (idx: number) => void
 }
 export default React.memo(function Index(props: TProps) {
-  const { form, idx, attAndAttValHash, handleClickDeleteSku, paHashMemo } =
-    props
+  const {
+    form,
+    idx,
+    attAndAttValHash,
+    handleClickDeleteSku,
+    paHashMemo,
+    pavHashMemo,
+  } = props
 
   const attInfo = useMemo(() => {
     const curSku = form.getValues("skus")[idx]
@@ -22,11 +33,13 @@ export default React.memo(function Index(props: TProps) {
     return curSku.productSkuAttVals
       .map((av) => {
         return `${attAndAttValHash.attHash[paHashMemo[av.productAttributeId].attributeId]?.name}: ${
-          attAndAttValHash.attVHash[av.productAttributeValueId]?.name
+          attAndAttValHash.attVHash[
+            pavHashMemo[av.productAttributeValueId]?.attributeValueId
+          ]?.name
         }`
       })
       .join(" - ")
-  }, [attAndAttValHash, form, idx])
+  }, [attAndAttValHash, form, idx, paHashMemo, pavHashMemo])
 
   return (
     <Card variant="outlined" sx={{ marginTop: 1 }}>

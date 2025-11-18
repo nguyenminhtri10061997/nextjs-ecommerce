@@ -1,0 +1,88 @@
+{
+  "name": "Next.js Ecommerce Admin",
+  "description": "Multilingual Next.js 15 ecommerce dashboard with Prisma, React Query, MUI, AWS S3, and RBAC-secured API routes.",
+  "projectRoot": "/home/cimb/work/learn-nextjs/nextjs-ecommerce",
+  "techStack": {
+    "frontend": [
+      "Next.js 15 App Router",
+      "React 19 + TypeScript",
+      "Tailwind CSS 4",
+      "MUI 7"
+    ],
+    "backend": [
+      "Next.js Route Handlers",
+      "Prisma 6 with PostgreSQL",
+      "AWS S3 (AppS3Client)"
+    ],
+    "tooling": [
+      "Zod DTO generators",
+      "React Query 5",
+      "JWT auth + RBAC middleware"
+    ]
+  },
+  "keyDirectories": [
+    "src/app/[lang]",
+    "src/app/api",
+    "src/lib/reactQuery",
+    "src/constants",
+    "prisma"
+  ],
+  "importantScripts": [
+    {
+      "name": "dev",
+      "command": "npm run dev",
+      "note": "Start Next.js dev server with Turbopack."
+    },
+    {
+      "name": "build",
+      "command": "npm run build",
+      "note": "Create production build."
+    },
+    {
+      "name": "lint",
+      "command": "npm run lint",
+      "note": "Run Next.js ESLint checks."
+    },
+    {
+      "name": "migrate",
+      "command": "npm run migrate",
+      "note": "Prisma migrate dev (creates new migration)."
+    },
+    {
+      "name": "prisma-generate",
+      "command": "npm run prisma-generate",
+      "note": "Regenerate Prisma client and Zod schemas."
+    }
+  ],
+  "apiGuidelines": {
+    "middleware": [
+      "Use HOF wrappers (withVerifyAccessToken, withVerifyCanDoAction, withValidateFieldHandler).",
+      "DTO validation lives beside route handlers (e.g., src/app/api/product/validator.ts)."
+    ],
+    "database": [
+      "Prefer Prisma transactions for multi-step mutations.",
+      "Use soft delete flags (isDeleted) where available."
+    ],
+    "files": [
+      "Upload via temp bucket, then promote using AppS3Client helpers.",
+      "Track rollback URLs during creation for cleanup."
+    ]
+  },
+  "uiGuidelines": {
+    "localization": "Use getDictionary(lang) and strings from src/constants/dictionaries.",
+    "forms": "React Hook Form + custom components (AppTextField, AppButtonConfirm, etc.).",
+    "dataFetching": "Wrap calls in React Query hooks in src/lib/reactQuery/**."
+  },
+  "references": {
+    "designSystem": "MUI + Tailwind utility classes",
+    "authFlow": "src/lib/auth + src/app/api/auth/*",
+    "environment": "src/constants/environment/appEnvironment.ts"
+  },
+  "mcpServers": {
+    "next-devtools": {
+      "command": "npx",
+      "args": ["-y", "next-devtools-mcp@latest"]
+    }
+  }
+}
+

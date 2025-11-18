@@ -17,7 +17,7 @@ import {
   Stack,
   useTheme,
 } from "@mui/material"
-import EmptyImage from "@public/empty-img.svg"
+import EmptyImage from "@public/svg/empty-img.svg"
 import { AxiosError } from "axios"
 import Image from "next/image"
 import React, { useMemo, useRef, useState } from "react"

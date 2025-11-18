@@ -1,7 +1,7 @@
 import ClientDashboardLayoutLayout from "@/components/customComponents/ClientDashboardLayout";
-import { TLang } from "@/types/dictionaries";
 import { ScopedCssBaseline } from "@mui/material";
-import { getDictionary } from "../dictionaries";
+import { getDictionary, TLang } from "../dictionaries";
+import { roboto } from "@/constants/fonts";
 
 export default async function Layout({
   children,
@@ -14,8 +14,10 @@ export default async function Layout({
   const dict = await getDictionary(lang);
 
   return (
+    <div className={roboto.className}>
     <ClientDashboardLayoutLayout dict={dict}>
       <ScopedCssBaseline>{children}</ScopedCssBaseline>
     </ClientDashboardLayoutLayout>
+    </div>
   );
 }

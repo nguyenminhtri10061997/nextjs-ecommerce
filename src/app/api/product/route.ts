@@ -54,7 +54,7 @@ export const GET = withValidateFieldHandler(
 
         const [data, count] = await Promise.all([
           prisma.product.findMany(findManyArgs),
-          skip && take ? prisma.product.count({ where }) : undefined,
+          pagination ? prisma.product.count({ where }) : undefined,
         ])
 
         return AppResponse.json({
@@ -105,6 +105,34 @@ const getSkuFinal = async (skus: output<typeof PostCreateBodyDTO>["skus"]) => {
   )
 }
 
+type TProductWithMedia = {
+  mainImage: string | null
+  listImages: string[] | null
+  productSkus: { image: string | null }[]
+  productAttributes: {
+    productAttributeValues: { image: string | null }[]
+  }[]
+}
+
+const collectProductMediaKeys = (products: TProductWithMedia[]) => {
+  return products
+    .flatMap((product) => {
+      const skuImages = product.productSkus
+        .map((sku) => sku.image)
+        .filter((img): img is string => Boolean(img))
+      const attrValueImages = product.productAttributes.flatMap((att) =>
+        att.productAttributeValues
+          .map((attVal) => attVal.image)
+          .filter((img): img is string => Boolean(img))
+      )
+      return [product.mainImage]
+        .concat(product.listImages || [])
+        .concat(skuImages)
+        .concat(attrValueImages)
+    })
+    .filter((key): key is string => Boolean(key))
+}
+
 const handleCreate = async (
   body: output<typeof PostCreateBodyDTO>,
   resRollback: { urlImgToRollbacks: (string | null)[] }
@@ -127,7 +155,7 @@ const handleCreate = async (
     resRollback.urlImgToRollbacks.concat(mainImageFinal)
   const listImageFinal = (await getListImageFinal(listImages)) as string[]
   resRollback.urlImgToRollbacks =
-    resRollback.urlImgToRollbacks.concat(listImages)
+    resRollback.urlImgToRollbacks.concat(listImageFinal)
   const attributeValuesImgFinal = await getAttributeValueImgFinal(attributes)
   resRollback.urlImgToRollbacks = resRollback.urlImgToRollbacks.concat(
     attributeValuesImgFinal.flat()
@@ -324,10 +352,49 @@ export const DELETE = withValidateFieldHandler(
       },
       async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
         const bodyParse = ctx.bodyParse!
-        const res = await prisma.product.deleteMany({
-          where: { id: { in: bodyParse.ids } },
-        })
-        return AppResponse.json({ status: 200, data: res.count })
+
+        try {
+          const res = await prisma.$transaction(async (tx) => {
+            const productsWithMedia = await tx.product.findMany({
+              where: { id: { in: bodyParse.ids } },
+              select: {
+                mainImage: true,
+                listImages: true,
+                productSkus: {
+                  select: {
+                    image: true,
+                  },
+                },
+                productAttributes: {
+                  select: {
+                    productAttributeValues: {
+                      select: {
+                        image: true,
+                      },
+                    },
+                  },
+                },
+              },
+            })
+
+            const mediaKeys = collectProductMediaKeys(productsWithMedia)
+
+            const deletedRes = await tx.product.deleteMany({
+              where: { id: { in: bodyParse.ids } },
+            })
+
+            if (mediaKeys.length) {
+              await AppS3Client.s3DeleteFiles(mediaKeys)
+            }
+
+            return deletedRes
+          })
+
+          return AppResponse.json({ status: 200, data: res.count })
+        } catch (err) {
+          console.error("Product delete failed", err)
+          return AppError.json()
+        }
       }
     )
   )

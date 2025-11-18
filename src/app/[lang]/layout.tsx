@@ -1,5 +1,4 @@
 import LocalizationProviderMUIProvider from "@/components/providers/LocalizationProviderMUIDatePicker"
-import { roboto } from "@/constants/fonts"
 import theme from "@/constants/theme/clientTheme"
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter"
 import InitColorSchemeScript from "@mui/material/InitColorSchemeScript"
@@ -18,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={roboto.variable} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={"antialiased"}>
         <InitColorSchemeScript attribute="class" />
         <AppRouterCacheProvider>

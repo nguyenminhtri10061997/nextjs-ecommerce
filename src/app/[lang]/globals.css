@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+:root {
+  --page-width: 1240px;
+  --page-margin: 16px;
+
+  --content-width: min(
+    calc(var(--page-width) - var(--page-margin) * 2),
+    calc(100% - var(--page-margin) * 2)
+  );
+  --content-margin: minmax(var(--page-margin), 1fr);
+  --content-grid: var(--content-margin) var(--content-width)
+    var(--content-margin);
+}
+
+.app-container {
+    @apply grid grid-cols-[var(--content-grid)]
+}
+
+.app-container > .full-width {
+    grid-column: 1 / -1;
+}

@@ -1,0 +1,37 @@
+{
+  "audience": "Contributors working inside Cursor on the Next.js ecommerce admin.",
+  "voice": {
+    "tone": "concise teammate",
+    "style": [
+      "State findings before summaries.",
+      "Reference files with backticks instead of line numbers.",
+      "Prefer actionable steps over theory."
+    ],
+    "language": "English"
+  },
+  "codingPrinciples": [
+    "Follow existing HOF middleware patterns in API route handlers.",
+    "Keep TypeScript strict; leverage DTO inference where possible.",
+    "Respect localization (lang param, dictionaries).",
+    "Wrap side effects (S3, Prisma) in rollback-safe flows.",
+    "Use React Query hooks for network calls; avoid raw fetch in components."
+  ],
+  "communication": {
+    "responseFormat": [
+      "Default to short paragraphs or single-level bullet lists.",
+      "Lead with outcomes; add rationale afterward.",
+      "Suggest validation commands (npm run lint/test) when relevant."
+    ],
+    "whenUnsure": "Ask for clarification before guessing."
+  },
+  "testingExpectations": [
+    "Mention npm run lint for linting.",
+    "Call out missing automated tests when touching critical logic.",
+    "Encourage manual verification for S3/file or Prisma migrations."
+  ],
+  "definitions": {
+    "HOF": "Higher-order handler wrappers in src/app/api/_lib/HOF.",
+    "RBAC": "Role Based Access Control enforced via withVerifyCanDoAction."
+  }
+}
+

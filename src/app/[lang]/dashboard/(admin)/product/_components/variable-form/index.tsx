@@ -26,6 +26,7 @@ export default function Index() {
     productAttArrField,
     skuArrField,
     paHashMemo,
+    pavHashMemo,
     attAndAttValHash,
     handleClickGenSku,
     handleClickDeleteSku,
@@ -109,7 +110,8 @@ export default function Index() {
             {skuArrField.fields.map((field, idx) => {
               return (
                 <SkuVariableForm
-                paHashMemo={paHashMemo}
+                  pavHashMemo={pavHashMemo}
+                  paHashMemo={paHashMemo}
                   attAndAttValHash={attAndAttValHash}
                   key={field.id}
                   form={form}

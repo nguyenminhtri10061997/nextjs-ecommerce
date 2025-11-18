@@ -22,13 +22,15 @@ export default class AppS3Client {
   })
 
   private static bucketName = AppEnvironment.S3_BUCKET_NAME
+  static TEMP_FOLDER = 'temp'
+  static FINAL_FOLDER = 'final'
 
   private static getFileKey(file: File, isTemp = true) {
     const baseName = getBaseFileName(textToSlug(file.name))
     const contentType = file.type || "application/octet-stream"
     const extension = mimeExtension(contentType)
     const uuid = v4().slice(0, 8)
-    const prefix = isTemp ? "temp" : "final"
+    const prefix = isTemp ? this.TEMP_FOLDER : this.FINAL_FOLDER
     const fileKey = `${prefix}/${baseName}-${uuid}-${+new Date()}.${extension}`
     return { fileKey, contentType }
   }
@@ -41,7 +43,7 @@ export default class AppS3Client {
     const contentType = data.contentType || "application/octet-stream"
     const extension = mimeExtension(contentType)
     const uuid = v4().slice(0, 8)
-    const prefix = "temp"
+    const prefix = this.TEMP_FOLDER
     const fileKey = `${prefix}/${baseName}-${uuid}-${+new Date()}.${extension}`
     return fileKey
   }
@@ -203,7 +205,7 @@ export default class AppS3Client {
   ) {
     if (!key) return null
     const fileName = key.split("/")[1]
-    const toKey = `final/${fileName}`
+    const toKey = `${this.FINAL_FOLDER}/${fileName}`
 
     // Step 1: Copy
     this.copyS3File({

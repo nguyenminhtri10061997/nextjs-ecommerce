@@ -1,3 +1,7 @@
 {
-  "AppName": "My App"
+  "AppName": "My App",
+  "topAd": {
+    "text": "Sign up and get 20% off to your first order.",
+    "signUpNow": "Sign Up Now"
+  }
 }

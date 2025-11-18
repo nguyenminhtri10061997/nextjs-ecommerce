@@ -1,1 +1,0 @@
-export type TLang = 'en-US' | 'vi-VN'

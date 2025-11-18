@@ -93,14 +93,22 @@ export default function useIndex(props: TProps) {
     skuArrField.remove(idx)
   }
 
-  const attributeWatch = useWatch({
+  const paWatch = useWatch({
     control: form.control,
     name: "attributes",
   })
 
   const paHashMemo = useMemo(
-    () => Object.fromEntries(attributeWatch?.map((i) => [i.id, i]) || []) || {},
-    [attributeWatch]
+    () => Object.fromEntries(paWatch?.map((i) => [i.id, i]) || []) || {},
+    [paWatch]
+  )
+
+  const pavHashMemo = useMemo(
+    () =>
+      Object.fromEntries(
+        paWatch?.flatMap((i) => i.productAttValues?.map((j) => [j.id, j])) || []
+      ) || {},
+    [paWatch]
   )
 
   return {
@@ -109,6 +117,7 @@ export default function useIndex(props: TProps) {
     skuArrField,
     attAndAttValHash,
     paHashMemo,
+    pavHashMemo,
     handleClickGenSku,
     handleClickDeleteSku,
   }

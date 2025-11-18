@@ -1,4 +1,5 @@
 "use client"
+import { TLang } from "@/app/[lang]/dictionaries"
 import { DragEndEvent } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
 import { ChangeEvent } from "react"
@@ -62,3 +63,8 @@ export const handleNumberChange = (
     onChange(val === "" ? "" : Number(val))
   }
 }
+
+
+export type TAppPageProps = React.PropsWithChildren<{
+  params: Promise<{ lang: TLang }>
+}>

@@ -1,3 +1,7 @@
 {
-  "AppName": "App Tôi"
+  "AppName": "App Tôi",
+  "topAd": {
+    "text": "Đăng ký và nhận khuyến mãi 20% trên đơn hàng đầu tiên của bạn",
+    "signUpNow": "Đăng Ký Ngay"
+  }
 }

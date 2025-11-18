@@ -1,0 +1,22 @@
+## Cursor Rules for Next.js Ecommerce Admin
+
+- **Project Scope**: Multilingual Next.js 15 dashboard + Prisma API. Default path `/home/cimb/work/learn-nextjs/nextjs-ecommerce`.
+- **Tech Conventions**: TypeScript everywhere, Tailwind utilities with MUI components, React Query for data access, Prisma for DB, Zod DTO validation.
+- **API Workflows**:
+  - Chain HOF middlewares (`withValidateFieldHandler` → `withVerifyAccessToken` → `withVerifyCanDoAction`).
+  - Keep validators in sibling `validator.ts` files; infer types from DTOs.
+  - For file uploads, move objects from temp to final via `AppS3Client`; capture rollback URLs.
+- **Frontend Workflows**:
+  - Use dictionaries under `src/constants/dictionaries` and `getDictionary(lang)` in `[lang]` routes.
+  - Fetch data via hooks in `src/lib/reactQuery/*`; avoid ad-hoc axios calls in components.
+  - Reuse shared components in `src/components/customComponents`.
+  - animation use gsap in src/lib/gsap
+- **Quality**:
+  - Run `npm run lint` after significant changes.
+  - Describe manual checks if automation isn’t feasible (e.g., S3 operations, Prisma migrations).
+  - Cite files with backticks; avoid line numbers unless essential.
+- **Communication**:
+  - Lead with findings/issues, then context.
+  - Ask for missing requirements before implementing assumptions.
+  - Suggest follow-up steps (tests, builds) when responding.
+
