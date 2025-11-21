@@ -1,5 +1,6 @@
 import { TReturnOfGetDictionary } from "@/app/[lang]/dictionaries"
-import BannerCloseButton from "./BannerCloseButton"
+import BannerCloseButton from "./bannerCloseButton"
+import PublicAppContainer from "@/components/customComponents/PublicAppContainer"
 
 type TProps = {
   dict: TReturnOfGetDictionary
@@ -7,7 +8,7 @@ type TProps = {
 
 export default function TopAdBanner({ dict }: TProps) {
   return (
-    <div
+    <PublicAppContainer
       id="top-ad-banner"
       className="bg-black app-container"
       role="banner"
@@ -18,7 +19,7 @@ export default function TopAdBanner({ dict }: TProps) {
         <p className="text-center text-white text-[12px] md:text-[14px]">
           {dict.topAd.text}.{" "}
           <a
-            href="<?php echo esc_attr(wc_get_page_permalink('myaccount')); ?>"
+            href="#"
             className="underline font-bold"
           >
             {dict.topAd.signUpNow}
@@ -27,6 +28,6 @@ export default function TopAdBanner({ dict }: TProps) {
         <BannerCloseButton />
       </div>
       <div />
-    </div>
+    </PublicAppContainer>
   )
 }

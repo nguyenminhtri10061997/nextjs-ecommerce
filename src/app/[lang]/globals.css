@@ -14,9 +14,21 @@
 }
 
 .app-container {
-    @apply grid grid-cols-[var(--content-grid)]
+  @apply grid grid-cols-[var(--content-grid)];
 }
 
 .app-container > .full-width {
-    grid-column: 1 / -1;
+  grid-column: 1 / -1;
+}
+
+#menu-ul.open {
+  @apply block fixed w-full bg-white mt-[0.625rem] left-0 pt-[0.625rem];
+}
+
+#menu-ul.open a {
+  @apply px-[0.625rem] py-[0.625rem];
+}
+
+#menu-ul.open > li:hover {
+  @apply bg-black/10 font-bold;
 }

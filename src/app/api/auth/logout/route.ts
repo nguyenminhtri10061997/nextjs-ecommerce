@@ -1,9 +1,9 @@
 import { AppResponse } from "@/common/server/appResponse";
-import { AppEnvironment } from "@/environment/appEnvironment";
 import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken";
 import prisma from "@/lib/prisma";
 import { AuthService } from "@/lib/auth/authService";
 import { NextRequest } from "next/server";
+import { AppEnvironment } from "@/constants/environment/appEnvironment";
 
 export const POST = withVerifyAccessToken(async (request: NextRequest, ctx) => {
   const { accessTokenCtx } = ctx

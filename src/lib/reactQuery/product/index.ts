@@ -3,6 +3,7 @@ import {
   IdParamsDTO,
   PatchUpdateProductDTO,
 } from "@/app/api/product/[id]/validator"
+import { GetQueryDTO as SearchGetQueryDTO } from "@/app/api/product/search/validator"
 import {
   DeleteBodyDTO,
   GetQueryDTO,
@@ -21,6 +22,8 @@ export const productKeys = {
   lists: () => [...productKeys.all, "list"] as const,
   list: (query?: output<typeof GetQueryDTO>) =>
     [...productKeys.lists(), stringify(query)] as const,
+  searchList: (query?: output<typeof SearchGetQueryDTO>) =>
+    [...productKeys.lists(), stringify(query)] as const,
   details: () => [...productKeys.all, "detail"] as const,
   detail: (id: string) => [...productKeys.details(), id] as const,
 }
@@ -35,10 +38,31 @@ const getList = async ({ queryKey }: QueryFunctionContext) => {
   return data.data.data
 }
 
+const searchList = async ({ queryKey }: QueryFunctionContext) => {
+  const [, , params] = queryKey as ReturnType<typeof productKeys.list>
+  const data = await axiosInstance.get<
+    TAppResponseBody<{ data: Product[]; pagination: TPaginationResponse }>
+  >(`${API_ENDPOINT}/search`, {
+    params: JSON.parse(params),
+  })
+  return data.data.data
+}
+
 export function useGetProductListQuery(query?: output<typeof GetQueryDTO>) {
   return useQuery({
     queryKey: productKeys.list(query),
     queryFn: getList,
+  })
+}
+
+export function useGetProductSearchQuery(
+  enabled: boolean,
+  query?: output<typeof SearchGetQueryDTO>,
+) {
+  return useQuery({
+    queryKey: productKeys.searchList(query),
+    queryFn: searchList,
+    enabled,
   })
 }
 
@@ -65,13 +89,13 @@ export const getProductDetail = async ({ queryKey }: QueryFunctionContext) => {
           }
           productOptions: {
             include: {
-              ProductOptionToOptionItem: true,
+              ProductOptionToOptionItem: true
             }
           }
           productSkus: {
             include: {
-              skuAttributeValues: true,
-            },
+              skuAttributeValues: true
+            }
           }
           productToProductTags: true
         }

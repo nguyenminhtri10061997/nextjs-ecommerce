@@ -34,12 +34,12 @@ export enum ESearchType {
   equals = "equals",
 }
 
-export const SearchQueryDTO = (IEnum: string[]) =>
+export const SearchQueryDTO = <T extends Readonly<string>>(IEnum: T[]) =>
   z.object({
     searchQuery: z.object({
       searchKey: z.enum(IEnum),
       searchStr: z.string(),
-      searchType: z.enum(ESearchType),
+      searchType: z.enum(ESearchType).default(ESearchType.equals).optional(),
     }),
   });
 

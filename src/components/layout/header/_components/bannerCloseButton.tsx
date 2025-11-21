@@ -2,6 +2,7 @@
 
 import { useRef } from "react"
 import XIcon from '@public/svg/x-icon.svg'
+import { gsap } from "@/lib/gsap"
 
 export default function BannerCloseButton() {
   const parentRef = useRef<HTMLDivElement | null>(null)
