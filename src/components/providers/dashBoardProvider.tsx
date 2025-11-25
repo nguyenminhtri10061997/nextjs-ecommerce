@@ -1,12 +1,13 @@
+'use client'
+import { TReturnOfGetDictionary } from "@/app/[lang]/dictionaries";
 import { DashboardCtx } from "@/components/contexts/dashboardCtx";
-import { DictTypeGenerated } from "@/types/dictTypeGenerated";
 
 export default function DashboardProvider({
   children,
   dict,
 }: {
   children: React.ReactNode;
-  dict: DictTypeGenerated;
+  dict: TReturnOfGetDictionary;
 }) {
   return (
     <DashboardCtx

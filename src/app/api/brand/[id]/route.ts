@@ -95,7 +95,7 @@ export const PATCH = withValidateFieldHandler(
 
         let finalLogoImg = brand.logoImage;
         if (logoImage && logoImage !== brand.logoImage) {
-          finalLogoImg = await AppS3Client.moveFromTempToFinalS3File(logoImage);
+          finalLogoImg = await AppS3Client.copyFromTempToFinalS3File(logoImage, true);
         }
 
         const updated = await prisma.brand.update({

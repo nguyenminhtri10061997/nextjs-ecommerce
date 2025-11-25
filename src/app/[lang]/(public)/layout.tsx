@@ -1,14 +1,13 @@
-import { getDictionary } from "@/app/[lang]/dictionaries"
+import { getDictionary, TLang } from "@/app/[lang]/dictionaries"
+import Hero from "@/components/customComponents/Hero"
 import PublicAppContainer from "@/components/customComponents/PublicAppContainer"
 import Header from "@/components/layout/header"
 import { aBeeZee, notoSans } from "@/constants/fonts"
 import "reflect-metadata"
-import { LayoutProps } from "../../../../.next/types/app/[lang]/layout"
-import Hero from "@/components/customComponents/Hero"
 
-export default async function Layout(props: LayoutProps) {
+export default async function Layout(props: LayoutProps<"/[lang]">) {
   const { lang } = await props.params
-  const dict = await getDictionary(lang)
+  const dict = await getDictionary(lang as TLang)
 
   const fontClass = lang === "en-US" ? aBeeZee.className : notoSans.className
 

@@ -1,3 +1,4 @@
+'use client'
 import { LoadingCtx } from "@/components/contexts/loadingCtx";
 import { Backdrop, CircularProgress } from "@mui/material";
 import Fade from "@mui/material/Fade";
@@ -19,11 +20,11 @@ export default function LoadingProvider({
       }}
     >
       {children}
-      <Fade in={loadingDeferred} timeout={100}>
+      {/* <Fade in={loadingDeferred} timeout={100}>
         <Backdrop open sx={{ zIndex: 1600 }}>
           <CircularProgress color="inherit" />
         </Backdrop>
-      </Fade>
+      </Fade> */}
     </LoadingCtx>
   );
 }

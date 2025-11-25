@@ -2,7 +2,6 @@ import fileLocale from "@/constants/locale/locales.json"
 import { match } from "@formatjs/intl-localematcher"
 import Negotiator from "negotiator"
 import { NextRequest, NextResponse } from "next/server"
-import { getToken } from "./common/dal"
 
 const { defaultLocale = "en-US", locales = [] } = fileLocale
 const protectedRoutes = ["/dashboard"]
@@ -19,7 +18,7 @@ const getLocale = (headers: Headers) => {
   return match(languages, locales, defaultLocale)
 }
 
-export default async function middleware(req: NextRequest) {
+export default function proxy(req: NextRequest) {
   const url = req.nextUrl.clone()
   const { pathname } = req.nextUrl
 
@@ -33,7 +32,7 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  const { accessToken } = await getToken()
+  const accessToken = req.cookies.get("accessToken")?.value || ""
 
   const isProtected = protectedRoutes.some(
     (i) => pathname === i || pathname.startsWith(i)

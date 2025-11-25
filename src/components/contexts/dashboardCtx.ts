@@ -1,8 +1,8 @@
-import { DictTypeGenerated } from "@/types/dictTypeGenerated"
+import { TReturnOfGetDictionary } from "@/app/[lang]/dictionaries"
 import { createContext } from "react"
 
 type TDashboardCtx = {
-  dict: DictTypeGenerated
+  dict: TReturnOfGetDictionary
 } | null
 
 export const DashboardCtx = createContext<TDashboardCtx>(null)

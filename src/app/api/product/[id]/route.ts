@@ -6,11 +6,17 @@ import { AppError } from "@/common/server/appError"
 import { AppResponse } from "@/common/server/appResponse"
 import { AppStatusCode } from "@/common/server/statusCode"
 import prisma from "@/lib/prisma"
-import { EPermissionAction, EPermissionResource, EStockType, Prisma } from "@prisma/client"
+import AppS3Client from "@/lib/s3"
+import {
+  EPermissionAction,
+  EPermissionResource,
+  EStockType,
+  Prisma,
+  ProductAttributeValue,
+} from "@prisma/client"
+import { NextResponse } from "next/server"
 import { output } from "zod/v4"
 import { IdParamsDTO, PatchUpdateProductDTO } from "./validator"
-import AppS3Client from "@/lib/s3"
-import { NextResponse } from "next/server"
 
 type TImageMigrationTracker = {
   tempKeysToDelete: string[]
@@ -128,7 +134,7 @@ export const GET = withValidateFieldHandler(
             productOptions: {
               include: {
                 ProductOptionToOptionItem: true,
-              }
+              },
             },
             productSkus: {
               include: {
@@ -210,6 +216,12 @@ const syncAttributeValue = async (
   }
 }
 
+type TResAttV = {
+  toDeleteValIds: string[]
+  toUpdateVals: ProductAttributeValue[]
+  toCreateVals: ProductAttributeValue[]
+}
+
 const syncAttribute = async (data: {
   product: Prisma.ProductGetPayload<{
     include: {
@@ -250,8 +262,9 @@ const syncAttribute = async (data: {
   const toUpdateAttrs = attributes.filter((attr) => curAttIdSet.has(attr.id))
 
   const toCreateAttrs = attributes.filter((attr) => !curAttIdSet.has(attr.id))
+
   return {
-    resAttV,
+    resAttV: resAttV as TResAttV,
     toDeleteAttrIds,
     toUpdateAttrs,
     toCreateAttrs,
@@ -414,7 +427,7 @@ const syncProductOptions = async (data: {
 
 type TAttributeSyncResult = Exclude<
   Awaited<ReturnType<typeof syncAttribute>>,
-  NextResponse
+  Response
 >
 
 const applyProductAttributeMutations = async ({
@@ -427,11 +440,7 @@ const applyProductAttributeMutations = async ({
   syncResult: TAttributeSyncResult
 }) => {
   const { resAttV, toCreateAttrs, toDeleteAttrIds, toUpdateAttrs } = syncResult
-  const {
-    toDeleteValIds = [],
-    toUpdateVals = [],
-    toCreateVals = [],
-  } = resAttV
+  const { toDeleteValIds = [], toUpdateVals = [], toCreateVals = [] } = resAttV
 
   if (toDeleteValIds.length) {
     await tx.productSkuAttributeValue.deleteMany({
@@ -625,11 +634,8 @@ const applyProductTagMutations = async ({
   productId: string
   tagSyncResult: Awaited<ReturnType<typeof syncProductTags>>
 }) => {
-  const {
-    pToPTagIdToBeDeletes,
-    poToPTagToBeCreates,
-    poToPTagToBeUpdates,
-  } = tagSyncResult
+  const { pToPTagIdToBeDeletes, poToPTagToBeCreates, poToPTagToBeUpdates } =
+    tagSyncResult
 
   if (pToPTagIdToBeDeletes.length) {
     await tx.productToProductTag.deleteMany({
@@ -779,7 +785,9 @@ export const PATCH = withValidateFieldHandler(
             const productFound = await tx.product.findUnique({
               where: { id },
               include: {
-                productAttributes: { include: { productAttributeValues: true } },
+                productAttributes: {
+                  include: { productAttributeValues: true },
+                },
                 productSkus: { include: { skuAttributeValues: true } },
                 productToProductTags: true,
                 brand: true,
@@ -869,7 +877,7 @@ export const PATCH = withValidateFieldHandler(
               body: bodyParse!,
             })
 
-            if (resSyncAtt instanceof NextResponse) {
+            if (resSyncAtt instanceof Response) {
               return resSyncAtt
             }
 

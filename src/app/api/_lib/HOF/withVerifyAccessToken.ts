@@ -1,6 +1,5 @@
 import { getToken } from "@/common/dal"
 import { AppError } from "@/common/server/appError"
-import { AppResponse } from "@/common/server/appResponse"
 import { AppEnvironment } from "@/constants/environment/appEnvironment"
 import { JwtService } from "@/lib/auth/jwtService"
 import { redirect } from "next/navigation"
@@ -12,7 +11,7 @@ export const withVerifyAccessToken = <T extends THofContext>(
   callback: (
     request: NextRequest,
     ctx: T & { accessTokenCtx: THofContext["accessTokenCtx"] }
-  ) => Promise<AppError | AppResponse>
+  ) => Promise<Response>
 ) => {
   return async (request: NextRequest, prevCtx: T = {} as T) => {
     const { accessToken, refreshToken, cookie } = await getToken()

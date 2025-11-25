@@ -103,7 +103,7 @@ export const POST = withValidateFieldHandler(
             seoDescription,
             displayOrder,
             productCategoryParentId,
-            isActive,
+            isActive: isActive || false,
           },
         });
 

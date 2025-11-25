@@ -6,12 +6,9 @@ import { getDictionary, TLang } from "../dictionaries"
 export default async function Layout({
   children,
   params,
-}: {
-  children: React.ReactNode
-  params: Promise<{ lang: TLang }>
-}) {
+}: LayoutProps<"/[lang]/dashboard">) {
   const { lang } = await params
-  const dict = await getDictionary(lang)
+  const dict = await getDictionary(lang as TLang)
 
   return (
     <div className={roboto.className}>

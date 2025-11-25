@@ -1,20 +1,16 @@
-import { getOrderBy, getSkipAndTake } from "@/common";
-import { AppError } from "@/common/server/appError";
-import { AppResponse } from "@/common/server/appResponse";
-import { AppStatusCode } from "@/common/server/statusCode";
-import { THofContext } from "@/app/api/_lib/HOF/type";
-import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField";
-import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken";
-import { withVerifyCanDoAction } from "@/app/api/_lib/HOF/withVerifyCanDoAction";
-import prisma from "@/lib/prisma";
-import { TGetProductRatingListResponse } from "@/types/api/product-rating";
-import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client";
-import dayjs from "dayjs";
-import {
-  DeleteBodyDTO,
-  GetQueryDTO,
-  PostCreateBodyDTO,
-} from "./validator";
+import { THofContext } from "@/app/api/_lib/HOF/type"
+import { withValidateFieldHandler } from "@/app/api/_lib/HOF/withValidateField"
+import { withVerifyAccessToken } from "@/app/api/_lib/HOF/withVerifyAccessToken"
+import { withVerifyCanDoAction } from "@/app/api/_lib/HOF/withVerifyCanDoAction"
+import { getOrderBy, getSkipAndTake } from "@/common/server"
+import { AppError } from "@/common/server/appError"
+import { AppResponse } from "@/common/server/appResponse"
+import { AppStatusCode } from "@/common/server/statusCode"
+import prisma from "@/lib/prisma"
+import { TGetProductRatingListResponse } from "@/types/api/product-rating"
+import { EPermissionAction, EPermissionResource, Prisma } from "@prisma/client"
+import dayjs from "dayjs"
+import { DeleteBodyDTO, GetQueryDTO, PostCreateBodyDTO } from "./validator"
 
 export const GET = withValidateFieldHandler(
   null,
@@ -22,55 +18,58 @@ export const GET = withValidateFieldHandler(
   null,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.PRODUCT_RATING, action: EPermissionAction.READ },
+      {
+        resource: EPermissionResource.PRODUCT_RATING,
+        action: EPermissionAction.READ,
+      },
       async (_, ctx: THofContext<never, typeof GetQueryDTO>) => {
-        const { orderQuery, pagination, dateRangeQuery, ratings, } = ctx.queryParse || {};
-        const where: Prisma.ProductRatingWhereInput = {};
+        const { orderQuery, pagination, dateRangeQuery, ratings } =
+          ctx.queryParse || {}
+        const where: Prisma.ProductRatingWhereInput = {}
 
         if (dateRangeQuery?.startDate && dateRangeQuery?.endDate) {
           where["createdAt"] = {
             gte: dayjs(dateRangeQuery.startDate).startOf("d").toDate(),
             lte: dayjs(dateRangeQuery.endDate).startOf("d").toDate(),
-          };
+          }
         }
 
-        const {
-          skip,
-          take,
-        } = getSkipAndTake(pagination)
+        const { skip, take } = getSkipAndTake(pagination)
 
         const findManyArgs: Prisma.ProductRatingFindManyArgs = {
           where,
           skip,
           take,
           orderBy: getOrderBy(orderQuery),
-        };
+        }
 
         if (ratings?.length) {
           where.rating = {
-            in: ratings
+            in: ratings,
           }
         }
 
         const [data, count] = await Promise.all([
           prisma.productRating.findMany(findManyArgs),
           skip && take ? prisma.productRating.count({ where }) : undefined,
-        ]);
+        ])
 
         return AppResponse.json({
           status: 200,
           data: {
             data,
-            pagination: pagination ? {
-              ...pagination,
-              count,
-            } : undefined,
+            pagination: pagination
+              ? {
+                  ...pagination,
+                  count,
+                }
+              : undefined,
           } as TGetProductRatingListResponse,
-        });
+        })
       }
     )
   )
-);
+)
 
 export const POST = withValidateFieldHandler(
   null,
@@ -78,27 +77,23 @@ export const POST = withValidateFieldHandler(
   PostCreateBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.PRODUCT_RATING, action: EPermissionAction.CREATE },
+      {
+        resource: EPermissionResource.PRODUCT_RATING,
+        action: EPermissionAction.CREATE,
+      },
       async (_, ctx: THofContext<never, never, typeof PostCreateBodyDTO>) => {
-        const {
-          userId,
-          productId,
-          rating,
-          title,
-          detail,
-          video,
-          images,
-        } = ctx.bodyParse!;
+        const { userId, productId, rating, title, detail, video, images } =
+          ctx.bodyParse!
 
         const exists = await prisma.productRating.findFirst({
           where: { userId, productId },
-        });
+        })
 
         if (exists) {
           return AppError.json({
             status: AppStatusCode.EXISTING,
             message: "You have already rated this product",
-          });
+          })
         }
 
         const res = await prisma.productRating.create({
@@ -111,13 +106,13 @@ export const POST = withValidateFieldHandler(
             video,
             images,
           },
-        });
+        })
 
-        return AppResponse.json({ status: 200, data: res });
+        return AppResponse.json({ status: 200, data: res })
       }
     )
   )
-);
+)
 
 export const DELETE = withValidateFieldHandler(
   null,
@@ -125,14 +120,17 @@ export const DELETE = withValidateFieldHandler(
   DeleteBodyDTO,
   withVerifyAccessToken(
     withVerifyCanDoAction(
-      { resource: EPermissionResource.PRODUCT_RATING, action: EPermissionAction.DELETE },
+      {
+        resource: EPermissionResource.PRODUCT_RATING,
+        action: EPermissionAction.DELETE,
+      },
       async (_, ctx: THofContext<never, never, typeof DeleteBodyDTO>) => {
         const res = await prisma.productRating.deleteMany({
           where: { id: { in: ctx.bodyParse!.ids } },
-        });
+        })
 
-        return AppResponse.json({ status: 200, data: res.count });
+        return AppResponse.json({ status: 200, data: res.count })
       }
     )
   )
-);
+)

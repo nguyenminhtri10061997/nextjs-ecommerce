@@ -1,3 +1,5 @@
+'use client'
+
 import { PostCreateBodyDTO } from "@/app/api/brand/validator";
 import { useForm } from "react-hook-form";
 import { output } from "zod/v4";

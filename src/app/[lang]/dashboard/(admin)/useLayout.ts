@@ -1,3 +1,4 @@
+'use client'
 import { useAlertContext } from "@/components/hooks/useAlertContext"
 import useLoadingWhenRoutePush from "@/components/hooks/useLoadingWhenRoutePush"
 import { DASHBOARD_MENU_ITEMS } from "@/constants/dashBoardMenu"

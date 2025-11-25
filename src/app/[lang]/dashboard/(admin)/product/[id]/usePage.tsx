@@ -17,7 +17,6 @@ import { useEffect } from "react"
 import { SubmitHandler } from "react-hook-form"
 import { TForm } from "../_components/product-form/useIndex"
 
-export type TPermissionState = Partial<Record<string, boolean>>
 export const usePage = () => {
   const { id } = useParams<{ id: string }>()
   const queryClient = useQueryClient()

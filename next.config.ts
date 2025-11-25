@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  cacheComponents: true,
 }
 
 const withBundleAnalyzer = require("@next/bundle-analyzer")({

@@ -1,14 +1,15 @@
-"use client";
+"use client"
 
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import AttributeForm from "./_components/attributeForm";
-import { usePage } from "./usePage";
+import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import Stack from "@mui/material/Stack"
+import Typography from "@mui/material/Typography"
+import { Suspense } from "react"
+import AttributeForm from "./_components/attributeForm"
+import { usePage } from "./usePage"
 
 export default function AttributePage() {
-  const { mutation, handleSetForm, handleClickSubmitForm } = usePage();
+  const { mutation, handleSetForm, handleClickSubmitForm } = usePage()
 
   return (
     <Box>
@@ -20,7 +21,9 @@ export default function AttributePage() {
         sx={{ mt: 2 }}
         onSubmit={handleClickSubmitForm}
       >
-        <AttributeForm onGetForm={handleSetForm} />
+        <Suspense>
+          <AttributeForm onGetForm={handleSetForm} />
+        </Suspense>
         <Stack direction={"row-reverse"}>
           <Button
             sx={{
@@ -35,5 +38,5 @@ export default function AttributePage() {
         </Stack>
       </Box>
     </Box>
-  );
+  )
 }

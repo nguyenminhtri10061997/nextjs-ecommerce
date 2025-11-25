@@ -1,4 +1,5 @@
 import { EUserOrAccountType } from "@prisma/client";
+import { AccountSchema } from "@prisma/generated/schemas/models";
 import { z } from "zod/v4";
 
 export const idParamsDTO = z.object({
@@ -8,11 +9,12 @@ export const idParamsDTO = z.object({
 export const PatchBodyDTO = z.object({
   fullName: z.string().optional(),
   type: z.enum(EUserOrAccountType).optional(),
-  account: z.object({
-    username: z.string().optional(),
-    newPassword: z.string().optional(),
-    roleId: z.uuidv4().optional(),
-    isBanned: z.boolean().optional(),
-    isBlocked: z.boolean().optional(),
+  account: AccountSchema.omit({
+    id: true,
+    userId: true,
+    password: true,
+    type: true,
+  }).extend({
+    newPassword: z.string().min(0)
   }),
 });

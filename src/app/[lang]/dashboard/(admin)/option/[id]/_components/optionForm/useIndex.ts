@@ -1,3 +1,5 @@
+'use client'
+
 import { PatchBodyDTO } from "@/app/api/option/[id]/validator"
 import { textToSlug } from "@/common"
 import useAppUseForm from "@/constants/reactHookForm"

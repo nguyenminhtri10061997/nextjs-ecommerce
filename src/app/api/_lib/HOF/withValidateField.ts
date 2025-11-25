@@ -1,5 +1,4 @@
 import { AppError } from "@/common/server/appError"
-import { AppResponse } from "@/common/server/appResponse"
 import { NextRequest } from "next/server"
 import qs from "qs"
 import { core, ZodObject } from "zod/v4"
@@ -13,7 +12,7 @@ export function withValidateFieldHandler<
   TParamsSchema extends ZodObject = never,
   TQuerySchema extends ZodObject = never,
   TBodySchema extends ZodObject = never,
-  T extends THofContext = never
+  T extends THofContext = never,
 >(
   paramSchema: TParamsSchema | null = null,
   querySchema: TQuerySchema | null = null,
@@ -25,7 +24,7 @@ export function withValidateFieldHandler<
       queryParse?: THofContext["queryParse"]
       bodyParse?: THofContext["bodyParse"]
     }
-  ) => Promise<AppError | AppResponse>
+  ) => Promise<Response>
 ) {
   return async (req: NextRequest, ctx: T) => {
     const url = new URL(req.url)

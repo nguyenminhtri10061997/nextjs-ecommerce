@@ -1,3 +1,5 @@
+'use client'
+
 import { PatchBodyDTO } from "@/app/api/attribute/[id]/validator";
 import { textToSlug } from "@/common";
 import { AttributeValue } from "@prisma/client";

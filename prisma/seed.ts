@@ -1,23 +1,19 @@
+import prisma from "@/lib/prisma"
 import {
   EAttributeType,
   EPermissionAction,
   EPermissionResource,
   EUserOrAccountType,
   Prisma,
-  PrismaClient,
 } from "@prisma/client"
 import { v4 } from "uuid"
 
-const prisma = new PrismaClient()
 export async function main() {
-  const [permissionsInDb] = await Promise.all([
-    prisma.permission.findMany({
-      include: {
-        role: true,
-      },
-    }),
-  ])
-
+  const permissionsInDb = await prisma.permission.findMany({
+    include: {
+      role: true,
+    },
+  })
   const permissionsInDbHash = Object.fromEntries(
     permissionsInDb.map((per) => [`${per.resource}_${per.action}`, per])
   )
