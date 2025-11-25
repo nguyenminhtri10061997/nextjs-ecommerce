@@ -1,5 +1,3 @@
-"use client";
-
 import { useAlertContext } from "@/components/hooks/useAlertContext";
 import useFormRef from "@/components/hooks/useFormRef";
 import useLoadingWhenRoutePush from "@/components/hooks/useLoadingWhenRoutePush";
