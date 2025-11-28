@@ -1,5 +1,9 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Design
+
+[Figma Design](https://www.figma.com/design/u4YrR2eNS2Qnh7pMelS8aK/E-commerce-Website-Template--Freebie---Community-?node-id=20-2&t=aDCxdSpM804KeUz2-1)
+
 ## Getting Started
 
 First, run the development server:

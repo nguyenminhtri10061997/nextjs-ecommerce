@@ -30,8 +30,8 @@ export default function RootLayout({
 
 export async function generateStaticParams() {
   return [
-    { lang: 'en-US' },
-    { lang: 'vi-VN' },
+    { lang: "en-US" },
+    { lang: "vi-VN" },
     // add other supported languages
-  ];
+  ]
 }

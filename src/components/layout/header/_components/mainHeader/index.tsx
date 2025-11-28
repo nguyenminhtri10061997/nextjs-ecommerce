@@ -19,7 +19,6 @@ export default function MainHeader() {
                 alt="LOGO"
                 src={logo}
                 className="w-[7.875rem] h-[1.375rem]"
-                objectFit="cover"
               />
             </Link>
             <div className="relative -order-1 md:order-1">

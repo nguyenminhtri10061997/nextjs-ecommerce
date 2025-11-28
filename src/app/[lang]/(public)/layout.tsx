@@ -1,12 +1,14 @@
 import { getDictionary, TLang } from "@/app/[lang]/dictionaries"
-import BrandSlider from "@/components/customComponents/BrandSlider"
-import Hero from "@/components/customComponents/Hero"
 import PublicAppContainer from "@/components/customComponents/PublicAppContainer"
+import Footer from "@/components/layout/footer"
 import Header from "@/components/layout/header"
 import { aBeeZee, notoSans } from "@/constants/fonts"
 
-export default async function Layout(props: LayoutProps<"/[lang]">) {
-  const { lang } = await props.params
+export default async function Layout({
+  children,
+  params,
+}: LayoutProps<"/[lang]">) {
+  const { lang } = await params
   const dict = await getDictionary(lang as TLang)
 
   const fontClass = lang === "en-US" ? aBeeZee.className : notoSans.className
@@ -14,12 +16,10 @@ export default async function Layout(props: LayoutProps<"/[lang]">) {
   return (
     <div className={fontClass}>
       <Header dict={dict} />
-      <Hero />
-
-      <BrandSlider />
-      <PublicAppContainer>
-        <main className="bg-yello-500">{props.children}</main>
-      </PublicAppContainer>
+      <PublicAppContainer>{children}</PublicAppContainer>
+      <div className="mt-[10.625rem]">
+        <Footer />
+      </div>
     </div>
   )
 }

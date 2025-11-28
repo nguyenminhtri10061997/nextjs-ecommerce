@@ -18,7 +18,7 @@ const getLocale = (headers: Headers) => {
   return match(languages, locales, defaultLocale)
 }
 
-export default function proxy(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const url = req.nextUrl.clone()
   const { pathname } = req.nextUrl
 
