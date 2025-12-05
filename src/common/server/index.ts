@@ -1,3 +1,7 @@
+import {
+  TDictionaryKeys,
+  TReturnOfGetDictionary,
+} from "@/app/[lang]/dictionaries"
 import { TOrderQuery, TPaginationParams } from "@/types/api/common"
 
 export const getSkipAndTake = (pagination?: TPaginationParams) => {
@@ -17,4 +21,13 @@ export const getOrderBy = (orderQuery?: TOrderQuery) => {
     }
   }
   return {}
+}
+
+export type TAppLangProps = {
+  dict: TReturnOfGetDictionary
+  lang: TDictionaryKeys
+}
+
+export const getAppLinkWithLang = (lang: TDictionaryKeys, href: string) => {
+  return `/${lang}${href}`
 }

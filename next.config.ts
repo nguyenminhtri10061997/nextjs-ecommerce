@@ -17,6 +17,15 @@ const nextConfig: NextConfig = {
     },
   },
   cacheComponents: true,
+  redirects() {
+    return [
+      {
+        source: "/:path*/page",
+        destination: "/:path*",
+        permanent: false,
+      },
+    ]
+  },
 }
 
 const withBundleAnalyzer = require("@next/bundle-analyzer")({

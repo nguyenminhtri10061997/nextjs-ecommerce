@@ -20,11 +20,11 @@ export default function LoadingProvider({
       }}
     >
       {children}
-      {/* <Fade in={loadingDeferred} timeout={100}>
+      <Fade in={loadingDeferred} timeout={100}>
         <Backdrop open sx={{ zIndex: 1600 }}>
           <CircularProgress color="inherit" />
         </Backdrop>
-      </Fade> */}
+      </Fade>
     </LoadingCtx>
   );
 }

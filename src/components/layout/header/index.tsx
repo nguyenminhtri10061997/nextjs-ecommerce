@@ -1,16 +1,14 @@
-import { TReturnOfGetDictionary } from "@/app/[lang]/dictionaries"
+import { TAppLangProps } from "@/common/server"
 import MainHeader from "./_components/mainHeader"
 import TopAdBanner from "./_components/topAdBanner"
 
-type HeaderProps = {
-  dict: TReturnOfGetDictionary
-}
+type HeaderProps = TAppLangProps
 
-export default function Header({ dict }: HeaderProps) {
+export default function Header({ dict, lang }: HeaderProps) {
   return (
     <header>
       <TopAdBanner dict={dict} />
-      <MainHeader />
+      <MainHeader dict={dict} lang={lang} />
     </header>
   )
 }

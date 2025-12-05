@@ -2,7 +2,7 @@
 
 import { PatchBodyDTO } from "@/app/api/option/[id]/validator"
 import { textToSlug } from "@/common"
-import useAppUseForm from "@/constants/reactHookForm"
+import useAppUseForm from "@/components/hooks/useAppUseForm"
 import { ChangeEvent } from "react"
 import { useFieldArray } from "react-hook-form"
 import { output } from "zod/v4"

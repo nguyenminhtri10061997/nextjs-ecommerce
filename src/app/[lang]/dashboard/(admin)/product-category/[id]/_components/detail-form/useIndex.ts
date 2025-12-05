@@ -1,7 +1,7 @@
 import { PatchBodyDTO } from "@/app/api/product-category/[id]/validator"
 import { useAlertContext } from "@/components/hooks/useAlertContext"
 import { useLoadingCtx } from "@/components/hooks/useLoadingCtx"
-import useAppUseForm from "@/constants/reactHookForm"
+import useAppUseForm from "@/components/hooks/useAppUseForm"
 import { useGetProductCategoryListQuery } from "@/lib/reactQuery/product-category"
 import { useEffect } from "react"
 import { output } from "zod/v4"

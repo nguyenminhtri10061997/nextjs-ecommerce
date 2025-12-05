@@ -5,9 +5,9 @@ const dictionaries = {
     ['vi-VN']: () => import('../../constants/dictionaries/vi-VN.json').then((module) => module.default),
 }
 
-export const getDictionary = async (locale: 'en-US' | 'vi-VN') =>
+export type TDictionaryKeys = keyof typeof dictionaries
+
+export const getDictionary = async (locale: TDictionaryKeys) =>
     dictionaries[locale]()
 
 export type TReturnOfGetDictionary = Awaited<ReturnType<typeof getDictionary>>
-
-export type TLang = 'en-US' | 'vi-VN'

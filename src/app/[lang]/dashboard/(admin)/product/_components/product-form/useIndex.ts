@@ -1,5 +1,5 @@
 import { PostCreateBodyDTO } from "@/app/api/product/validator"
-import useAppUseForm from "@/constants/reactHookForm"
+import useAppUseForm from "@/components/hooks/useAppUseForm"
 import { useGetBrandListQuery } from "@/lib/reactQuery/brand"
 import { useGetOptionListQuery } from "@/lib/reactQuery/option"
 import { useGetProductCategoryListQuery } from "@/lib/reactQuery/product-category"

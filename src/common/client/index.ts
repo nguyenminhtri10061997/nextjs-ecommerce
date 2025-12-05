@@ -1,5 +1,5 @@
 "use client"
-import { TLang } from "@/app/[lang]/dictionaries"
+import { TDictionaryKeys } from "@/app/[lang]/dictionaries"
 import { DragEndEvent } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
 import { ChangeEvent } from "react"
@@ -14,7 +14,7 @@ import {
 
 export function handleDragEnd<
   TForm extends Record<string, unknown>,
-  TKey extends ArrayPath<TForm>
+  TKey extends ArrayPath<TForm>,
 >(
   form: UseFormReturn<TForm>,
   key: TKey,
@@ -65,10 +65,13 @@ export const handleNumberChange = (
 }
 
 export type TAppPageProps = React.PropsWithChildren<{
-  params: Promise<{ lang: TLang }>
+  params: Promise<{ lang: TDictionaryKeys }>
 }>
 
-export function debounce<T extends (...args: never[]) => void>(fn: T, delay = 300) {
+export function debounce<T extends (...args: never[]) => void>(
+  fn: T,
+  delay = 300
+) {
   let timer: ReturnType<typeof setTimeout>
   return (...args: Parameters<T>) => {
     clearTimeout(timer)

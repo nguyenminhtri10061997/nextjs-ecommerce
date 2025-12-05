@@ -1,16 +1,18 @@
+import { TAppLangProps } from "@/common/server"
 import Link from "next/link"
 import { Fragment } from "react/jsx-runtime"
 
-type TProps = {
+type TProps = Pick<TAppLangProps, "lang"> & {
   segments: {
     title: string
     href: string
   }[]
 }
 
-export default function AppBreadcrumbs({ segments }: TProps) {
+export default function AppBreadcrumbs({ segments, lang }: TProps) {
   const segmentsLen = segments.length
-  let href = ""
+  const homeHref = `/${lang}`
+  let href = homeHref
   const breadcrumbs = segments.map((segment, idx) => {
     href = `${href}/${segment.href}`
 
@@ -19,10 +21,10 @@ export default function AppBreadcrumbs({ segments }: TProps) {
     const isLast = idx === segmentsLen - 1
     return (
       <Fragment key={href}>
-        <span className="mx-2">/</span>
+        <span className="mx-2">{">"}</span>
         <Link
           href={href}
-          className={`hover:text-black transition-colors ${isLast ? "font-medium" : ""}`}
+          className={`hover:text-black transition-colors ${isLast ? "font-medium text-black" : ""}`}
         >
           {label}
         </Link>
@@ -30,8 +32,8 @@ export default function AppBreadcrumbs({ segments }: TProps) {
     )
   })
   return (
-    <nav className="col-start-2 mb-8 flex items-center text-sm text-gray-500">
-      <Link href="/" className="hover:text-black transition-colors">
+    <nav className="col-start-2 flex items-center text-sm text-gray-500">
+      <Link href={homeHref} className="hover:text-black transition-colors">
         Home
       </Link>
       {breadcrumbs}

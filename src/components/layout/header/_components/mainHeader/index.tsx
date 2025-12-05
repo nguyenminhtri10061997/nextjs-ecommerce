@@ -1,3 +1,4 @@
+import { getAppLinkWithLang, TAppLangProps } from "@/common/server"
 import PublicAppContainer from "@/components/customComponents/PublicAppContainer"
 import logo from "@public/images/SHOP.CO.png"
 import CartIcon from "@public/svg/cart.svg"
@@ -8,13 +9,13 @@ import Link from "next/link"
 import MenuToggle from "../menuToggle"
 import SearchProduct from "../searchProduct"
 
-export default function MainHeader() {
+export default function MainHeader({ lang }: TAppLangProps) {
   return (
     <PublicAppContainer>
       <div className="my-[23px] md:my-[24px]">
         <div className="my-theme-container flex items-center justify-between gap-[40px]">
           <div className="flex items-center gap-[16px] md:gap-[40px]">
-            <Link href="/">
+            <Link href={getAppLinkWithLang(lang, "/")} className="block">
               <Image
                 alt="LOGO"
                 src={logo}
@@ -26,7 +27,7 @@ export default function MainHeader() {
               <ul id="menu-ul" className="hidden md:flex gap-[24px]">
                 <li>
                   <Link
-                    href="#"
+                    href={`${getAppLinkWithLang(lang, "/shop")}`}
                     className="w-full h-full block hover:opacity-75"
                   >
                     Shop
